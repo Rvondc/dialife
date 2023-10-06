@@ -82,7 +82,7 @@ class _RootState extends State<Root> {
       //   title: Text(widget.title),
       // ),
       body: Container(
-        color: const Color.fromARGB(255, 100, 44, 141),
+        color: const Color.fromARGB(255, 100, 64, 141),
         constraints: const BoxConstraints.expand(),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
