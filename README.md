@@ -1,4 +1,4 @@
-# dialife
+# DiaLife
 
 ## Module 1
 The first three feature of DiaLife to delivered by the end of the month include:
