@@ -1,16 +1,9 @@
 # dialife
 
-A new Flutter project.
+## Module 1
+The first three feature of DiaLife to delivered by the end of the month include:
+1. Blood Glucose Tracking (Assigned to me)
+2. BMI Tracking (Assigned to me)
+3. Insulin Tracking (Assigned to von)
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Each feature, all its widgets and logic, should be contained in its own folder (i.e. BMI Tracking feature should be placed in bmi_tracking).
