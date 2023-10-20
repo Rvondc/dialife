@@ -1,7 +1,12 @@
-import 'package:dialife/blood_glucose_tracking/blood_glucose_tracking.dart';
+import 'package:dialife/blood_glucose_tracking/glucose_tracking.dart';
+import 'package:dialife/blood_glucose_tracking/input_form.dart';
+import 'package:dialife/blood_glucose_tracking/record_editor.dart';
 import 'package:dialife/bmi_tracking/bmi_tracking.dart';
+import 'package:dialife/bmi_tracking/input_form.dart';
+import 'package:dialife/bmi_tracking/record_editor.dart';
 import 'package:dialife/insulin_tracking/insulin_tracking.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 void main() {
   runApp(const Main());
@@ -13,6 +18,10 @@ class Main extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
     return MaterialApp(
       title: 'DiaLife',
       theme: ThemeData(
@@ -43,13 +52,36 @@ class Main extends StatelessWidget {
             );
           case "/blood-glucose-tracking":
             return MaterialPageRoute(
-              builder: (context) => const BloodGlucoseTracking(),
+              builder: (context) => const GlucoseTracking(),
               settings: const RouteSettings(name: "/blood-glucose-tracking"),
+            );
+          case "/blood-glucose-tracking/editor":
+            return MaterialPageRoute(
+              builder: (context) => const GlucoseRecordEditor(),
+              settings:
+                  const RouteSettings(name: "/blood-glucose-tracking/editor"),
+            );
+          case "/blood-glucose-tracking/input":
+            return MaterialPageRoute(
+              builder: (context) =>
+                  const GlucoseRecordInputForm(existing: null),
+              settings:
+                  const RouteSettings(name: "/blood-glucose-tracking/input"),
             );
           case "/bmi-tracking":
             return MaterialPageRoute(
               builder: (context) => const BMITracking(),
               settings: const RouteSettings(name: "/bmi-tracking"),
+            );
+          case "/bmi-tracking/editor":
+            return MaterialPageRoute(
+              builder: (context) => const BMIRecordEditor(),
+              settings: const RouteSettings(name: "/bmi-tracking/editor"),
+            );
+          case "/bmi-tracking/input":
+            return MaterialPageRoute(
+              builder: (context) => const BMIRecordForm(),
+              settings: const RouteSettings(name: "/bmi-tracking/input"),
             );
           case "/insulin-tracking":
             return MaterialPageRoute(
