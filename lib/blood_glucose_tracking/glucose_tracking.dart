@@ -407,16 +407,6 @@ class _GlucoseTrackingInternalState extends State<_GlucoseTrackingInternal> {
                   )
                   .toList();
 
-              // final a1CDataPointsMap = widget.glucoseRecords
-              //     .where((record) => record.isA1C)
-              //     .toList()
-              //     .asMap()
-              //     .entries
-              //     .where((data) =>
-              //         _scope.start.isBefore(data.value.bloodTestDate) &&
-              //         _scope.end.isAfter(data.value.bloodTestDate))
-              //     .toList();
-
               var glucoseDataPoints = glucoseDataPointsMap
                   .map((data) => data.value)
                   .where((record) => !record.isA1C)
@@ -434,6 +424,7 @@ class _GlucoseTrackingInternalState extends State<_GlucoseTrackingInternal> {
               switch (_scopeString) {
                 case "allTime":
                   interval = 7;
+                // TODO: Replace with glucoseDataPoints
                 // dataPoints = sparsifyGlucoseRecords(dataPoints, 1);
                 case "month":
                   interval = 7;
