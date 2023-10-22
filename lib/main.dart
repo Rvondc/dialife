@@ -5,8 +5,12 @@ import 'package:dialife/bmi_tracking/bmi_tracking.dart';
 import 'package:dialife/bmi_tracking/input_form.dart';
 import 'package:dialife/bmi_tracking/record_editor.dart';
 import 'package:dialife/insulin_tracking/insulin_tracking.dart';
+import 'package:dialife/setup.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
 
 void main() {
   runApp(const Main());
@@ -108,60 +112,136 @@ class _RootState extends State<Root> {
   Widget build(BuildContext context) {
     const double margin = 8;
 
+    reset() {
+      setState(() {});
+    }
+
     return Scaffold(
       // appBar: AppBar(
       //   backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       //   title: Text(widget.title),
       // ),
-      body: Container(
-        color: const Color.fromARGB(255, 100, 64, 141),
-        constraints: const BoxConstraints.expand(),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              "Sample Landing Page",
-              style: TextStyle(fontSize: 20, color: Colors.white),
-            ),
-            Container(
-              margin: const EdgeInsets.all(margin),
-              child: TextButton(
-                style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all(Colors.white),
-                ),
-                onPressed: () {
-                  Navigator.of(context).pushNamed("/blood-glucose-tracking");
+      backgroundColor: Colors.grey.shade200,
+      body: FutureBuilder(
+        future: getDatabasesPath(),
+        builder: (context, data) {
+          const loading = SpinKitCircle(color: fgColor);
+
+          if (data.connectionState != ConnectionState.done ||
+              data.data == null) {
+            return loading;
+          }
+
+          return FutureBuilder(
+            future: initUserDatabase(data.data!),
+            builder: (context, dbContainer) {
+              if (dbContainer.connectionState != ConnectionState.done ||
+                  dbContainer.data == null) {
+                return loading;
+              }
+
+              return FutureBuilder(
+                future: dbContainer.data!.query("User"),
+                builder: (context, data) {
+                  if (data.connectionState != ConnectionState.done ||
+                      data.data == null) {
+                    return loading;
+                  }
+
+                  if (data.data!.isEmpty) {
+                    return SafeArea(
+                      child: UserSetup(
+                        reset: reset,
+                        db: dbContainer.data!,
+                      ),
+                    );
+                  }
+
+                  return Container(
+                    color: const Color.fromARGB(255, 100, 64, 141),
+                    constraints: const BoxConstraints.expand(),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          "Sample Landing Page",
+                          style: TextStyle(fontSize: 20, color: Colors.white),
+                        ),
+                        Container(
+                          margin: const EdgeInsets.all(margin),
+                          child: TextButton(
+                            style: ButtonStyle(
+                              backgroundColor:
+                                  MaterialStateProperty.all(Colors.white),
+                            ),
+                            onPressed: () {
+                              Navigator.of(context)
+                                  .pushNamed("/blood-glucose-tracking");
+                            },
+                            child: const Text("Blood Glucose Tracking"),
+                          ),
+                        ),
+                        Container(
+                          margin: const EdgeInsets.all(margin),
+                          child: TextButton(
+                            style: ButtonStyle(
+                              backgroundColor:
+                                  MaterialStateProperty.all(Colors.white),
+                            ),
+                            onPressed: () {
+                              Navigator.of(context)
+                                  .pushNamed("/insulin-tracking");
+                            },
+                            child:
+                                const Text("Insulin and Medication Tracking"),
+                          ),
+                        ),
+                        Container(
+                          margin: const EdgeInsets.all(margin),
+                          child: TextButton(
+                            style: ButtonStyle(
+                              backgroundColor:
+                                  MaterialStateProperty.all(Colors.white),
+                            ),
+                            onPressed: () {
+                              Navigator.of(context).pushNamed("/bmi-tracking");
+                            },
+                            child: const Text("Weight and BMI Tracking"),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
                 },
-                child: const Text("Blood Glucose Tracking"),
-              ),
-            ),
-            Container(
-              margin: const EdgeInsets.all(margin),
-              child: TextButton(
-                style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all(Colors.white),
-                ),
-                onPressed: () {
-                  Navigator.of(context).pushNamed("/insulin-tracking");
-                },
-                child: const Text("Insulin and Medication Tracking"),
-              ),
-            ),
-            Container(
-              margin: const EdgeInsets.all(margin),
-              child: TextButton(
-                style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all(Colors.white),
-                ),
-                onPressed: () {
-                  Navigator.of(context).pushNamed("/bmi-tracking");
-                },
-                child: const Text("Weight and BMI Tracking"),
-              ),
-            ),
-          ],
-        ),
+              );
+            },
+          );
+        },
       ),
     );
   }
+}
+
+Future<Database> initUserDatabase(String path) async {
+  return openDatabase(
+    join(path, "user.db"),
+    onCreate: (db, version) async {
+      await db.execute("""
+        CREATE TABLE User (
+          id INTEGER NOT NULL PRIMARY KEY,
+          first_name VARCHAR(255) NOT NULL,
+          last_name VARCHAR(255) NOT NULL,
+          middle_name VARCHAR(255),
+          birthdate DATETIME NOT NULL,
+          province VARCHAR(50) NOT NULL,
+          municipality VARCHAR(50) NOT NULL,
+          barangay VARCHAR(50) NOT NULL,
+          address_description VARCHAR(255) NOT NULL,
+          zip_code VARCHAR(10) NOT NULL,
+          contact_number VARCHAR(20) NOT NULL
+        )
+       """);
+    },
+    version: 1,
+  );
 }
