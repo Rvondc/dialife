@@ -46,6 +46,7 @@ dependencies:
   auto_size_text: ^3.0.0
   collection: ^1.17.2
   google_fonts: ^6.1.0
+  flutter_switch: ^0.3.2
 
 dev_dependencies:
   flutter_test:
