@@ -4,6 +4,7 @@ import 'package:dialife/blood_glucose_tracking/utils.dart';
 import 'package:dialife/bmi_tracking/calculate_average.dart';
 import 'package:dialife/bmi_tracking/entities.dart';
 import 'package:dialife/bmi_tracking/no_data.dart';
+import 'package:dialife/user.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
@@ -12,29 +13,13 @@ import 'package:sqflite/sqflite.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 
-Future<Database> initBMIRecordDatabase(String path) async {
-  return openDatabase(
-    join(path, "bmi-tracking.db"),
-    onCreate: (db, version) async {
-      await db.execute("""
-        CREATE TABLE BMIRecord (
-          id INTEGER PRIMARY KEY NOT NULL,
-          height DECIMAL(3, 2) NOT NULL,
-          notes VARCHAR(255) NOT NULL,
-          weight DECIMAL(5, 2) NOT NULL,
-          created_at DATETIME NOT NULL
-        ) 
-      """);
-
-      return db.execute(
-          "INSERT INTO BMIRecord (height, weight, created_at, notes) VALUES (1.73, 77.08, '2023-10-13', 'After lunch'), (1.73, 77.5, '2023-10-12', 'Before bed'), (1.73, 78.2, '2023-10-11', 'Deserunt deserunt eu duis sit minim deserunt et aute et ea dolore.')");
-    },
-    version: 1,
-  );
-}
-
 class BMITracking extends StatefulWidget {
-  const BMITracking({super.key});
+  final User user;
+
+  const BMITracking({
+    super.key,
+    required this.user,
+  });
 
   @override
   State<BMITracking> createState() => _BMITrackingState();
@@ -69,6 +54,7 @@ class _BMITrackingState extends State<BMITracking> {
 
                 return _BMITrackingInteralScaffold(
                   reset: reset,
+                  user: widget.user,
                   records: parsedData,
                 );
               },
@@ -82,11 +68,13 @@ class _BMITrackingState extends State<BMITracking> {
 
 class _BMITrackingInteralScaffold extends StatelessWidget {
   final List<BMIRecord> records;
+  final User user;
   final void Function() reset;
 
   const _BMITrackingInteralScaffold({
     super.key,
     required this.reset,
+    required this.user,
     required this.records,
   });
 
@@ -135,7 +123,11 @@ class _BMITrackingInteralScaffold extends StatelessWidget {
                 top: 20,
                 bottom: 10,
               ),
-              child: _BMITrackingInternal(records: records, reset: reset),
+              child: _BMITrackingInternal(
+                records: records,
+                reset: reset,
+                user: user,
+              ),
             ),
           ),
         ),
@@ -146,11 +138,13 @@ class _BMITrackingInteralScaffold extends StatelessWidget {
 
 class _BMITrackingInternal extends StatefulWidget {
   final List<BMIRecord> records;
+  final User user;
   final void Function() reset;
 
   const _BMITrackingInternal({
     super.key,
     required this.reset,
+    required this.user,
     required this.records,
   });
 
@@ -530,5 +524,26 @@ Widget averageContainer(String label, double? average) {
         ),
       ],
     ),
+  );
+}
+
+Future<Database> initBMIRecordDatabase(String path) async {
+  return openDatabase(
+    join(path, "bmi-tracking.db"),
+    onCreate: (db, version) async {
+      await db.execute("""
+        CREATE TABLE BMIRecord (
+          id INTEGER PRIMARY KEY NOT NULL,
+          height DECIMAL(3, 2) NOT NULL,
+          notes VARCHAR(255) NOT NULL,
+          weight DECIMAL(5, 2) NOT NULL,
+          created_at DATETIME NOT NULL
+        ) 
+      """);
+
+      return db.execute(
+          "INSERT INTO BMIRecord (height, weight, created_at, notes) VALUES (1.73, 77.08, '2023-10-13', 'After lunch'), (1.73, 77.5, '2023-10-12', 'Before bed'), (1.73, 78.2, '2023-10-11', 'Deserunt deserunt eu duis sit minim deserunt et aute et ea dolore.')");
+    },
+    version: 1,
   );
 }

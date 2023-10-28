@@ -1,13 +1,17 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:dialife/blood_glucose_tracking/entities.dart';
+import 'package:dialife/user.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class GlucoseRecordInputForm extends StatelessWidget {
+  final User user;
+
   final GlucoseRecord? existing;
 
   const GlucoseRecordInputForm({
     super.key,
+    required this.user,
     required this.existing,
   });
 
