@@ -1,10 +1,13 @@
+import 'package:dialife/blood_glucose_tracking/calculate_average.dart';
+import 'package:dialife/blood_glucose_tracking/entities.dart';
 import 'package:dialife/blood_glucose_tracking/glucose_tracking.dart';
 import 'package:dialife/blood_glucose_tracking/input_form.dart';
 import 'package:dialife/blood_glucose_tracking/record_editor.dart';
+import 'package:dialife/blood_glucose_tracking/utils.dart';
 import 'package:dialife/bmi_tracking/bmi_tracking.dart';
 import 'package:dialife/bmi_tracking/input_form.dart';
 import 'package:dialife/bmi_tracking/record_editor.dart';
-import 'package:dialife/insulin_tracking/insulin_tracking.dart';
+import 'package:dialife/medication_tracking/medication_tracking.dart';
 import 'package:dialife/setup.dart';
 import 'package:dialife/user.dart';
 import 'package:flutter/material.dart';
@@ -56,8 +59,12 @@ class Main extends StatelessWidget {
               settings: const RouteSettings(name: "/"),
             );
           case "/blood-glucose-tracking":
+            final args = settings.arguments as Map<String, dynamic>;
+
             return MaterialPageRoute(
-              builder: (context) => const GlucoseTracking(),
+              builder: (context) => GlucoseTracking(
+                user: args["user"],
+              ),
               settings: const RouteSettings(name: "/blood-glucose-tracking"),
             );
           case "/blood-glucose-tracking/editor":
@@ -67,15 +74,23 @@ class Main extends StatelessWidget {
                   const RouteSettings(name: "/blood-glucose-tracking/editor"),
             );
           case "/blood-glucose-tracking/input":
+            final args = settings.arguments as Map<String, dynamic>;
+
             return MaterialPageRoute(
-              builder: (context) =>
-                  const GlucoseRecordInputForm(existing: null),
+              builder: (context) => GlucoseRecordInputForm(
+                existing: null,
+                user: args["user"],
+              ),
               settings:
                   const RouteSettings(name: "/blood-glucose-tracking/input"),
             );
           case "/bmi-tracking":
+            final args = settings.arguments as Map<String, dynamic>;
+
             return MaterialPageRoute(
-              builder: (context) => const BMITracking(),
+              builder: (context) => BMITracking(
+                user: args["user"],
+              ),
               settings: const RouteSettings(name: "/bmi-tracking"),
             );
           case "/bmi-tracking/editor":
@@ -109,6 +124,8 @@ class Root extends StatefulWidget {
 }
 
 class _RootState extends State<Root> {
+  List<GlucoseRecord>? _records;
+
   @override
   Widget build(BuildContext context) {
     reset() {
@@ -153,7 +170,7 @@ class _RootState extends State<Root> {
           }
 
           return FutureBuilder(
-            future: initUserDatabase(data.data!),
+            future: initAppDatabase(data.data!),
             builder: (context, dbContainer) {
               if (dbContainer.connectionState != ConnectionState.done ||
                   dbContainer.data == null) {
@@ -183,53 +200,6 @@ class _RootState extends State<Root> {
                     constraints: const BoxConstraints.expand(),
                     child: ListView(
                       children: [
-                        // const Text(
-                        //   "Sample Landing Page",
-                        //   style: TextStyle(fontSize: 20, color: Colors.white),
-                        // ),
-                        // Container(
-                        //   margin: const EdgeInsets.all(margin),
-                        //   child: TextButton(
-                        //     style: ButtonStyle(
-                        //       backgroundColor:
-                        //           MaterialStateProperty.all(Colors.white),
-                        //     ),
-                        //     onPressed: () {
-                        //       Navigator.of(context)
-                        //           .pushNamed("/blood-glucose-tracking");
-                        //     },
-                        //     child: const Text("Blood Glucose Tracking"),
-                        //   ),
-                        // ),
-                        // Container(
-                        //   margin: const EdgeInsets.all(margin),
-                        //   child: TextButton(
-                        //     style: ButtonStyle(
-                        //       backgroundColor:
-                        //           MaterialStateProperty.all(Colors.white),
-                        //     ),
-                        //     onPressed: () {
-                        //       Navigator.of(context)
-                        //           .pushNamed("/insulin-tracking");
-                        //     },
-                        //     child:
-                        //         const Text("Insulin and Medication Tracking"),
-                        //   ),
-                        // ),
-                        // Container(
-                        //   margin: const EdgeInsets.all(margin),
-                        //   child: TextButton(
-                        //     style: ButtonStyle(
-                        //       backgroundColor:
-                        //           MaterialStateProperty.all(Colors.white),
-                        //     ),
-                        //     onPressed: () {
-                        //       Navigator.of(context).pushNamed("/bmi-tracking");
-                        //     },
-                        //     child: const Text("Weight and BMI Tracking"),
-                        //   ),
-                        // ),
-
                         Text(
                           'DiaLife',
                           textAlign: TextAlign.center,
@@ -243,16 +213,18 @@ class _RootState extends State<Root> {
                           'Current Health Status',
                           textAlign: TextAlign.center,
                           style: GoogleFonts.inter(
-                            fontSize: 19,
-                            fontWeight: FontWeight.w500,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
 
                         // Container for health progress bar
                         GestureDetector(
                           onTap: () {
-                            Navigator.of(context)
-                                .pushNamed("/blood-glucose-tracking");
+                            Navigator.of(context).pushNamed(
+                              "/blood-glucose-tracking",
+                              arguments: {"user": user},
+                            );
                           },
                           child: Container(
                             width: double.infinity,
@@ -262,6 +234,7 @@ class _RootState extends State<Root> {
                               right: 10,
                               top: 10,
                             ),
+                            padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(10.0),
@@ -274,8 +247,235 @@ class _RootState extends State<Root> {
                                 ),
                               ],
                             ),
-                            child: Column(
-                              children: [],
+                            // TODO: Create glucose tracking component (MARKER)
+                            child: waitForFuture(
+                              future: dbContainer.data!.query("GlucoseRecord"),
+                              loading: const SpinKitCircle(color: fgColor),
+                              builder: (context, data) {
+                                if (_records == null) {
+                                  // final records =
+                                  //     GlucoseRecord.fromListOfMaps(data);
+
+                                  final records =
+                                      GlucoseRecord.mock(count: 30, daySpan: 5);
+
+                                  records.sort(
+                                    (a, b) => a.bloodTestDate
+                                        .compareTo(b.bloodTestDate),
+                                  );
+
+                                  Future.delayed(Duration.zero, () {
+                                    setState(() {
+                                      _records = records;
+                                    });
+                                  });
+                                }
+
+                                if (_records == null) {
+                                  return const SpinKitCircle(color: fgColor);
+                                }
+
+                                return Column(
+                                  children: [
+                                    const Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        SizedBox(width: 20),
+                                        Text(
+                                          "Glucose Level",
+                                          style: TextStyle(fontSize: 20),
+                                        ),
+                                        Icon(
+                                          Icons.info_outline,
+                                          color: fgColor,
+                                          size: 20,
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 30,
+                                      ),
+                                      child: Material(
+                                        elevation: 5,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                        child: Container(
+                                          height: 55,
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                            color: const Color(0xFF67E88B),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      height: 20,
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        SizedBox(
+                                          width: 100,
+                                          child: Column(
+                                            children: [
+                                              Container(
+                                                width: 3,
+                                                height: 20,
+                                                color: const Color(0xFFCBCF10),
+                                              ),
+                                              const Text("Latest"),
+                                              const SizedBox(height: 5),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  Text(
+                                                    _records!.last.glucoseLevel
+                                                        .toStringAsFixed(2),
+                                                    style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 20,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 3),
+                                                  const Text(
+                                                    "mmol/L",
+                                                    style: TextStyle(
+                                                      color: Colors.blueGrey,
+                                                      fontSize: 12,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          width: 100,
+                                          child: Column(
+                                            children: [
+                                              Container(
+                                                width: 3,
+                                                height: 20,
+                                                color: const Color(0xFF102ECF),
+                                              ),
+                                              const Text("Week Average"),
+                                              const SizedBox(height: 5),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  Builder(
+                                                    builder: (context) {
+                                                      double? average =
+                                                          calcAverageGlucoseRecord(
+                                                        DateTime.now().subtract(
+                                                            const Duration(
+                                                                days: 7)),
+                                                        DateTime.now(),
+                                                        _records!,
+                                                      );
+
+                                                      if (average == null) {
+                                                        return const Text(
+                                                            "No Data");
+                                                      }
+
+                                                      return Text(
+                                                        average
+                                                            .toStringAsFixed(2),
+                                                        style: const TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          fontSize: 20,
+                                                        ),
+                                                      );
+                                                    },
+                                                  ),
+                                                  const SizedBox(width: 3),
+                                                  const Text(
+                                                    "mmol/L",
+                                                    style: TextStyle(
+                                                      color: Colors.blueGrey,
+                                                      fontSize: 12,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          width: 100,
+                                          child: Column(
+                                            children: [
+                                              Container(
+                                                width: 3,
+                                                height: 20,
+                                                color: const Color(0xFF866000),
+                                              ),
+                                              const Text("Last Updated"),
+                                              const SizedBox(height: 5),
+                                              LastUpdatedSection(
+                                                  records: _records),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Container(
+                                      margin: const EdgeInsets.symmetric(
+                                        vertical: 5,
+                                      ),
+                                      child: const Divider(
+                                        color: Colors.black,
+                                        endIndent: 20,
+                                        indent: 20,
+                                      ),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pushNamed(
+                                            "/blood-glucose-tracking/editor",
+                                            arguments: {"user": user});
+                                      },
+                                      style: ButtonStyle(
+                                        overlayColor: MaterialStateProperty.all(
+                                          Colors.white.withOpacity(0.3),
+                                        ),
+                                        backgroundColor:
+                                            MaterialStateProperty.all(
+                                          fgColor,
+                                        ),
+                                        shape: MaterialStateProperty.all(
+                                          RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                          ),
+                                        ),
+                                      ),
+                                      child: const Text(
+                                        "VIEW FULL HISTORY",
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
                             ),
                           ),
                         ),
@@ -349,8 +549,9 @@ class _RootState extends State<Root> {
                                   // NOTE: BMI
                                   GestureDetector(
                                     onTap: () {
-                                      Navigator.of(context)
-                                          .pushNamed("/bmi-tracking");
+                                      Navigator.of(context).pushNamed(
+                                          "/bmi-tracking",
+                                          arguments: {"user": user});
                                     },
                                     child: Container(
                                       width: 114,
@@ -368,6 +569,10 @@ class _RootState extends State<Root> {
                                             offset: const Offset(0, 4),
                                           )
                                         ],
+                                      ),
+                                      // TODO: implement BMI tracking (MARKER)
+                                      child: Column(
+                                        children: [],
                                       ),
                                     ),
                                   ),
@@ -428,9 +633,45 @@ class _RootState extends State<Root> {
   }
 }
 
-Future<Database> initUserDatabase(String path) async {
+class LastUpdatedSection extends StatelessWidget {
+  const LastUpdatedSection({
+    super.key,
+    required List<GlucoseRecord>? records,
+  }) : _records = records;
+
+  final List<GlucoseRecord>? _records;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          DateTime.now()
+              .difference(_records!.last.bloodTestDate)
+              .inHours
+              .toString(),
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
+        ),
+        const SizedBox(width: 3),
+        const Text(
+          "Hours Ago",
+          style: TextStyle(
+            color: Colors.blueGrey,
+            fontSize: 12,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+Future<Database> initAppDatabase(String path) async {
   return openDatabase(
-    join(path, "user.db"),
+    join(path, "app.db"),
     onCreate: (db, version) async {
       await db.execute("""
         CREATE TABLE User (
@@ -445,6 +686,16 @@ Future<Database> initUserDatabase(String path) async {
           address_description VARCHAR(255) NOT NULL,
           zip_code VARCHAR(10) NOT NULL,
           contact_number VARCHAR(20) NOT NULL
+        )
+       """);
+
+      await db.execute("""
+        CREATE TABLE GlucoseRecord (
+          id INTEGER NOT NULL PRIMARY KEY,
+          glucose_level DECIMAL(5, 2) NOT NULL,
+          notes VARCHAR(255) NOT NULL,
+          is_a1c BOOLEAN NOT NULl,
+          blood_test_date DATETIME
         )
        """);
     },

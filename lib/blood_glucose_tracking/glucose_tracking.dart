@@ -3,6 +3,8 @@ import 'package:dialife/blood_glucose_tracking/calculate_average.dart';
 import 'package:dialife/blood_glucose_tracking/entities.dart';
 import 'package:dialife/blood_glucose_tracking/no_data.dart';
 import 'package:dialife/blood_glucose_tracking/utils.dart';
+import 'package:dialife/main.dart';
+import 'package:dialife/user.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_switch/flutter_switch.dart';
@@ -16,7 +18,12 @@ const fgColor = Color(0xFF4C66F0);
 const bgColorToggleSwitch = Color(0xFFBFBFBF);
 
 class GlucoseTracking extends StatefulWidget {
-  const GlucoseTracking({super.key});
+  final User user;
+
+  const GlucoseTracking({
+    super.key,
+    required this.user,
+  });
 
   @override
   State<GlucoseTracking> createState() => _GlucoseTrackingState();
@@ -39,7 +46,7 @@ class _GlucoseTrackingState extends State<GlucoseTracking> {
       builder: (context, data) {
         return waitForFuture(
           loading: loading,
-          future: initGlucoseRecordDatabase(data),
+          future: initAppDatabase(data),
           builder: (context, data) {
             return waitForFuture(
               loading: loading,
@@ -63,7 +70,7 @@ class _GlucoseTrackingState extends State<GlucoseTracking> {
 
                 return _GlucoseTrackingInternalScaffold(
                   glucoseRecords: parsedGlucoseRecordData,
-                  // a1CRecords: parsedA1CRecordData,
+                  user: widget.user,
                   reset: reset,
                 );
               },
@@ -77,13 +84,13 @@ class _GlucoseTrackingState extends State<GlucoseTracking> {
 
 class _GlucoseTrackingInternalScaffold extends StatelessWidget {
   final List<GlucoseRecord> glucoseRecords;
-  // final List<A1CRecord> a1CRecords;
+  final User user;
   final void Function() reset;
 
   const _GlucoseTrackingInternalScaffold({
     super.key,
     required this.glucoseRecords,
-    // required this.a1CRecords,
+    required this.user,
     required this.reset,
   });
 
@@ -104,7 +111,7 @@ class _GlucoseTrackingInternalScaffold extends StatelessWidget {
 
     final glucoseTracking = _GlucoseTrackingInternal(
       glucoseRecords: glucoseRecords,
-      // a1CRecords: a1CRecords,
+      user: user,
       reset: reset,
     );
 
@@ -120,7 +127,8 @@ class _GlucoseTrackingInternalScaffold extends StatelessWidget {
           color: Colors.white,
         ),
         onPressed: () {
-          Navigator.of(context).pushNamed("/blood-glucose-tracking/input");
+          Navigator.of(context).pushNamed("/blood-glucose-tracking/input",
+              arguments: {"user": user});
         },
       ),
       body: RefreshIndicator(
@@ -149,12 +157,13 @@ class _GlucoseTrackingInternalScaffold extends StatelessWidget {
 
 class _GlucoseTrackingInternal extends StatefulWidget {
   final List<GlucoseRecord> glucoseRecords;
-  // final List<A1CRecord> a1CRecords;
+  final User user;
   final void Function() reset;
 
   const _GlucoseTrackingInternal({
     super.key,
     required this.reset,
+    required this.user,
     required this.glucoseRecords,
     // required this.a1CRecords,
   });
@@ -302,13 +311,14 @@ class _GlucoseTrackingInternalState extends State<_GlucoseTrackingInternal> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           SizedBox(
-                            width: 150,
+                            width: 160,
                             child: AutoSizeText(
                               "Your Current Glucose",
                               maxLines: 1,
                               style: TextStyle(
                                 fontWeight: FontWeight.w500,
-                                fontSize: 16,
+                                color: Colors.grey.shade600,
+                                fontSize: 20,
                               ),
                             ),
                           ),
@@ -723,8 +733,9 @@ class _GlucoseTrackingInternalState extends State<_GlucoseTrackingInternal> {
           margin: const EdgeInsets.all(12),
           child: TextButton(
             onPressed: () async {
-              final changed = await Navigator.of(context)
-                  .pushNamed("/blood-glucose-tracking/editor") as bool;
+              final changed = await Navigator.of(context).pushNamed(
+                  "/blood-glucose-tracking/editor",
+                  arguments: {"user": widget.user}) as bool;
 
               if (changed) {
                 widget.reset();
@@ -732,6 +743,9 @@ class _GlucoseTrackingInternalState extends State<_GlucoseTrackingInternal> {
             },
             style: ButtonStyle(
               backgroundColor: MaterialStateProperty.all(fgColor),
+              overlayColor: MaterialStateProperty.all(
+                Colors.white.withOpacity(0.3),
+              ),
               shape: MaterialStateProperty.all(RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10))),
             ),
@@ -830,42 +844,20 @@ enum Units {
   milligramsPerDeciliter,
 }
 
-Future<Database> initGlucoseRecordDatabase(String path) async {
-  return openDatabase(
-    join(path, "bgt.db"),
-    onCreate: (db, version) async {
-      // await db.execute("""
-      //   CREATE TABLE Facility (
-      //     id INTEGER NOT NULL PRIMARY KEY,
-      //     name VARCHAR(255) NOT NULL,
-      //     long DECIMAL(7, 4),
-      //     lat DECIMAL(7, 4),
-      //     description VARCHAR(255) NOT NULL
-      //   )
-      // """);
-
-      // await db.execute(
-      //     "INSERT INTO Facility (name, long, lat, description) VALUES (\"Emmanuel\", 23.112, 138.2211, \"Emmanuel Description\"), (\"Medicus\", 69.162, 22.5413, \"Medicus Description\"), (\"Centrum\", 213.12, 228.1, \"Centrum Description\")");
-
-      await db.execute("""
-        CREATE TABLE GlucoseRecord (
-          id INTEGER NOT NULL PRIMARY KEY,
-          glucose_level DECIMAL(5, 2) NOT NULL,
-          notes VARCHAR(255) NOT NULL,
-          is_a1c BOOLEAN NOT NULl,
-          blood_test_date DATETIME
-        )
-       """);
-
-      // await db.execute("""
-      //   CREATE TABLE A1CRecord (
-      //     id INTEGER NOT NULL PRIMARY KEY,
-      //     glucose_level DECIMAL(5, 2) NOT NULL,
-      //     notes VARCHAR(255) NOT NULL,
-      //     blood_test_date DATETIME
-      //   )
-      // """);
-    },
-    version: 1,
-  );
-}
+// Future<Database> initGlucoseRecordDatabase(String path) async {
+//   return openDatabase(
+//     join(path, "bgt.db"),
+//     onCreate: (db, version) async {
+//       await db.execute("""
+//         CREATE TABLE GlucoseRecord (
+//           id INTEGER NOT NULL PRIMARY KEY,
+//           glucose_level DECIMAL(5, 2) NOT NULL,
+//           notes VARCHAR(255) NOT NULL,
+//           is_a1c BOOLEAN NOT NULl,
+//           blood_test_date DATETIME
+//         )
+//        """);
+//     },
+//     version: 1,
+//   );
+// }
