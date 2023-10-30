@@ -23,6 +23,14 @@ class User {
     required this.municipality,
   });
 
+  String get name {
+    if (middleName.isEmpty) {
+      return "$firstName $lastName";
+    } else {
+      return "$firstName ${middleName[0]}. $lastName";
+    }
+  }
+
   static User fromMap(Map<String, dynamic> map) {
     return User(
       firstName: map["first_name"],
