@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:dialife/blood_glucose_tracking/calculate_average.dart';
 import 'package:dialife/blood_glucose_tracking/entities.dart';
 import 'package:dialife/blood_glucose_tracking/glucose_tracking.dart';
@@ -63,13 +64,19 @@ class Main extends StatelessWidget {
 
             return MaterialPageRoute(
               builder: (context) => GlucoseTracking(
+                db: args["db"],
                 user: args["user"],
               ),
               settings: const RouteSettings(name: "/blood-glucose-tracking"),
             );
           case "/blood-glucose-tracking/editor":
+            final args = settings.arguments as Map<String, dynamic>;
+
             return MaterialPageRoute(
-              builder: (context) => const GlucoseRecordEditor(),
+              builder: (context) => GlucoseRecordEditor(
+                db: args["db"],
+                user: args["user"],
+              ),
               settings:
                   const RouteSettings(name: "/blood-glucose-tracking/editor"),
             );
@@ -78,7 +85,8 @@ class Main extends StatelessWidget {
 
             return MaterialPageRoute(
               builder: (context) => GlucoseRecordInputForm(
-                existing: null,
+                existing: args["existing"],
+                db: args["db"],
                 user: args["user"],
               ),
               settings:
@@ -128,7 +136,7 @@ class _RootState extends State<Root> {
 
   @override
   Widget build(BuildContext context) {
-    reset() {
+    void reset() {
       setState(() {});
     }
 
@@ -220,11 +228,18 @@ class _RootState extends State<Root> {
 
                         // Container for health progress bar
                         GestureDetector(
-                          onTap: () {
-                            Navigator.of(context).pushNamed(
+                          onTap: () async {
+                            await Navigator.of(context).pushNamed(
                               "/blood-glucose-tracking",
-                              arguments: {"user": user},
+                              arguments: {
+                                "user": user,
+                                "db": dbContainer.data!,
+                              },
                             );
+
+                            setState(() {
+                              _records = null;
+                            });
                           },
                           child: Container(
                             width: double.infinity,
@@ -253,11 +268,11 @@ class _RootState extends State<Root> {
                               loading: const SpinKitCircle(color: fgColor),
                               builder: (context, data) {
                                 if (_records == null) {
-                                  // final records =
-                                  //     GlucoseRecord.fromListOfMaps(data);
-
                                   final records =
-                                      GlucoseRecord.mock(count: 30, daySpan: 5);
+                                      GlucoseRecord.fromListOfMaps(data);
+
+                                  // final records =
+                                  //     GlucoseRecord.mock(count: 30, daySpan: 5);
 
                                   records.sort(
                                     (a, b) => a.bloodTestDate
@@ -340,14 +355,31 @@ class _RootState extends State<Root> {
                                                 mainAxisAlignment:
                                                     MainAxisAlignment.center,
                                                 children: [
-                                                  Text(
-                                                    _records!.last.glucoseLevel
-                                                        .toStringAsFixed(2),
-                                                    style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 20,
-                                                    ),
+                                                  Builder(
+                                                    builder: (context) {
+                                                      if (_records == null ||
+                                                          _records!.isEmpty) {
+                                                        return const Text(
+                                                          "--",
+                                                          style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            fontSize: 20,
+                                                          ),
+                                                        );
+                                                      }
+
+                                                      return Text(
+                                                        _records!
+                                                            .last.glucoseLevel
+                                                            .toStringAsFixed(2),
+                                                        style: const TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          fontSize: 20,
+                                                        ),
+                                                      );
+                                                    },
                                                   ),
                                                   const SizedBox(width: 3),
                                                   const Text(
@@ -390,7 +422,13 @@ class _RootState extends State<Root> {
 
                                                       if (average == null) {
                                                         return const Text(
-                                                            "No Data");
+                                                          "--",
+                                                          style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            fontSize: 20,
+                                                          ),
+                                                        );
                                                       }
 
                                                       return Text(
@@ -446,10 +484,18 @@ class _RootState extends State<Root> {
                                       ),
                                     ),
                                     TextButton(
-                                      onPressed: () {
-                                        Navigator.of(context).pushNamed(
-                                            "/blood-glucose-tracking/editor",
-                                            arguments: {"user": user});
+                                      onPressed: () async {
+                                        await Navigator.of(context).pushNamed(
+                                          "/blood-glucose-tracking/editor",
+                                          arguments: {
+                                            "user": user,
+                                            "db": dbContainer.data!,
+                                          },
+                                        );
+
+                                        setState(() {
+                                          _records = null;
+                                        });
                                       },
                                       style: ButtonStyle(
                                         overlayColor: MaterialStateProperty.all(
@@ -511,6 +557,7 @@ class _RootState extends State<Root> {
                             top: 15,
                           ),
                           height: 224,
+                          // TODO: Refactor using IntrinsicHeight and strech cross alignment
                           child: Row(
                             children: [
                               Column(
@@ -533,18 +580,7 @@ class _RootState extends State<Root> {
                                         )
                                       ],
                                     ),
-                                    child: Center(
-                                      child: IconButton(
-                                        icon: const Icon(
-                                          Icons.notifications,
-                                          size: 35,
-                                        ),
-                                        onPressed: () {
-                                          // Navigator.pushNamed(
-                                          //     context, '/notifPage');
-                                        },
-                                      ),
-                                    ),
+                                    child: Container(),
                                   ),
                                   // NOTE: BMI
                                   GestureDetector(
@@ -643,29 +679,82 @@ class LastUpdatedSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(
-          DateTime.now()
-              .difference(_records!.last.bloodTestDate)
-              .inHours
-              .toString(),
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
+    return Builder(builder: (context) {
+      if (_records == null || _records!.isEmpty) {
+        return const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              "--",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+              ),
+            ),
+            SizedBox(width: 3),
+            Text(
+              "Hours Ago",
+              style: TextStyle(
+                color: Colors.blueGrey,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        );
+      }
+
+      final inHours =
+          DateTime.now().difference(_records!.last.bloodTestDate).inHours;
+      final inMinutes =
+          DateTime.now().difference(_records!.last.bloodTestDate).inMinutes;
+      final inSeconds =
+          DateTime.now().difference(_records!.last.bloodTestDate).inSeconds;
+
+      int time;
+      String descriptionText;
+
+      if (inHours == 1) {
+        descriptionText = "Hour Ago";
+        time = inHours;
+      } else if (inHours < 1 && inMinutes > 1) {
+        descriptionText = "Minutes Ago";
+        time = inMinutes;
+      } else if (inHours < 1 && inMinutes == 1) {
+        descriptionText = "Minute Ago";
+        time = inMinutes;
+      } else if (inMinutes < 1 && inSeconds > 0) {
+        descriptionText = "Seconds Ago";
+        time = inSeconds;
+      } else {
+        descriptionText = "Hours Ago";
+        time = inHours;
+      }
+
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            time.toString(),
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+            ),
           ),
-        ),
-        const SizedBox(width: 3),
-        const Text(
-          "Hours Ago",
-          style: TextStyle(
-            color: Colors.blueGrey,
-            fontSize: 12,
+          const SizedBox(width: 3),
+          SizedBox(
+            width: 70,
+            child: AutoSizeText(
+              descriptionText,
+              minFontSize: 8,
+              maxLines: 1,
+              style: const TextStyle(
+                color: Colors.blueGrey,
+              ),
+            ),
           ),
-        ),
-      ],
-    );
+        ],
+      );
+    });
   }
 }
 
