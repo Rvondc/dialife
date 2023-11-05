@@ -166,11 +166,9 @@ class __GlucoseRecordEditorInternalState
     extends State<_GlucoseRecordEditorInternal> {
   @override
   Widget build(BuildContext context) {
-    bool changed = false;
-
     return WillPopScope(
       onWillPop: () async {
-        Navigator.of(context).pop(changed);
+        Navigator.of(context).pop();
         return true;
       },
       child: ListView.builder(
@@ -212,9 +210,6 @@ class __GlucoseRecordEditorInternalState
               },
               key: ValueKey(index),
               onDismissed: (direction) async {
-                changed = true;
-                // TODO: Delete record in database
-
                 await widget.db.delete(
                   "GlucoseRecord",
                   where: "id = ?",
