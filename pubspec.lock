@@ -81,6 +81,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.6"
+  datepicker_dropdown:
+    dependency: "direct main"
+    description:
+      name: datepicker_dropdown
+      sha256: a6ed67be78411369b52d1f84cd9ecc96326a98364171662a2e8e02342d633d3d
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.8"
+  dbus:
+    dependency: transitive
+    description:
+      name: dbus
+      sha256: "6f07cba3f7b3448d42d015bfd3d53fe12e5b36da2423f23838efc1d5fb31a263"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.7.8"
   fake_async:
     dependency: transitive
     description:
