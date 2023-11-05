@@ -601,7 +601,7 @@ class _GlucoseTrackingInternalState extends State<_GlucoseTrackingInternal> {
                                       SizedBox(
                                         width: 95,
                                         child: AutoSizeText(
-                                          "Notes: \n${typedData.notes}",
+                                          "Notes: ${typedData.notes.isEmpty ? "--" : "\n${typedData.notes}"}",
                                           maxLines: 4,
                                           overflow: TextOverflow.fade,
                                           style: const TextStyle(
@@ -764,15 +764,13 @@ class _GlucoseTrackingInternalState extends State<_GlucoseTrackingInternal> {
           margin: const EdgeInsets.all(12),
           child: TextButton(
             onPressed: () async {
-              final changed = await Navigator.of(context)
+              await Navigator.of(context)
                   .pushNamed("/blood-glucose-tracking/editor", arguments: {
                 "user": widget.user,
                 "db": widget.db,
-              }) as bool;
+              });
 
-              if (changed) {
-                widget.reset();
-              }
+              widget.reset();
             },
             style: ButtonStyle(
               backgroundColor: MaterialStateProperty.all(fgColor),
@@ -812,7 +810,7 @@ Widget glucoseRecordListTile(
         style: const TextStyle(fontWeight: FontWeight.bold),
       ),
       subtitle: AutoSizeText(
-        "Notes: $notes",
+        "Notes: ${notes.isEmpty ? "--" : notes}",
         maxLines: 3,
         overflow: TextOverflow.fade,
       ),
