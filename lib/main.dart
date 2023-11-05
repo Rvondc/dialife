@@ -550,48 +550,24 @@ class _RootState extends State<Root> {
                         ),
 
                         // Empty containers
-                        Container(
-                          margin: const EdgeInsets.only(
+                        Padding(
+                          padding: const EdgeInsets.only(
                             right: 10,
                             left: 10,
                             top: 15,
                           ),
-                          height: 224,
-                          // TODO: Refactor using IntrinsicHeight and strech cross alignment
-                          child: Row(
-                            children: [
-                              Column(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  // NOTE: Medication
-                                  Container(
-                                    width: 114,
-                                    height: 104,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(10.0),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withOpacity(0.25),
-                                          blurRadius: 4,
-                                          spreadRadius: 0,
-                                          offset: const Offset(0, 4),
-                                        )
-                                      ],
-                                    ),
-                                    child: Container(),
-                                  ),
-                                  // NOTE: BMI
-                                  GestureDetector(
-                                    onTap: () {
-                                      Navigator.of(context).pushNamed(
-                                          "/bmi-tracking",
-                                          arguments: {"user": user});
-                                    },
-                                    child: Container(
-                                      width: 114,
-                                      height: 104,
+                          child: IntrinsicHeight(
+                            child: Row(
+                              children: [
+                                Column(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    // NOTE: Medication
+                                    Container(
+                                      height: 120,
+                                      width: 120,
+                                      padding: const EdgeInsets.all(8),
                                       decoration: BoxDecoration(
                                         color: Colors.white,
                                         borderRadius:
@@ -606,32 +582,81 @@ class _RootState extends State<Root> {
                                           )
                                         ],
                                       ),
-                                      // TODO: implement BMI tracking (MARKER)
                                       child: Column(
-                                        children: [],
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            "Medication",
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(width: 15),
-                              Expanded(
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(10.0),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.25),
-                                        blurRadius: 4,
-                                        spreadRadius: 0,
-                                        offset: const Offset(0, 4),
-                                      )
-                                    ],
+                                    const SizedBox(height: 15),
+                                    // NOTE: BMI
+                                    GestureDetector(
+                                      onTap: () {
+                                        Navigator.of(context).pushNamed(
+                                            "/bmi-tracking",
+                                            arguments: {"user": user});
+                                      },
+                                      child: Container(
+                                        height: 120,
+                                        width: 120,
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius:
+                                              BorderRadius.circular(10.0),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black
+                                                  .withOpacity(0.25),
+                                              blurRadius: 4,
+                                              spreadRadius: 0,
+                                              offset: const Offset(0, 4),
+                                            )
+                                          ],
+                                        ),
+                                        // TODO: implement BMI tracking (MARKER)
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const Text(
+                                              "BMI Tracker",
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(width: 15),
+                                Expanded(
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(10.0),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.25),
+                                          blurRadius: 4,
+                                          spreadRadius: 0,
+                                          offset: const Offset(0, 4),
+                                        )
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
 
@@ -768,6 +793,7 @@ Future<Database> initAppDatabase(String path) async {
           first_name VARCHAR(255) NOT NULL,
           last_name VARCHAR(255) NOT NULL,
           middle_name VARCHAR(255),
+          is_male BOOLEAN NOT NULL,
           birthdate DATETIME NOT NULL,
           province VARCHAR(50) NOT NULL,
           municipality VARCHAR(50) NOT NULL,
@@ -787,6 +813,19 @@ Future<Database> initAppDatabase(String path) async {
           blood_test_date DATETIME
         )
        """);
+
+      await db.execute("""
+        CREATE TABLE BMIRecord (
+          id INTEGER PRIMARY KEY NOT NULL,
+          height DECIMAL(3, 2) NOT NULL,
+          notes VARCHAR(255) NOT NULL,
+          weight DECIMAL(5, 2) NOT NULL,
+          created_at DATETIME NOT NULL
+        ) 
+      """);
+
+      return db.execute(
+          "INSERT INTO BMIRecord (height, weight, created_at, notes) VALUES (1.73, 77.08, '2023-10-13', 'After lunch'), (1.73, 77.5, '2023-10-12', 'Before bed'), (1.73, 78.2, '2023-10-11', 'Deserunt deserunt eu duis sit minim deserunt et aute et ea dolore.')");
     },
     version: 1,
   );
