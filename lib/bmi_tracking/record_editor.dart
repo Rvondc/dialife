@@ -2,6 +2,7 @@ import 'package:dialife/blood_glucose_tracking/glucose_tracking.dart';
 import 'package:dialife/blood_glucose_tracking/utils.dart';
 import 'package:dialife/bmi_tracking/bmi_tracking.dart';
 import 'package:dialife/bmi_tracking/entities.dart';
+import 'package:dialife/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:sqflite/sqflite.dart';
@@ -21,7 +22,7 @@ class BMIRecordEditor extends StatelessWidget {
       builder: (context, data) {
         return waitForFuture(
           loading: loading,
-          future: initBMIRecordDatabase(data),
+          future: initAppDatabase(data),
           builder: (context, data) {
             return waitForFuture(
               loading: loading,

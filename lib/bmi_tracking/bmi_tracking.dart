@@ -4,11 +4,11 @@ import 'package:dialife/blood_glucose_tracking/utils.dart';
 import 'package:dialife/bmi_tracking/calculate_average.dart';
 import 'package:dialife/bmi_tracking/entities.dart';
 import 'package:dialife/bmi_tracking/no_data.dart';
+import 'package:dialife/main.dart';
 import 'package:dialife/user.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
-import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:toggle_switch/toggle_switch.dart';
@@ -42,7 +42,7 @@ class _BMITrackingState extends State<BMITracking> {
       builder: (context, data) {
         return waitForFuture(
           loading: loading,
-          future: initBMIRecordDatabase(data),
+          future: initAppDatabase(data),
           builder: (context, data) {
             return waitForFuture(
               loading: loading,
@@ -527,23 +527,23 @@ Widget averageContainer(String label, double? average) {
   );
 }
 
-Future<Database> initBMIRecordDatabase(String path) async {
-  return openDatabase(
-    join(path, "bmi-tracking.db"),
-    onCreate: (db, version) async {
-      await db.execute("""
-        CREATE TABLE BMIRecord (
-          id INTEGER PRIMARY KEY NOT NULL,
-          height DECIMAL(3, 2) NOT NULL,
-          notes VARCHAR(255) NOT NULL,
-          weight DECIMAL(5, 2) NOT NULL,
-          created_at DATETIME NOT NULL
-        ) 
-      """);
+// Future<Database> initBMIRecordDatabase(String path) async {
+//   return openDatabase(
+//     join(path, "bmi-tracking.db"),
+//     onCreate: (db, version) async {
+//       await db.execute("""
+//         CREATE TABLE BMIRecord (
+//           id INTEGER PRIMARY KEY NOT NULL,
+//           height DECIMAL(3, 2) NOT NULL,
+//           notes VARCHAR(255) NOT NULL,
+//           weight DECIMAL(5, 2) NOT NULL,
+//           created_at DATETIME NOT NULL
+//         ) 
+//       """);
 
-      return db.execute(
-          "INSERT INTO BMIRecord (height, weight, created_at, notes) VALUES (1.73, 77.08, '2023-10-13', 'After lunch'), (1.73, 77.5, '2023-10-12', 'Before bed'), (1.73, 78.2, '2023-10-11', 'Deserunt deserunt eu duis sit minim deserunt et aute et ea dolore.')");
-    },
-    version: 1,
-  );
-}
+//       return db.execute(
+//           "INSERT INTO BMIRecord (height, weight, created_at, notes) VALUES (1.73, 77.08, '2023-10-13', 'After lunch'), (1.73, 77.5, '2023-10-12', 'Before bed'), (1.73, 78.2, '2023-10-11', 'Deserunt deserunt eu duis sit minim deserunt et aute et ea dolore.')");
+//     },
+//     version: 1,
+//   );
+// }
