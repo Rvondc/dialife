@@ -1,47 +1,54 @@
 import 'package:dialife/blood_glucose_tracking/entities.dart';
 import 'package:dialife/blood_glucose_tracking/glucose_tracking.dart';
 import 'package:dialife/blood_glucose_tracking/utils.dart';
-import 'package:dialife/main.dart';
+import 'package:dialife/user.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:sqflite/sqflite.dart';
 
-class GlucoseRecordEditor extends StatelessWidget {
-  const GlucoseRecordEditor({super.key});
+class GlucoseRecordEditor extends StatefulWidget {
+  final Database db;
+  final User user;
 
+  const GlucoseRecordEditor({
+    super.key,
+    required this.user,
+    required this.db,
+  });
+
+  @override
+  State<GlucoseRecordEditor> createState() => _GlucoseRecordEditorState();
+}
+
+class _GlucoseRecordEditorState extends State<GlucoseRecordEditor> {
   @override
   Widget build(BuildContext context) {
     const loading = Scaffold(
       body: SpinKitCircle(color: fgColor),
     );
 
+    void reset() {
+      setState(() {});
+    }
+
     return waitForFuture(
-      future: getDatabasesPath(),
       loading: loading,
+      future: widget.db.query("GlucoseRecord"),
       builder: (context, data) {
-        return waitForFuture(
-          loading: loading,
-          future: initAppDatabase(data),
-          builder: (context, data) {
-            return waitForFuture(
-              loading: loading,
-              future: data.query("GlucoseRecord"),
-              builder: (context, data) {
-                // final parsedData = GlucoseRecord.fromListOfMaps(data);
-                final parsedData = GlucoseRecord.mock(
-                  count: 50,
-                  daySpan: 365,
-                  a1cInDay: true,
-                );
+        final parsedData = GlucoseRecord.fromListOfMaps(data);
+        // final parsedData = GlucoseRecord.mock(
+        //   count: 50,
+        //   daySpan: 365,
+        //   a1cInDay: true,
+        // );
 
-                parsedData
-                    .sort((a, b) => a.bloodTestDate.compareTo(b.bloodTestDate));
+        parsedData.sort((a, b) => a.bloodTestDate.compareTo(b.bloodTestDate));
 
-                return _GlucoseRecordEditorInternalScaffold(
-                    records: parsedData);
-              },
-            );
-          },
+        return _GlucoseRecordEditorInternalScaffold(
+          records: parsedData.reversed.toList(),
+          user: widget.user,
+          reset: reset,
+          db: widget.db,
         );
       },
     );
@@ -49,10 +56,16 @@ class GlucoseRecordEditor extends StatelessWidget {
 }
 
 class _GlucoseRecordEditorInternalScaffold extends StatefulWidget {
+  final Database db;
+  final User user;
+  final void Function() reset;
   final List<GlucoseRecord> records;
 
   const _GlucoseRecordEditorInternalScaffold({
     super.key,
+    required this.db,
+    required this.reset,
+    required this.user,
     required this.records,
   });
 
@@ -115,6 +128,9 @@ class _GlucoseRecordEditorInternalScaffoldState
               bottom: 0,
             ),
             child: _GlucoseRecordEditorInternal(
+              db: widget.db,
+              user: widget.user,
+              reset: widget.reset,
               records: widget.records,
               isMmolPerLiter: _isMmolPerLiter,
             ),
@@ -126,11 +142,17 @@ class _GlucoseRecordEditorInternalScaffoldState
 }
 
 class _GlucoseRecordEditorInternal extends StatefulWidget {
+  final Database db;
+  final User user;
+  final void Function() reset;
   final List<GlucoseRecord> records;
   final bool isMmolPerLiter;
 
   const _GlucoseRecordEditorInternal({
     super.key,
+    required this.db,
+    required this.reset,
+    required this.user,
     required this.records,
     required this.isMmolPerLiter,
   });
@@ -144,23 +166,32 @@ class __GlucoseRecordEditorInternalState
     extends State<_GlucoseRecordEditorInternal> {
   @override
   Widget build(BuildContext context) {
-    bool changed = false;
-
     return WillPopScope(
       onWillPop: () async {
-        Navigator.of(context).pop(changed);
+        Navigator.of(context).pop();
         return true;
       },
       child: ListView.builder(
         itemBuilder: (context, index) {
           final current = widget.records[index];
           return GestureDetector(
-            onTap: () {},
+            onTap: () async {
+              await Navigator.of(context).pushNamed(
+                "/blood-glucose-tracking/input",
+                arguments: {
+                  "db": widget.db,
+                  "user": widget.user,
+                  "existing": current,
+                },
+              );
+
+              widget.reset();
+            },
             child: Dismissible(
               confirmDismiss: (direction) async {
                 final result = ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    duration: const Duration(seconds: 1, milliseconds: 500),
+                    duration: const Duration(seconds: 1),
                     content: const Text('Delete?'),
                     action: SnackBarAction(
                       label: 'Undo',
@@ -179,8 +210,11 @@ class __GlucoseRecordEditorInternalState
               },
               key: ValueKey(index),
               onDismissed: (direction) async {
-                changed = true;
-                // TODO: Delete record in database
+                await widget.db.delete(
+                  "GlucoseRecord",
+                  where: "id = ?",
+                  whereArgs: [current.id],
+                );
               },
               child: Container(
                 margin: const EdgeInsets.only(top: 10),

@@ -3,25 +3,26 @@ import 'package:dialife/blood_glucose_tracking/calculate_average.dart';
 import 'package:dialife/blood_glucose_tracking/entities.dart';
 import 'package:dialife/blood_glucose_tracking/no_data.dart';
 import 'package:dialife/blood_glucose_tracking/utils.dart';
-import 'package:dialife/main.dart';
 import 'package:dialife/user.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_switch/flutter_switch.dart';
 import 'package:intl/intl.dart';
-import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 
 const fgColor = Color(0xFF4C66F0);
 const bgColorToggleSwitch = Color(0xFFBFBFBF);
+const a1cPurple = Color.fromARGB(255, 81, 31, 163);
 
 class GlucoseTracking extends StatefulWidget {
   final User user;
+  final Database db;
 
   const GlucoseTracking({
     super.key,
+    required this.db,
     required this.user,
   });
 
@@ -41,41 +42,30 @@ class _GlucoseTrackingState extends State<GlucoseTracking> {
     }
 
     return waitForFuture(
-      future: getDatabasesPath(),
       loading: loading,
+      future: Future.wait(
+        [widget.db.query("GlucoseRecord")],
+      ),
       builder: (context, data) {
-        return waitForFuture(
-          loading: loading,
-          future: initAppDatabase(data),
-          builder: (context, data) {
-            return waitForFuture(
-              loading: loading,
-              future: Future.wait(
-                [data.query("GlucoseRecord")],
-              ),
-              builder: (context, data) {
-                // NOTE: Should pull from database in production
-                // final parsedData = GlucoseRecord.fromListOfMaps(data[0]);
-                final parsedGlucoseRecordData = GlucoseRecord.mock(
-                  count: 90,
-                  daySpan: 30,
-                  a1cInDay: true,
-                );
-                parsedGlucoseRecordData
-                    .sort((a, b) => a.bloodTestDate.compareTo(b.bloodTestDate));
+        // NOTE: Should pull from database in production
+        final parsedGlucoseRecordData = GlucoseRecord.fromListOfMaps(data[0]);
+        // final parsedGlucoseRecordData = GlucoseRecord.mock(
+        //   count: 90,
+        //   daySpan: 30,
+        //   a1cInDay: true,
+        // );
+        parsedGlucoseRecordData
+            .sort((a, b) => a.bloodTestDate.compareTo(b.bloodTestDate));
 
-                // final parsedA1CRecordData = A1CRecord.mock(1, 1);
-                // parsedA1CRecordData
-                //     .sort((a, b) => a.bloodTestDate.compareTo(b.bloodTestDate));
+        // final parsedA1CRecordData = A1CRecord.mock(1, 1);
+        // parsedA1CRecordData
+        //     .sort((a, b) => a.bloodTestDate.compareTo(b.bloodTestDate));
 
-                return _GlucoseTrackingInternalScaffold(
-                  glucoseRecords: parsedGlucoseRecordData,
-                  user: widget.user,
-                  reset: reset,
-                );
-              },
-            );
-          },
+        return _GlucoseTrackingInternalScaffold(
+          glucoseRecords: parsedGlucoseRecordData,
+          db: widget.db,
+          user: widget.user,
+          reset: reset,
         );
       },
     );
@@ -84,12 +74,14 @@ class _GlucoseTrackingState extends State<GlucoseTracking> {
 
 class _GlucoseTrackingInternalScaffold extends StatelessWidget {
   final List<GlucoseRecord> glucoseRecords;
+  final Database db;
   final User user;
   final void Function() reset;
 
   const _GlucoseTrackingInternalScaffold({
     super.key,
     required this.glucoseRecords,
+    required this.db,
     required this.user,
     required this.reset,
   });
@@ -100,10 +92,13 @@ class _GlucoseTrackingInternalScaffold extends StatelessWidget {
       return Scaffold(
         backgroundColor: Colors.grey.shade200,
         appBar: AppBar(title: const Text("Glucose")),
-        body: const SafeArea(
+        body: SafeArea(
           child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 30),
-            child: GlucoseTrackingNoData(),
+            padding: const EdgeInsets.symmetric(vertical: 30),
+            child: GlucoseTrackingNoData(
+              db: db,
+              user: user,
+            ),
           ),
         ),
       );
@@ -112,6 +107,7 @@ class _GlucoseTrackingInternalScaffold extends StatelessWidget {
     final glucoseTracking = _GlucoseTrackingInternal(
       glucoseRecords: glucoseRecords,
       user: user,
+      db: db,
       reset: reset,
     );
 
@@ -126,9 +122,14 @@ class _GlucoseTrackingInternalScaffold extends StatelessWidget {
           Icons.add,
           color: Colors.white,
         ),
-        onPressed: () {
-          Navigator.of(context).pushNamed("/blood-glucose-tracking/input",
-              arguments: {"user": user});
+        onPressed: () async {
+          await Navigator.of(context)
+              .pushNamed("/blood-glucose-tracking/input", arguments: {
+            "user": user,
+            "db": db,
+          });
+
+          reset();
         },
       ),
       body: RefreshIndicator(
@@ -157,12 +158,14 @@ class _GlucoseTrackingInternalScaffold extends StatelessWidget {
 
 class _GlucoseTrackingInternal extends StatefulWidget {
   final List<GlucoseRecord> glucoseRecords;
+  final Database db;
   final User user;
   final void Function() reset;
 
   const _GlucoseTrackingInternal({
     super.key,
     required this.reset,
+    required this.db,
     required this.user,
     required this.glucoseRecords,
     // required this.a1CRecords,
@@ -480,12 +483,29 @@ class _GlucoseTrackingInternalState extends State<_GlucoseTrackingInternal> {
                         interval = 0.3;
                     }
 
+                    final normalGlucoseRecMap = widget.glucoseRecords
+                        .where(
+                          (data) => !data.isA1C,
+                        )
+                        .toList()
+                        .asMap()
+                        .entries
+                        .toList();
+
+                    // NOTE: Selects the element just before the first element in glucoseDataPoints if it exists
+                    // TODO: Fix this garbage
                     if (glucoseDataPointsMap.isNotEmpty &&
                         glucoseDataPointsMap.first.key - 1 >= 0) {
                       glucoseDataPoints.insert(
                           0,
-                          widget.glucoseRecords[
-                              glucoseDataPointsMap.first.key - 1]);
+                          normalGlucoseRecMap[normalGlucoseRecMap
+                                      .where((element) =>
+                                          element.value.id ==
+                                          glucoseDataPoints.first.id)
+                                      .first
+                                      .key -
+                                  1]
+                              .value);
                     }
 
                     return SfCartesianChart(
@@ -508,13 +528,13 @@ class _GlucoseTrackingInternalState extends State<_GlucoseTrackingInternal> {
                             decoration: BoxDecoration(
                                 color: !typedData.isA1C
                                     ? const Color(0xFF67E88B)
-                                    : const Color.fromARGB(255, 233, 143, 136),
+                                    : const Color.fromARGB(255, 153, 104, 230),
                                 borderRadius: BorderRadius.circular(5),
                                 border: Border.all(
                                   width: 1,
                                   color: !typedData.isA1C
                                       ? const Color(0xFF016629)
-                                      : const Color.fromARGB(255, 81, 31, 28),
+                                      : a1cPurple,
                                 ),
                                 boxShadow: [
                                   BoxShadow(
@@ -534,7 +554,7 @@ class _GlucoseTrackingInternalState extends State<_GlucoseTrackingInternal> {
                                   decoration: BoxDecoration(
                                     color: !typedData.isA1C
                                         ? const Color(0xFF016629)
-                                        : const Color.fromARGB(255, 81, 31, 28),
+                                        : a1cPurple,
                                     borderRadius: BorderRadius.circular(5),
                                   ),
                                 ),
@@ -581,15 +601,12 @@ class _GlucoseTrackingInternalState extends State<_GlucoseTrackingInternal> {
                                       SizedBox(
                                         width: 95,
                                         child: AutoSizeText(
-                                          "Notes: \n${typedData.notes}",
+                                          "Notes: ${typedData.notes.isEmpty ? "--" : "\n${typedData.notes}"}",
                                           maxLines: 4,
                                           overflow: TextOverflow.fade,
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                             height: 1,
-                                            color: !typedData.isA1C
-                                                ? const Color(0xFF016629)
-                                                : const Color.fromARGB(
-                                                    255, 81, 31, 28),
+                                            color: Colors.black,
                                             fontSize: 10,
                                           ),
                                         ),
@@ -655,7 +672,7 @@ class _GlucoseTrackingInternalState extends State<_GlucoseTrackingInternal> {
                           isVisibleInLegend: false,
                           markerSettings: const MarkerSettings(
                             isVisible: true,
-                            borderColor: Colors.red,
+                            borderColor: a1cPurple,
                           ),
                           color: Colors.transparent,
                         ),
@@ -717,14 +734,28 @@ class _GlucoseTrackingInternalState extends State<_GlucoseTrackingInternal> {
                 ? mmolLToMgDL(record.glucoseLevel)
                 : record.glucoseLevel;
 
-            return Container(
-              margin: const EdgeInsets.symmetric(vertical: 5),
-              child: glucoseRecordListTile(
-                record.bloodTestDate,
-                record.notes,
-                glucoseLevel,
-                _unit,
-                record.isA1C,
+            return GestureDetector(
+              onTap: () async {
+                await Navigator.of(context).pushNamed(
+                  "/blood-glucose-tracking/input",
+                  arguments: {
+                    "user": widget.user,
+                    "db": widget.db,
+                    "existing": record,
+                  },
+                );
+
+                widget.reset();
+              },
+              child: Container(
+                margin: const EdgeInsets.symmetric(vertical: 5),
+                child: glucoseRecordListTile(
+                  record.bloodTestDate,
+                  record.notes,
+                  glucoseLevel,
+                  _unit,
+                  record.isA1C,
+                ),
               ),
             );
           },
@@ -733,13 +764,13 @@ class _GlucoseTrackingInternalState extends State<_GlucoseTrackingInternal> {
           margin: const EdgeInsets.all(12),
           child: TextButton(
             onPressed: () async {
-              final changed = await Navigator.of(context).pushNamed(
-                  "/blood-glucose-tracking/editor",
-                  arguments: {"user": widget.user}) as bool;
+              await Navigator.of(context)
+                  .pushNamed("/blood-glucose-tracking/editor", arguments: {
+                "user": widget.user,
+                "db": widget.db,
+              });
 
-              if (changed) {
-                widget.reset();
-              }
+              widget.reset();
             },
             style: ButtonStyle(
               backgroundColor: MaterialStateProperty.all(fgColor),
@@ -769,7 +800,7 @@ Widget glucoseRecordListTile(
     child: ListTile(
       leading: Icon(
         Icons.receipt,
-        color: !isA1C ? fgColor : Colors.red,
+        color: !isA1C ? fgColor : a1cPurple,
       ),
       title: AutoSizeText(
         "${(isA1C ? "(A1C) " : "")}Date: ${DateFormat("MMM. dd, yyyy hh:mm a").format(date)}",
@@ -779,7 +810,7 @@ Widget glucoseRecordListTile(
         style: const TextStyle(fontWeight: FontWeight.bold),
       ),
       subtitle: AutoSizeText(
-        "Notes: $notes",
+        "Notes: ${notes.isEmpty ? "--" : notes}",
         maxLines: 3,
         overflow: TextOverflow.fade,
       ),

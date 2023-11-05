@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:dialife/blood_glucose_tracking/calculate_average.dart';
 import 'package:dialife/blood_glucose_tracking/entities.dart';
 import 'package:dialife/blood_glucose_tracking/glucose_tracking.dart';
@@ -67,13 +68,19 @@ class Main extends StatelessWidget {
 
             return MaterialPageRoute(
               builder: (context) => GlucoseTracking(
+                db: args["db"],
                 user: args["user"],
               ),
               settings: const RouteSettings(name: "/blood-glucose-tracking"),
             );
           case "/blood-glucose-tracking/editor":
+            final args = settings.arguments as Map<String, dynamic>;
+
             return MaterialPageRoute(
-              builder: (context) => const GlucoseRecordEditor(),
+              builder: (context) => GlucoseRecordEditor(
+                db: args["db"],
+                user: args["user"],
+              ),
               settings:
                   const RouteSettings(name: "/blood-glucose-tracking/editor"),
             );
@@ -82,7 +89,8 @@ class Main extends StatelessWidget {
 
             return MaterialPageRoute(
               builder: (context) => GlucoseRecordInputForm(
-                existing: null,
+                existing: args["existing"],
+                db: args["db"],
                 user: args["user"],
               ),
               settings:
@@ -132,7 +140,7 @@ class _RootState extends State<Root> {
 
   @override
   Widget build(BuildContext context) {
-    reset() {
+    void reset() {
       setState(() {});
     }
 
@@ -224,11 +232,18 @@ class _RootState extends State<Root> {
 
                         // Container for health progress bar
                         GestureDetector(
-                          onTap: () {
-                            Navigator.of(context).pushNamed(
+                          onTap: () async {
+                            await Navigator.of(context).pushNamed(
                               "/blood-glucose-tracking",
-                              arguments: {"user": user},
+                              arguments: {
+                                "user": user,
+                                "db": dbContainer.data!,
+                              },
                             );
+
+                            setState(() {
+                              _records = null;
+                            });
                           },
                           child: Container(
                             width: double.infinity,
@@ -257,11 +272,11 @@ class _RootState extends State<Root> {
                               loading: const SpinKitCircle(color: fgColor),
                               builder: (context, data) {
                                 if (_records == null) {
-                                  // final records =
-                                  //     GlucoseRecord.fromListOfMaps(data);
-
                                   final records =
-                                      GlucoseRecord.mock(count: 30, daySpan: 5);
+                                      GlucoseRecord.fromListOfMaps(data);
+
+                                  // final records =
+                                  //     GlucoseRecord.mock(count: 30, daySpan: 5);
 
                                   records.sort(
                                     (a, b) => a.bloodTestDate
@@ -344,14 +359,31 @@ class _RootState extends State<Root> {
                                                 mainAxisAlignment:
                                                     MainAxisAlignment.center,
                                                 children: [
-                                                  Text(
-                                                    _records!.last.glucoseLevel
-                                                        .toStringAsFixed(2),
-                                                    style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 20,
-                                                    ),
+                                                  Builder(
+                                                    builder: (context) {
+                                                      if (_records == null ||
+                                                          _records!.isEmpty) {
+                                                        return const Text(
+                                                          "--",
+                                                          style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            fontSize: 20,
+                                                          ),
+                                                        );
+                                                      }
+
+                                                      return Text(
+                                                        _records!
+                                                            .last.glucoseLevel
+                                                            .toStringAsFixed(2),
+                                                        style: const TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          fontSize: 20,
+                                                        ),
+                                                      );
+                                                    },
                                                   ),
                                                   const SizedBox(width: 3),
                                                   const Text(
@@ -394,7 +426,13 @@ class _RootState extends State<Root> {
 
                                                       if (average == null) {
                                                         return const Text(
-                                                            "No Data");
+                                                          "--",
+                                                          style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            fontSize: 20,
+                                                          ),
+                                                        );
                                                       }
 
                                                       return Text(
@@ -450,10 +488,18 @@ class _RootState extends State<Root> {
                                       ),
                                     ),
                                     TextButton(
-                                      onPressed: () {
-                                        Navigator.of(context).pushNamed(
-                                            "/blood-glucose-tracking/editor",
-                                            arguments: {"user": user});
+                                      onPressed: () async {
+                                        await Navigator.of(context).pushNamed(
+                                          "/blood-glucose-tracking/editor",
+                                          arguments: {
+                                            "user": user,
+                                            "db": dbContainer.data!,
+                                          },
+                                        );
+
+                                        setState(() {
+                                          _records = null;
+                                        });
                                       },
                                       style: ButtonStyle(
                                         overlayColor: MaterialStateProperty.all(
@@ -508,58 +554,24 @@ class _RootState extends State<Root> {
                         ),
 
                         // Empty containers
-                        Container(
-                          margin: const EdgeInsets.only(
+                        Padding(
+                          padding: const EdgeInsets.only(
                             right: 10,
                             left: 10,
                             top: 15,
                           ),
-                          height: 224,
-                          child: Row(
-                            children: [
-                              Column(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  // NOTE: Medication
-                                  Container(
-                                    width: 114,
-                                    height: 104,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(10.0),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withOpacity(0.25),
-                                          blurRadius: 4,
-                                          spreadRadius: 0,
-                                          offset: const Offset(0, 4),
-                                        )
-                                      ],
-                                    ),
-                                    child: Center(
-                                      child: IconButton(
-                                        icon: const Icon(
-                                          Icons.notifications,
-                                          size: 35,
-                                        ),
-                                        onPressed: () {
-                                          // Navigator.pushNamed(
-                                          //     context, '/notifPage');
-                                        },
-                                      ),
-                                    ),
-                                  ),
-                                  // NOTE: BMI
-                                  GestureDetector(
-                                    onTap: () {
-                                      Navigator.of(context).pushNamed(
-                                          "/bmi-tracking",
-                                          arguments: {"user": user});
-                                    },
-                                    child: Container(
-                                      width: 114,
-                                      height: 104,
+                          child: IntrinsicHeight(
+                            child: Row(
+                              children: [
+                                Column(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    // NOTE: Medication
+                                    Container(
+                                      height: 120,
+                                      width: 120,
+                                      padding: const EdgeInsets.all(8),
                                       decoration: BoxDecoration(
                                         color: Colors.white,
                                         borderRadius:
@@ -574,32 +586,81 @@ class _RootState extends State<Root> {
                                           )
                                         ],
                                       ),
-                                      // TODO: implement BMI tracking (MARKER)
                                       child: Column(
-                                        children: [],
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            "Medication",
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(width: 15),
-                              Expanded(
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(10.0),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.25),
-                                        blurRadius: 4,
-                                        spreadRadius: 0,
-                                        offset: const Offset(0, 4),
-                                      )
-                                    ],
+                                    const SizedBox(height: 15),
+                                    // NOTE: BMI
+                                    GestureDetector(
+                                      onTap: () {
+                                        Navigator.of(context).pushNamed(
+                                            "/bmi-tracking",
+                                            arguments: {"user": user});
+                                      },
+                                      child: Container(
+                                        height: 120,
+                                        width: 120,
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius:
+                                              BorderRadius.circular(10.0),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black
+                                                  .withOpacity(0.25),
+                                              blurRadius: 4,
+                                              spreadRadius: 0,
+                                              offset: const Offset(0, 4),
+                                            )
+                                          ],
+                                        ),
+                                        // TODO: implement BMI tracking (MARKER)
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const Text(
+                                              "BMI Tracker",
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(width: 15),
+                                Expanded(
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(10.0),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.25),
+                                          blurRadius: 4,
+                                          spreadRadius: 0,
+                                          offset: const Offset(0, 4),
+                                        )
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
 
@@ -647,29 +708,82 @@ class LastUpdatedSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(
-          DateTime.now()
-              .difference(_records!.last.bloodTestDate)
-              .inHours
-              .toString(),
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
+    return Builder(builder: (context) {
+      if (_records == null || _records!.isEmpty) {
+        return const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              "--",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+              ),
+            ),
+            SizedBox(width: 3),
+            Text(
+              "Hours Ago",
+              style: TextStyle(
+                color: Colors.blueGrey,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        );
+      }
+
+      final inHours =
+          DateTime.now().difference(_records!.last.bloodTestDate).inHours;
+      final inMinutes =
+          DateTime.now().difference(_records!.last.bloodTestDate).inMinutes;
+      final inSeconds =
+          DateTime.now().difference(_records!.last.bloodTestDate).inSeconds;
+
+      int time;
+      String descriptionText;
+
+      if (inHours == 1) {
+        descriptionText = "Hour Ago";
+        time = inHours;
+      } else if (inHours < 1 && inMinutes > 1) {
+        descriptionText = "Minutes Ago";
+        time = inMinutes;
+      } else if (inHours < 1 && inMinutes == 1) {
+        descriptionText = "Minute Ago";
+        time = inMinutes;
+      } else if (inMinutes < 1 && inSeconds > 0) {
+        descriptionText = "Seconds Ago";
+        time = inSeconds;
+      } else {
+        descriptionText = "Hours Ago";
+        time = inHours;
+      }
+
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            time.toString(),
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+            ),
           ),
-        ),
-        const SizedBox(width: 3),
-        const Text(
-          "Hours Ago",
-          style: TextStyle(
-            color: Colors.blueGrey,
-            fontSize: 12,
+          const SizedBox(width: 3),
+          SizedBox(
+            width: 70,
+            child: AutoSizeText(
+              descriptionText,
+              minFontSize: 8,
+              maxLines: 1,
+              style: const TextStyle(
+                color: Colors.blueGrey,
+              ),
+            ),
           ),
-        ),
-      ],
-    );
+        ],
+      );
+    });
   }
 }
 
@@ -683,6 +797,7 @@ Future<Database> initAppDatabase(String path) async {
           first_name VARCHAR(255) NOT NULL,
           last_name VARCHAR(255) NOT NULL,
           middle_name VARCHAR(255),
+          is_male BOOLEAN NOT NULL,
           birthdate DATETIME NOT NULL,
           province VARCHAR(50) NOT NULL,
           municipality VARCHAR(50) NOT NULL,
@@ -702,6 +817,19 @@ Future<Database> initAppDatabase(String path) async {
           blood_test_date DATETIME
         )
        """);
+
+      await db.execute("""
+        CREATE TABLE BMIRecord (
+          id INTEGER PRIMARY KEY NOT NULL,
+          height DECIMAL(3, 2) NOT NULL,
+          notes VARCHAR(255) NOT NULL,
+          weight DECIMAL(5, 2) NOT NULL,
+          created_at DATETIME NOT NULL
+        ) 
+      """);
+
+      return db.execute(
+          "INSERT INTO BMIRecord (height, weight, created_at, notes) VALUES (1.73, 77.08, '2023-10-13', 'After lunch'), (1.73, 77.5, '2023-10-12', 'Before bed'), (1.73, 78.2, '2023-10-11', 'Deserunt deserunt eu duis sit minim deserunt et aute et ea dolore.')");
     },
     version: 1,
   );

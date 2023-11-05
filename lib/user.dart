@@ -6,6 +6,7 @@ class User {
   final String province;
   final String municipality;
   final String barangay;
+  final bool isMale;
   final String addressDescription;
   final String zipCode;
   final String contactNumber;
@@ -14,6 +15,7 @@ class User {
     required this.firstName,
     required this.middleName,
     required this.lastName,
+    required this.isMale,
     required this.addressDescription,
     required this.zipCode,
     required this.contactNumber,
@@ -23,11 +25,20 @@ class User {
     required this.municipality,
   });
 
+  String get name {
+    if (middleName.isEmpty) {
+      return "$firstName $lastName";
+    } else {
+      return "$firstName ${middleName[0]}. $lastName";
+    }
+  }
+
   static User fromMap(Map<String, dynamic> map) {
     return User(
       firstName: map["first_name"],
       middleName: map["middle_name"],
       lastName: map["last_name"],
+      isMale: map["is_male"] == 1,
       contactNumber: map["contact_number"],
       zipCode: map["zip_code"],
       addressDescription: map["address_description"],

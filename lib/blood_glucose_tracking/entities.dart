@@ -85,7 +85,7 @@ class GlucoseRecord {
       id: map["id"],
       // facilityId: map["facility_id"],
       notes: map["notes"],
-      isA1C: map["is_a1c"],
+      isA1C: map["is_a1c"] == 1,
       glucoseLevel: double.parse(map["glucose_level"].toString()),
       bloodTestDate: DateTime.parse(map["blood_test_date"]),
     );

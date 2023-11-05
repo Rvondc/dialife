@@ -1,9 +1,16 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:dialife/blood_glucose_tracking/glucose_tracking.dart';
+import 'package:dialife/user.dart';
 import 'package:flutter/material.dart';
+import 'package:sqflite/sqflite.dart';
 
 class GlucoseTrackingNoData extends StatelessWidget {
+  final User user;
+  final Database db;
+
   const GlucoseTrackingNoData({
+    required this.db,
+    required this.user,
     super.key,
   });
 
@@ -54,7 +61,19 @@ class GlucoseTrackingNoData extends StatelessWidget {
                           shape: BoxShape.circle,
                         ),
                         child: IconButton(
-                          onPressed: () {},
+                          onPressed: () async {
+                            await Navigator.of(context).pushNamed(
+                              "/blood-glucose-tracking/input",
+                              arguments: {
+                                "db": db,
+                                "user": user,
+                              },
+                            );
+
+                            if (context.mounted) {
+                              Navigator.of(context).pop();
+                            }
+                          },
                           color: fgColor,
                           iconSize: 48,
                           icon: const Icon(Icons.add),
