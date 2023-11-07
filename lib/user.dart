@@ -33,6 +33,10 @@ class User {
     }
   }
 
+  Duration get exactAge {
+    return DateTime.now().difference(birthday);
+  }
+
   static User fromMap(Map<String, dynamic> map) {
     return User(
       firstName: map["first_name"],
