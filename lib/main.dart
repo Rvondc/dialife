@@ -6,12 +6,14 @@ import 'package:dialife/blood_glucose_tracking/input_form.dart';
 import 'package:dialife/blood_glucose_tracking/record_editor.dart';
 import 'package:dialife/blood_glucose_tracking/utils.dart';
 import 'package:dialife/bmi_tracking/bmi_tracking.dart';
+import 'package:dialife/bmi_tracking/entities.dart';
 import 'package:dialife/bmi_tracking/input_form.dart';
 import 'package:dialife/bmi_tracking/record_editor.dart';
-import 'package:dialife/local_notifications/local_notifications.dart';
+// import 'package:dialife/local_notifications/local_notifications.dart';
 import 'package:dialife/medication_tracking/medication_tracking.dart';
 import 'package:dialife/setup.dart';
 import 'package:dialife/user.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -21,8 +23,8 @@ import 'package:google_fonts/google_fonts.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await LocalNotification.init();
-  
+  // await LocalNotification.init();
+
   runApp(const Main());
 }
 
@@ -36,6 +38,7 @@ class Main extends StatelessWidget {
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
     ]);
+
     return MaterialApp(
       title: 'DiaLife',
       theme: ThemeData(
@@ -101,18 +104,30 @@ class Main extends StatelessWidget {
 
             return MaterialPageRoute(
               builder: (context) => BMITracking(
+                db: args["db"],
                 user: args["user"],
               ),
               settings: const RouteSettings(name: "/bmi-tracking"),
             );
           case "/bmi-tracking/editor":
+            final args = settings.arguments as Map<String, dynamic>;
+
             return MaterialPageRoute(
-              builder: (context) => const BMIRecordEditor(),
+              builder: (context) => BMIRecordEditor(
+                db: args["db"],
+                user: args["user"],
+              ),
               settings: const RouteSettings(name: "/bmi-tracking/editor"),
             );
           case "/bmi-tracking/input":
+            final args = settings.arguments as Map<String, dynamic>;
+
             return MaterialPageRoute(
-              builder: (context) => const BMIRecordForm(),
+              builder: (context) => BMIRecordForm(
+                existing: args["existing"],
+                db: args["db"],
+                user: args["user"],
+              ),
               settings: const RouteSettings(name: "/bmi-tracking/input"),
             );
           case "/insulin-tracking":
@@ -136,7 +151,8 @@ class Root extends StatefulWidget {
 }
 
 class _RootState extends State<Root> {
-  List<GlucoseRecord>? _records;
+  List<GlucoseRecord>? _glucoseRecords;
+  List<BMIRecord>? _bmiRecords;
 
   @override
   Widget build(BuildContext context) {
@@ -221,13 +237,27 @@ class _RootState extends State<Root> {
                           ),
                         ),
                         // Current health status text label
-                        Text(
-                          'Current Health Status',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.inter(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
+                        RichText(
+                          text: TextSpan(
+                            children: <TextSpan>[
+                              TextSpan(
+                                text: "Welcome, ",
+                                style: GoogleFonts.istokWeb(
+                                  fontSize: 20,
+                                  color: Colors.black,
+                                ),
+                              ),
+                              TextSpan(
+                                text: "${user.firstName}!",
+                                style: GoogleFonts.istokWeb(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ],
                           ),
+                          textAlign: TextAlign.center,
                         ),
 
                         // Container for health progress bar
@@ -242,7 +272,7 @@ class _RootState extends State<Root> {
                             );
 
                             setState(() {
-                              _records = null;
+                              _glucoseRecords = null;
                             });
                           },
                           child: Container(
@@ -268,29 +298,41 @@ class _RootState extends State<Root> {
                             ),
                             // TODO: Create glucose tracking component (MARKER)
                             child: waitForFuture(
-                              future: dbContainer.data!.query("GlucoseRecord"),
+                              future: Future.wait(
+                                [
+                                  dbContainer.data!.query("GlucoseRecord"),
+                                  dbContainer.data!.query("BMIRecord"),
+                                ],
+                              ),
                               loading: const SpinKitCircle(color: fgColor),
                               builder: (context, data) {
-                                if (_records == null) {
-                                  final records =
-                                      GlucoseRecord.fromListOfMaps(data);
+                                if (_glucoseRecords == null ||
+                                    _bmiRecords == null) {
+                                  final glucoseRecords =
+                                      GlucoseRecord.fromListOfMaps(data[0]);
 
-                                  // final records =
-                                  //     GlucoseRecord.mock(count: 30, daySpan: 5);
+                                  final bmiRecords =
+                                      BMIRecord.fromListOfMaps(data[1]);
 
-                                  records.sort(
+                                  glucoseRecords.sort(
                                     (a, b) => a.bloodTestDate
                                         .compareTo(b.bloodTestDate),
                                   );
 
+                                  bmiRecords.sort(
+                                    (a, b) =>
+                                        a.createdAt.compareTo(b.createdAt),
+                                  );
+
                                   Future.delayed(Duration.zero, () {
                                     setState(() {
-                                      _records = records;
+                                      _glucoseRecords = glucoseRecords;
+                                      _bmiRecords = bmiRecords;
                                     });
                                   });
                                 }
 
-                                if (_records == null) {
+                                if (_glucoseRecords == null) {
                                   return const SpinKitCircle(color: fgColor);
                                 }
 
@@ -361,8 +403,10 @@ class _RootState extends State<Root> {
                                                 children: [
                                                   Builder(
                                                     builder: (context) {
-                                                      if (_records == null ||
-                                                          _records!.isEmpty) {
+                                                      if (_glucoseRecords ==
+                                                              null ||
+                                                          _glucoseRecords!
+                                                              .isEmpty) {
                                                         return const Text(
                                                           "--",
                                                           style: TextStyle(
@@ -374,7 +418,7 @@ class _RootState extends State<Root> {
                                                       }
 
                                                       return Text(
-                                                        _records!
+                                                        _glucoseRecords!
                                                             .last.glucoseLevel
                                                             .toStringAsFixed(2),
                                                         style: const TextStyle(
@@ -421,7 +465,7 @@ class _RootState extends State<Root> {
                                                             const Duration(
                                                                 days: 7)),
                                                         DateTime.now(),
-                                                        _records!,
+                                                        _glucoseRecords!,
                                                       );
 
                                                       if (average == null) {
@@ -471,7 +515,7 @@ class _RootState extends State<Root> {
                                               const Text("Last Updated"),
                                               const SizedBox(height: 5),
                                               LastUpdatedSection(
-                                                  records: _records),
+                                                  records: _glucoseRecords),
                                             ],
                                           ),
                                         ),
@@ -498,7 +542,7 @@ class _RootState extends State<Root> {
                                         );
 
                                         setState(() {
-                                          _records = null;
+                                          _glucoseRecords = null;
                                         });
                                       },
                                       style: ButtonStyle(
@@ -552,119 +596,168 @@ class _RootState extends State<Root> {
                             ],
                           ),
                         ),
-
-                        // Empty containers
                         Padding(
                           padding: const EdgeInsets.only(
-                            right: 10,
+                            top: 16,
                             left: 10,
-                            top: 15,
+                            right: 10,
                           ),
-                          child: IntrinsicHeight(
-                            child: Row(
-                              children: [
-                                Column(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
+                          child: AspectRatio(
+                            aspectRatio: 1.48,
+                            child: Material(
+                              borderRadius: BorderRadius.circular(10),
+                              elevation: 4,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Row(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
                                   children: [
-                                    // NOTE: Medication
+                                    Expanded(
+                                      flex: 4,
+                                      child: Container(),
+                                    ),
                                     Container(
-                                      height: 120,
-                                      width: 120,
-                                      padding: const EdgeInsets.all(8),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius:
-                                            BorderRadius.circular(10.0),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color:
-                                                Colors.black.withOpacity(0.25),
-                                            blurRadius: 4,
-                                            spreadRadius: 0,
-                                            offset: const Offset(0, 4),
-                                          )
-                                        ],
-                                      ),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          const Text(
-                                            "Medication",
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
+                                      width: 1,
+                                      color: const Color(0xFFC4C4C4),
+                                    ),
+                                    Expanded(
+                                      flex: 6,
+                                      child: GestureDetector(
+                                        onTap: () async {
+                                          await Navigator.of(context).pushNamed(
+                                            "/bmi-tracking",
+                                            arguments: {
+                                              "db": dbContainer.data!,
+                                              "user": user,
+                                            },
+                                          );
+
+                                          // TODO:
+                                          setState(() {
+                                            _bmiRecords = null;
+                                          });
+                                        },
+                                        child: Container(
+                                          padding: const EdgeInsets.only(
+                                            top: 8,
+                                          ),
+                                          decoration: const BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius: BorderRadius.only(
+                                              topRight: Radius.circular(10),
+                                              bottomRight: Radius.circular(10),
                                             ),
                                           ),
-                                        ],
-                                      ),
-                                    ),
-                                    const SizedBox(height: 15),
-                                    // NOTE: BMI
-                                    GestureDetector(
-                                      onTap: () {
-                                        Navigator.of(context).pushNamed(
-                                            "/bmi-tracking",
-                                            arguments: {"user": user});
-                                      },
-                                      child: Container(
-                                        height: 120,
-                                        width: 120,
-                                        padding: const EdgeInsets.all(8),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius:
-                                              BorderRadius.circular(10.0),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.black
-                                                  .withOpacity(0.25),
-                                              blurRadius: 4,
-                                              spreadRadius: 0,
-                                              offset: const Offset(0, 4),
-                                            )
-                                          ],
-                                        ),
-                                        // TODO: implement BMI tracking (MARKER)
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            const Text(
-                                              "BMI Tracker",
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.bold,
+                                          child: Column(
+                                            children: [
+                                              Text(
+                                                "Your Current BMI Level",
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
                                               ),
-                                            ),
-                                          ],
+                                              Image.asset(
+                                                user.isMale
+                                                    ? "assets/bmi_male.png"
+                                                    : "assets/bmi_female.png",
+                                                width: 230,
+                                              ),
+                                              const Divider(
+                                                height: 0,
+                                                endIndent: 0,
+                                                indent: 0,
+                                              ),
+                                              Expanded(
+                                                child: Builder(
+                                                  builder: (context) {
+                                                    if (_bmiRecords == null) {
+                                                      // TODO: Loading
+                                                      return Container();
+                                                    } else if (_bmiRecords!
+                                                        .isEmpty) {
+                                                      // TODO: No Data
+                                                      return const Align(
+                                                        alignment:
+                                                            Alignment.center,
+                                                        child: Padding(
+                                                          padding: EdgeInsets
+                                                              .symmetric(
+                                                                  horizontal:
+                                                                      8.0),
+                                                          child: AutoSizeText(
+                                                            "Please enter your Body Mass Index (BMI)",
+                                                            textAlign: TextAlign
+                                                                .center,
+                                                            maxLines: 2,
+                                                            minFontSize: 4,
+                                                          ),
+                                                        ),
+                                                      );
+                                                    }
+
+                                                    final latestBmiRecord =
+                                                        _bmiRecords!.first;
+                                                    double fraction;
+
+                                                    if (latestBmiRecord.bmi <
+                                                        19) {
+                                                      fraction = 0.23 *
+                                                          (latestBmiRecord.bmi /
+                                                              19.0);
+                                                    } else if (latestBmiRecord
+                                                                .bmi >=
+                                                            19 &&
+                                                        latestBmiRecord.bmi <=
+                                                            24) {
+                                                      fraction = (0.27 *
+                                                              ((latestBmiRecord
+                                                                          .bmi -
+                                                                      19) /
+                                                                  5)) +
+                                                          0.23;
+                                                    } else if (latestBmiRecord
+                                                                .bmi >
+                                                            24 &&
+                                                        latestBmiRecord.bmi <=
+                                                            29) {
+                                                      fraction = (0.27 *
+                                                              ((latestBmiRecord
+                                                                          .bmi -
+                                                                      24) /
+                                                                  5)) +
+                                                          0.5;
+                                                    } else {
+                                                      fraction = clampDouble(
+                                                          (0.23 *
+                                                              ((latestBmiRecord
+                                                                          .bmi -
+                                                                      29) /
+                                                                  11)),
+                                                          0,
+                                                          1);
+                                                    }
+
+                                                    return BMIGraph(
+                                                        frac: fraction);
+                                                  },
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     ),
                                   ],
                                 ),
-                                const SizedBox(width: 15),
-                                Expanded(
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(10.0),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withOpacity(0.25),
-                                          blurRadius: 4,
-                                          spreadRadius: 0,
-                                          offset: const Offset(0, 4),
-                                        )
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
+                              ),
                             ),
                           ),
                         ),
-
-                        // empty container
                         Container(
                           margin: const EdgeInsets.symmetric(
                             horizontal: 10,
@@ -694,6 +787,157 @@ class _RootState extends State<Root> {
           );
         },
       ),
+    );
+  }
+}
+
+class BMIGraph extends StatelessWidget {
+  final double frac;
+
+  const BMIGraph({
+    required this.frac,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    assert(frac >= 0 && frac <= 1);
+
+    int frontOffset = (frac * 100).toInt();
+    int backOffset = ((1 - frac) * 100).toInt();
+    String category;
+    String description;
+
+    Color pointerColor;
+
+    if (frac >= 0 && frac <= 0.23) {
+      category = "Underweight";
+      description = "You have low BMI";
+      pointerColor = const Color(0xFFEAA902);
+    } else if (frac > 0.23 && frac <= 0.5) {
+      category = "Normal";
+      description = "You are Healthy!";
+      pointerColor = const Color(0xFF46B265);
+    } else if (frac > 0.5 && frac <= 0.77) {
+      category = "Overweight";
+      description = "You have high BMI";
+      pointerColor = const Color(0xFFE8E26D);
+    } else {
+      category = "Obese";
+      description = "You have extreme BMI";
+      pointerColor = const Color(0xFFB84141);
+    }
+
+    return Stack(
+      children: [
+        const Positioned.fill(
+          bottom: 20,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Divider(
+                  color: Color(0xFFEAA902),
+                  thickness: 3,
+                  indent: 7,
+                ),
+              ),
+              Expanded(
+                child: Divider(
+                  color: Color(0xFF46B265),
+                  thickness: 3,
+                ),
+              ),
+              Expanded(
+                child: Divider(
+                  color: Color(0xFFE8E26D),
+                  thickness: 3,
+                ),
+              ),
+              Expanded(
+                child: Divider(
+                  color: Color(0xFFB84141),
+                  thickness: 3,
+                  endIndent: 7,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Positioned.fill(
+          child: Padding(
+            padding: const EdgeInsets.only(
+              left: 7,
+              right: 7,
+              top: 16,
+              bottom: 36,
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  flex: frontOffset,
+                  child: const SizedBox(),
+                ),
+                Container(
+                  constraints: const BoxConstraints(maxHeight: 30),
+                  decoration: BoxDecoration(
+                    color: pointerColor,
+                    boxShadow: const [
+                      BoxShadow(
+                        spreadRadius: 3,
+                        offset: Offset(0, 0),
+                        color: Colors.white,
+                      )
+                    ],
+                  ),
+                  width: 3,
+                ),
+                Expanded(
+                  flex: backOffset,
+                  child: const SizedBox(),
+                ),
+              ],
+            ),
+          ),
+        ),
+        Positioned(
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: Padding(
+              padding: const EdgeInsets.only(
+                bottom: 8.0,
+                left: 4,
+                right: 4,
+              ),
+              child: AutoSizeText.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(
+                      text: "$category, ",
+                      style: GoogleFonts.inter(
+                        color: pointerColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                    TextSpan(
+                      text: description,
+                      style: GoogleFonts.inter(
+                        color: Colors.black,
+                        fontSize: 18,
+                      ),
+                    ),
+                  ],
+                ),
+                textAlign: TextAlign.center,
+                minFontSize: 4,
+                overflow: TextOverflow.fade,
+                maxLines: 1,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -746,13 +990,13 @@ class LastUpdatedSection extends StatelessWidget {
         descriptionText = "Hour Ago";
         time = inHours;
       } else if (inHours < 1 && inMinutes > 1) {
-        descriptionText = "Minutes Ago";
+        descriptionText = "Mins Ago";
         time = inMinutes;
       } else if (inHours < 1 && inMinutes == 1) {
-        descriptionText = "Minute Ago";
+        descriptionText = "Min Ago";
         time = inMinutes;
       } else if (inMinutes < 1 && inSeconds > 0) {
-        descriptionText = "Seconds Ago";
+        descriptionText = "Secs Ago";
         time = inSeconds;
       } else {
         descriptionText = "Hours Ago";
@@ -828,8 +1072,8 @@ Future<Database> initAppDatabase(String path) async {
         ) 
       """);
 
-      return db.execute(
-          "INSERT INTO BMIRecord (height, weight, created_at, notes) VALUES (1.73, 77.08, '2023-10-13', 'After lunch'), (1.73, 77.5, '2023-10-12', 'Before bed'), (1.73, 78.2, '2023-10-11', 'Deserunt deserunt eu duis sit minim deserunt et aute et ea dolore.')");
+      // return db.execute(
+      //     "INSERT INTO BMIRecord (height, weight, created_at, notes) VALUES (1.73, 77.08, '2023-10-13', 'After lunch'), (1.73, 77.5, '2023-10-12', 'Before bed'), (1.73, 78.2, '2023-10-11', 'Deserunt deserunt eu duis sit minim deserunt et aute et ea dolore.')");
     },
     version: 1,
   );
