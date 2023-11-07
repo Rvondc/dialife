@@ -3,18 +3,35 @@ import 'package:dialife/blood_glucose_tracking/utils.dart';
 import 'package:dialife/bmi_tracking/bmi_tracking.dart';
 import 'package:dialife/bmi_tracking/entities.dart';
 import 'package:dialife/main.dart';
+import 'package:dialife/user.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:sqflite/sqflite.dart';
 
-class BMIRecordEditor extends StatelessWidget {
-  const BMIRecordEditor({super.key});
+class BMIRecordEditor extends StatefulWidget {
+  final Database db;
+  final User user;
 
+  const BMIRecordEditor({
+    super.key,
+    required this.db,
+    required this.user,
+  });
+
+  @override
+  State<BMIRecordEditor> createState() => _BMIRecordEditorState();
+}
+
+class _BMIRecordEditorState extends State<BMIRecordEditor> {
   @override
   Widget build(BuildContext context) {
     const loading = Scaffold(
       body: SpinKitCircle(color: fgColor),
     );
+
+    reset() {
+      setState(() {});
+    }
 
     return waitForFuture(
       future: getDatabasesPath(),
@@ -32,7 +49,12 @@ class BMIRecordEditor extends StatelessWidget {
                 // final parsedData = BMIRecord.mock(400, 365);
                 parsedData.sort((a, b) => a.createdAt.compareTo(b.createdAt));
 
-                return _BMIRecordEditorInternalScaffold(records: parsedData);
+                return _BMIRecordEditorInternalScaffold(
+                  records: parsedData,
+                  reset: reset,
+                  db: widget.db,
+                  user: widget.user,
+                );
               },
             );
           },
@@ -44,10 +66,16 @@ class BMIRecordEditor extends StatelessWidget {
 
 class _BMIRecordEditorInternalScaffold extends StatelessWidget {
   final List<BMIRecord> records;
+  final void Function() reset;
+  final Database db;
+  final User user;
 
   const _BMIRecordEditorInternalScaffold({
     super.key,
     required this.records,
+    required this.reset,
+    required this.db,
+    required this.user,
   });
 
   @override
@@ -67,7 +95,12 @@ class _BMIRecordEditorInternalScaffold extends StatelessWidget {
               top: 0,
               bottom: 0,
             ),
-            child: _BMIRecordEditorInternal(records: records),
+            child: _BMIRecordEditorInternal(
+              records: records,
+              reset: reset,
+              db: db,
+              user: user,
+            ),
           ),
         ),
       ),
@@ -77,9 +110,15 @@ class _BMIRecordEditorInternalScaffold extends StatelessWidget {
 
 class _BMIRecordEditorInternal extends StatefulWidget {
   final List<BMIRecord> records;
+  final void Function() reset;
+  final Database db;
+  final User user;
 
   const _BMIRecordEditorInternal({
     super.key,
+    required this.user,
+    required this.db,
+    required this.reset,
     required this.records,
   });
 
@@ -91,22 +130,30 @@ class _BMIRecordEditorInternal extends StatefulWidget {
 class _BMIRecordEditorInternalState extends State<_BMIRecordEditorInternal> {
   @override
   Widget build(BuildContext context) {
-    bool changed = false;
-
     return WillPopScope(
       onWillPop: () async {
-        Navigator.of(context).pop(changed);
+        Navigator.of(context).pop();
         return true;
       },
       child: ListView.builder(
         itemBuilder: (context, index) {
           final current = widget.records[index];
           return GestureDetector(
-            onTap: () {},
+            onTap: () async {
+              await Navigator.of(context).pushNamed(
+                "/bmi-tracking/input",
+                arguments: {
+                  "db": widget.db,
+                  "user": widget.user,
+                  "existing": current,
+                },
+              );
+
+              widget.reset();
+            },
             child: Dismissible(
               key: ValueKey(index),
               onDismissed: (direction) async {
-                changed = true;
                 // TODO: Delete record in database
               },
               child: Container(
