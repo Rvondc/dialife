@@ -40,7 +40,7 @@ class GlucoseTrackingNoData extends StatelessWidget {
                     children: [
                       Container(
                         decoration: BoxDecoration(
-                          color: Colors.grey.withOpacity(0.2),
+                          color: Colors.grey.shade200,
                           shape: BoxShape.circle,
                         ),
                         child: IconButton(
