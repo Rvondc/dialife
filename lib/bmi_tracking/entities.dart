@@ -62,8 +62,8 @@ class BMIRecord {
   static BMIRecord fromMap(Map<String, dynamic> map) {
     return BMIRecord(
       id: map["id"],
-      heightInMeters: map["height"],
-      weightInKilograms: map["weight"],
+      heightInMeters: map["height"].toDouble() / 100.0,
+      weightInKilograms: map["weight"].toDouble(),
       notes: map["notes"],
       createdAt: DateTime.parse(map["created_at"]),
     );
