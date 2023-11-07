@@ -21,3 +21,19 @@ List<BMIRecord> sparsifyBMIRecords(List<BMIRecord> input, int maxPerDay) {
       .flattened
       .toList();
 }
+
+double kilogramsToPounds(double kg) {
+  return kg * 2.2;
+}
+
+double poundsToKilograms(double lb) {
+  return lb / 2.2;
+}
+
+double centimetersToInches(double cm) {
+  return cm / 2.54;
+}
+
+double inchesToCentimeters(double inches) {
+  return inches * 2.54;
+}
