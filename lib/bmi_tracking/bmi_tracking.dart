@@ -8,6 +8,7 @@ import 'package:dialife/main.dart';
 import 'package:dialife/user.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -15,9 +16,11 @@ import 'package:toggle_switch/toggle_switch.dart';
 
 class BMITracking extends StatefulWidget {
   final User user;
+  final Database db;
 
   const BMITracking({
     super.key,
+    required this.db,
     required this.user,
   });
 
@@ -55,6 +58,7 @@ class _BMITrackingState extends State<BMITracking> {
                 return _BMITrackingInteralScaffold(
                   reset: reset,
                   user: widget.user,
+                  db: widget.db,
                   records: parsedData,
                 );
               },
@@ -68,12 +72,14 @@ class _BMITrackingState extends State<BMITracking> {
 
 class _BMITrackingInteralScaffold extends StatelessWidget {
   final List<BMIRecord> records;
+  final Database db;
   final User user;
   final void Function() reset;
 
   const _BMITrackingInteralScaffold({
     super.key,
     required this.reset,
+    required this.db,
     required this.user,
     required this.records,
   });
@@ -84,10 +90,13 @@ class _BMITrackingInteralScaffold extends StatelessWidget {
       return Scaffold(
         backgroundColor: Colors.grey.shade200,
         appBar: AppBar(title: const Text("BMI")),
-        body: const SafeArea(
+        body: SafeArea(
           child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 30),
-            child: BMITrackingNoData(),
+            padding: const EdgeInsets.symmetric(vertical: 30),
+            child: BMITrackingNoData(
+              db: db,
+              user: user,
+            ),
           ),
         ),
       );
@@ -95,7 +104,9 @@ class _BMITrackingInteralScaffold extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.grey.shade200,
-      appBar: AppBar(title: const Text("BMI")),
+      appBar: AppBar(
+        title: const Text("BMI"),
+      ),
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
       floatingActionButton: FloatingActionButton(
         shape: const CircleBorder(),
@@ -104,8 +115,16 @@ class _BMITrackingInteralScaffold extends StatelessWidget {
           Icons.add,
           color: Colors.white,
         ),
-        onPressed: () {
-          Navigator.of(context).pushNamed("/bmi-tracking/input");
+        onPressed: () async {
+          await Navigator.of(context).pushNamed(
+            "/bmi-tracking/input",
+            arguments: {
+              "db": db,
+              "user": user,
+            },
+          );
+
+          reset();
         },
       ),
       body: RefreshIndicator(
@@ -125,6 +144,7 @@ class _BMITrackingInteralScaffold extends StatelessWidget {
               ),
               child: _BMITrackingInternal(
                 records: records,
+                db: db,
                 reset: reset,
                 user: user,
               ),
@@ -138,11 +158,13 @@ class _BMITrackingInteralScaffold extends StatelessWidget {
 
 class _BMITrackingInternal extends StatefulWidget {
   final List<BMIRecord> records;
+  final Database db;
   final User user;
   final void Function() reset;
 
   const _BMITrackingInternal({
     super.key,
+    required this.db,
     required this.reset,
     required this.user,
     required this.records,
@@ -285,101 +307,209 @@ class __BMITrackingInternalState extends State<_BMITrackingInternal> {
             ],
           ),
           padding: const EdgeInsets.only(top: 10, bottom: 8),
-          height: 260,
-          child: Builder(
-            builder: (context) {
-              // NOTE: This convoluted step is required in order to get the last element that is not in the dataPoints list
-              final dataPointsMap = widget.records
-                  .asMap()
-                  .entries
-                  .where(
-                    (data) =>
-                        _scope.start.isBefore(data.value.createdAt) &&
-                        _scope.end.isAfter(data.value.createdAt),
-                  )
-                  .toList();
+          height: 280,
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 10,
+                        height: 10,
+                        decoration: BoxDecoration(
+                          color: const Color.fromARGB(255, 232, 183, 103),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        "Underweight",
+                        style: GoogleFonts.inter(fontSize: 12),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Container(
+                        width: 10,
+                        height: 10,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF67E88B),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        "Normal",
+                        style: GoogleFonts.inter(fontSize: 12),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Container(
+                        width: 10,
+                        height: 10,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFCBCF10),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        "Overweight",
+                        style: GoogleFonts.inter(fontSize: 12),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Container(
+                        width: 10,
+                        height: 10,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFB84141),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        "Obese",
+                        style: GoogleFonts.inter(fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              Expanded(
+                child: Builder(
+                  builder: (context) {
+                    // NOTE: This convoluted step is required in order to get the last element that is not in the dataPoints list
+                    final dataPointsMap = widget.records
+                        .asMap()
+                        .entries
+                        .where(
+                          (data) =>
+                              _scope.start.isBefore(data.value.createdAt) &&
+                              _scope.end.isAfter(data.value.createdAt),
+                        )
+                        .toList();
 
-              var dataPoints = dataPointsMap.map((data) => data.value).toList();
-              double interval = 1;
+                    var dataPoints =
+                        dataPointsMap.map((data) => data.value).toList();
+                    double interval = 1;
 
-              // NOTE: This is for optimization purposes
-              // TODO: Implement in settings
-              switch (_scopeString) {
-                case "allTime":
-                  interval = 7;
-                // dataPoints = sparsifyBMIRecords(dataPoints, 1);
-                case "month":
-                  interval = 7;
-                // dataPoints = sparsify(dataPoints, 4);
-                case "week":
-                  interval = 1;
-                // dataPoints = sparsify(dataPoints, 10);
-                case "day":
-                  interval = 0.3;
-              }
+                    // NOTE: This is for optimization purposes
+                    // TODO: Implement in settings
+                    switch (_scopeString) {
+                      case "allTime":
+                        interval = 7;
+                      // dataPoints = sparsifyBMIRecords(dataPoints, 1);
+                      case "month":
+                        interval = 7;
+                      // dataPoints = sparsify(dataPoints, 4);
+                      case "week":
+                        interval = 1;
+                      // dataPoints = sparsify(dataPoints, 10);
+                      case "day":
+                        interval = 0.3;
+                    }
 
-              if (dataPointsMap.isNotEmpty &&
-                  dataPointsMap.first.key - 1 >= 0) {
-                dataPoints.insert(
-                    0, widget.records[dataPointsMap.first.key - 1]);
-              }
+                    if (dataPointsMap.isNotEmpty &&
+                        dataPointsMap.first.key - 1 >= 0) {
+                      dataPoints.insert(
+                          0, widget.records[dataPointsMap.first.key - 1]);
+                    }
 
-              return SfCartesianChart(
-                backgroundColor: Colors.white,
-                zoomPanBehavior: ZoomPanBehavior(
-                  enablePinching: true,
-                  enablePanning: true,
-                  enableDoubleTapZooming: true,
-                ),
-                tooltipBehavior: TooltipBehavior(
-                  enable: true,
-                  builder: (data, point, series, pointIndex, seriesIndex) {
-                    return const Card(
-                      shape: BeveledRectangleBorder(),
-                      shadowColor: Colors.transparent,
-                      surfaceTintColor: Colors.transparent,
-                      child: Text("Heelo"),
+                    return SfCartesianChart(
+                      backgroundColor: Colors.white,
+                      zoomPanBehavior: ZoomPanBehavior(
+                        enablePinching: true,
+                        enablePanning: true,
+                        enableDoubleTapZooming: true,
+                      ),
+                      crosshairBehavior: CrosshairBehavior(enable: true),
+                      tooltipBehavior: TooltipBehavior(
+                        enable: false,
+                        builder:
+                            (data, point, series, pointIndex, seriesIndex) {
+                          return const Card(
+                            shape: BeveledRectangleBorder(),
+                            shadowColor: Colors.transparent,
+                            surfaceTintColor: Colors.transparent,
+                            child: Text("Heelo"),
+                          );
+                        },
+                      ),
+                      primaryXAxis: DateTimeAxis(
+                        axisLine: const AxisLine(color: fgColor, width: 2),
+                        maximum: _scope.end,
+                        minimum: _scopeString == "allTime"
+                            ? dataPoints.first.createdAt.copyWith(hour: -12)
+                            : _scope.start,
+                        majorGridLines: const MajorGridLines(color: fgColor),
+                        intervalType: DateTimeIntervalType.days,
+                        interval: interval,
+                        dateFormat: DateFormat.Md(),
+                      ),
+                      primaryYAxis: NumericAxis(
+                        maximum: lastRecords.length > 1 ? null : 40,
+                        plotBands: [
+                          PlotBand(
+                            start: 29,
+                            color: const Color(0xFFB84141),
+                            opacity: 0.5,
+                          ),
+                          PlotBand(
+                            start: 24,
+                            end: 29,
+                            color: const Color(0xFFCBCF10),
+                            opacity: 0.5,
+                          ),
+                          PlotBand(
+                            start: 19,
+                            end: 24,
+                            color: const Color(0xFF67E88B),
+                            opacity: 0.5,
+                          ),
+                          PlotBand(
+                            start: 0,
+                            end: 19,
+                            color: const Color.fromARGB(255, 232, 183, 103),
+                            opacity: 0.5,
+                          )
+                        ],
+                        axisLine: const AxisLine(color: fgColor, width: 2),
+                        majorGridLines: const MajorGridLines(color: fgColor),
+                      ),
+                      trackballBehavior: TrackballBehavior(enable: true),
+                      legend: const Legend(isVisible: true),
+                      series: <ChartSeries<BMIRecord, DateTime>>[
+                        LineSeries(
+                          dataSource: dataPoints,
+                          xValueMapper: (datum, index) => datum.createdAt,
+                          yValueMapper: (datum, index) =>
+                              datum.weightInKilograms /
+                              (datum.heightInMeters * datum.heightInMeters),
+                          markerSettings: const MarkerSettings(
+                              isVisible: true,
+                              width: 5,
+                              height: 5,
+                              borderWidth: 1,
+                              borderColor: fgColor,
+                              color: fgColor),
+                          color: Colors.black,
+                          width: 1,
+                          isVisibleInLegend: false,
+                        )
+                      ],
                     );
                   },
                 ),
-                primaryXAxis: DateTimeAxis(
-                  axisLine: const AxisLine(color: fgColor, width: 2),
-                  maximum: _scope.end,
-                  minimum: _scopeString == "allTime"
-                      ? dataPoints.first.createdAt.copyWith(hour: -12)
-                      : _scope.start,
-                  majorGridLines: const MajorGridLines(color: fgColor),
-                  intervalType: DateTimeIntervalType.days,
-                  interval: interval,
-                  dateFormat: DateFormat.Md(),
-                ),
-                primaryYAxis: NumericAxis(
-                  axisLine: const AxisLine(color: fgColor, width: 2),
-                  majorGridLines: const MajorGridLines(color: fgColor),
-                ),
-                trackballBehavior: TrackballBehavior(enable: true),
-                legend: const Legend(isVisible: true),
-                series: <ChartSeries<BMIRecord, DateTime>>[
-                  LineSeries(
-                    dataSource: dataPoints,
-                    xValueMapper: (datum, index) => datum.createdAt,
-                    yValueMapper: (datum, index) =>
-                        datum.weightInKilograms /
-                        (datum.heightInMeters * datum.heightInMeters),
-                    markerSettings: const MarkerSettings(
-                        isVisible: true,
-                        width: 5,
-                        height: 5,
-                        borderWidth: 1,
-                        borderColor: fgColor,
-                        color: fgColor),
-                    color: Colors.black,
-                    width: 1,
-                    isVisibleInLegend: false,
-                  )
-                ],
-              );
-            },
+              ),
+            ],
           ),
         ),
         Container(
@@ -423,7 +553,18 @@ class __BMITrackingInternalState extends State<_BMITrackingInternal> {
             return Container(
               margin: const EdgeInsets.symmetric(vertical: 5),
               child: GestureDetector(
-                onTap: () {},
+                onTap: () async {
+                  await Navigator.of(context).pushNamed(
+                    "/bmi-tracking/input",
+                    arguments: {
+                      "user": widget.user,
+                      "db": widget.db,
+                      "existing": record,
+                    },
+                  );
+
+                  widget.reset();
+                },
                 child: bmiRecordListTile(
                   record.createdAt,
                   record.notes,
@@ -437,12 +578,15 @@ class __BMITrackingInternalState extends State<_BMITrackingInternal> {
           margin: const EdgeInsets.all(12),
           child: TextButton(
             onPressed: () async {
-              final changed = await Navigator.of(context)
-                  .pushNamed("/bmi-tracking/editor") as bool;
+              await Navigator.of(context).pushNamed(
+                "/bmi-tracking/editor",
+                arguments: {
+                  "db": widget.db,
+                  "user": widget.user,
+                },
+              );
 
-              if (changed) {
-                widget.reset();
-              }
+              widget.reset();
             },
             style: ButtonStyle(
               backgroundColor: MaterialStateProperty.all(fgColor),
@@ -477,10 +621,48 @@ Widget bmiRecordListTile(DateTime date, String notes, double bmi) {
         minFontSize: 10,
         style: const TextStyle(fontWeight: FontWeight.bold),
       ),
-      subtitle: AutoSizeText(
-        "Notes: $notes",
-        maxLines: 3,
-        overflow: TextOverflow.fade,
+      subtitle: Row(
+        children: [
+          Builder(builder: (context) {
+            Color color;
+            String category;
+
+            // TODO: Might contain bug
+            if (bmi >= 19 && bmi <= 24) {
+              color = const Color(0xFF67E88B);
+              category = "Normal";
+            } else if (bmi > 24 && bmi <= 29) {
+              color = const Color(0xFFCBCF10);
+              category = "Overweight";
+            } else if (bmi > 29) {
+              color = const Color(0xFFB84141);
+              category = "Obese";
+            } else {
+              color = const Color.fromARGB(255, 232, 183, 103);
+              category = "Underweight";
+            }
+
+            return Row(
+              children: [
+                Container(
+                  width: 10,
+                  height: 10,
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  category,
+                  style: GoogleFonts.inter(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            );
+          })
+        ],
       ),
       trailing: AutoSizeText(
         bmi.toStringAsFixed(2),

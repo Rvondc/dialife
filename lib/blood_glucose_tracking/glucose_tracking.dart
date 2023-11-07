@@ -526,24 +526,25 @@ class _GlucoseTrackingInternalState extends State<_GlucoseTrackingInternal> {
                             width: 120,
                             height: 120,
                             decoration: BoxDecoration(
+                              color: !typedData.isA1C
+                                  ? const Color(0xFF67E88B)
+                                  : const Color.fromARGB(255, 153, 104, 230),
+                              borderRadius: BorderRadius.circular(5),
+                              border: Border.all(
+                                width: 1,
                                 color: !typedData.isA1C
-                                    ? const Color(0xFF67E88B)
-                                    : const Color.fromARGB(255, 153, 104, 230),
-                                borderRadius: BorderRadius.circular(5),
-                                border: Border.all(
-                                  width: 1,
-                                  color: !typedData.isA1C
-                                      ? const Color(0xFF016629)
-                                      : a1cPurple,
+                                    ? const Color(0xFF016629)
+                                    : a1cPurple,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  offset: const Offset(0, 4),
+                                  color: Colors.black.withOpacity(0.3),
+                                  blurRadius: 4,
+                                  spreadRadius: 2,
                                 ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    offset: const Offset(0, 4),
-                                    color: Colors.black.withOpacity(0.3),
-                                    blurRadius: 4,
-                                    spreadRadius: 2,
-                                  ),
-                                ]),
+                              ],
+                            ),
                             padding: const EdgeInsets.all(5),
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -632,7 +633,46 @@ class _GlucoseTrackingInternalState extends State<_GlucoseTrackingInternal> {
                         dateFormat: DateFormat.Md(),
                       ),
                       primaryYAxis: NumericAxis(
+                        minimum: 0,
                         axisLine: const AxisLine(color: fgColor, width: 2),
+                        maximum: () {
+                          if (lastRecords.length > 1) {
+                            return null;
+                          }
+
+                          return _unit == Units.milligramsPerDeciliter
+                              ? 200
+                              : mgDLToMmolL(200);
+                        }() as double?,
+                        plotBands: [
+                          PlotBand(
+                            start: _unit == Units.milligramsPerDeciliter
+                                ? 70
+                                : mgDLToMmolL(70),
+                            end: _unit == Units.milligramsPerDeciliter
+                                ? 100
+                                : mgDLToMmolL(100),
+                            color: const Color(0xFF67E88B),
+                            opacity: 0.5,
+                          ),
+                          PlotBand(
+                            start: _unit == Units.milligramsPerDeciliter
+                                ? 100
+                                : mgDLToMmolL(100),
+                            end: _unit == Units.milligramsPerDeciliter
+                                ? 125
+                                : mgDLToMmolL(125),
+                            color: const Color(0xFFCBCF10),
+                            opacity: 0.5,
+                          ),
+                          PlotBand(
+                            start: _unit == Units.milligramsPerDeciliter
+                                ? 125
+                                : mgDLToMmolL(125),
+                            color: const Color(0xFFB84141),
+                            opacity: 0.5,
+                          ),
+                        ],
                         majorGridLines: const MajorGridLines(color: fgColor),
                       ),
                       trackballBehavior: TrackballBehavior(
@@ -874,21 +914,3 @@ enum Units {
   mmolPerLiter,
   milligramsPerDeciliter,
 }
-
-// Future<Database> initGlucoseRecordDatabase(String path) async {
-//   return openDatabase(
-//     join(path, "bgt.db"),
-//     onCreate: (db, version) async {
-//       await db.execute("""
-//         CREATE TABLE GlucoseRecord (
-//           id INTEGER NOT NULL PRIMARY KEY,
-//           glucose_level DECIMAL(5, 2) NOT NULL,
-//           notes VARCHAR(255) NOT NULL,
-//           is_a1c BOOLEAN NOT NULl,
-//           blood_test_date DATETIME
-//         )
-//        """);
-//     },
-//     version: 1,
-//   );
-// }
