@@ -55,193 +55,198 @@ class _UserSetupState extends State<UserSetup> {
         Container(
           padding: const EdgeInsets.all(10),
           color: const Color(0xFFE4E4E4),
-          child: Column(
-            children: [
-              const SizedBox(height: 10),
-              Text(
-                "WELCOME TO",
-                textAlign: TextAlign.center,
-                style: GoogleFonts.istokWeb(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-              ),
-              const SizedBox(height: 5),
-              Text(
-                "DiaLife",
-                textAlign: TextAlign.center,
-                style: GoogleFonts.italianno(
-                  color: fgColor,
-                  fontSize: 64,
-                  height: 1,
-                ),
-              ),
-              const SizedBox(height: 30),
-              Text(
-                "What's your name?",
-                textAlign: TextAlign.center,
-                style: GoogleFonts.istokWeb(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Material(
-                elevation: 4,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: Colors.white,
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                const SizedBox(height: 10),
+                Text(
+                  "WELCOME TO",
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.istokWeb(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
                   ),
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                const Text("First name"),
-                                TextField(
-                                  controller: _firstNameController,
-                                  style: GoogleFonts.istokWeb(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  decoration: InputDecoration(
-                                    filled: true,
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(3),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  "DiaLife",
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.italianno(
+                    color: fgColor,
+                    fontSize: 64,
+                    height: 1,
+                  ),
+                ),
+                const SizedBox(height: 30),
+                Text(
+                  "What's your name?",
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.istokWeb(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Material(
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      color: Colors.white,
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  const Text("First name"),
+                                  TextField(
+                                    controller: _firstNameController,
+                                    style: GoogleFonts.istokWeb(
+                                      fontWeight: FontWeight.bold,
                                     ),
-                                    isDense: true,
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 8,
-                                    ),
-                                    fillColor: const Color(0xFFE4E4E4),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                const Text("Last name"),
-                                TextField(
-                                  controller: _lastNameController,
-                                  style: GoogleFonts.istokWeb(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  decoration: InputDecoration(
-                                    filled: true,
-                                    fillColor: const Color(0xFFE4E4E4),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(3),
-                                    ),
-                                    isDense: true,
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 8,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                const Text("Middle name (optional)"),
-                                TextField(
-                                  controller: _middleNameController,
-                                  style: GoogleFonts.istokWeb(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  decoration: InputDecoration(
-                                    filled: true,
-                                    fillColor: const Color(0xFFE4E4E4),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(3),
-                                    ),
-                                    isDense: true,
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 8,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          const Expanded(child: SizedBox()),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                      Center(
-                        child: SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.7,
-                          child: TextButton(
-                            onPressed: () async {
-                              if (_firstNameController.text.isEmpty ||
-                                  _lastNameController.text.isEmpty) {
-                                await ScaffoldMessenger.of(context)
-                                    .showSnackBar(
-                                      const SnackBar(
-                                        duration: Duration(milliseconds: 300),
-                                        content: Text('Incomplete Form'),
+                                    decoration: InputDecoration(
+                                      filled: true,
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(3),
                                       ),
-                                    )
-                                    .closed;
-
-                                return;
-                              }
-
-                              _setupController.nextPage(
-                                duration: const Duration(milliseconds: 300),
-                                curve: Curves.easeInOut,
-                              );
-                            },
-                            style: ButtonStyle(
-                              padding: MaterialStateProperty.all(
-                                const EdgeInsets.all(12),
-                              ),
-                              overlayColor: MaterialStateProperty.all(
-                                Colors.white.withOpacity(0.3),
-                              ),
-                              backgroundColor:
-                                  MaterialStateProperty.all(fgColor),
-                              shape: MaterialStateProperty.all(
-                                RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
+                                      isDense: true,
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 8,
+                                      ),
+                                      fillColor: const Color(0xFFE4E4E4),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            child: const Text(
-                              "Next",
-                              style: TextStyle(color: Colors.white),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  const Text("Last name"),
+                                  TextField(
+                                    controller: _lastNameController,
+                                    style: GoogleFonts.istokWeb(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    decoration: InputDecoration(
+                                      filled: true,
+                                      fillColor: const Color(0xFFE4E4E4),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(3),
+                                      ),
+                                      isDense: true,
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 8,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  const Text("Middle name (optional)"),
+                                  TextField(
+                                    controller: _middleNameController,
+                                    style: GoogleFonts.istokWeb(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    decoration: InputDecoration(
+                                      filled: true,
+                                      fillColor: const Color(0xFFE4E4E4),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(3),
+                                      ),
+                                      isDense: true,
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 8,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            const Expanded(child: SizedBox()),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        Center(
+                          child: SizedBox(
+                            width: MediaQuery.of(context).size.width * 0.7,
+                            child: TextButton(
+                              onPressed: () async {
+                                if (_firstNameController.text.isEmpty ||
+                                    _lastNameController.text.isEmpty) {
+                                  await ScaffoldMessenger.of(context)
+                                      .showSnackBar(
+                                        const SnackBar(
+                                          duration: Duration(milliseconds: 300),
+                                          content: Text('Incomplete Form'),
+                                        ),
+                                      )
+                                      .closed;
+
+                                  return;
+                                }
+
+                                _setupController.nextPage(
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                );
+                              },
+                              style: ButtonStyle(
+                                padding: MaterialStateProperty.all(
+                                  const EdgeInsets.all(12),
+                                ),
+                                overlayColor: MaterialStateProperty.all(
+                                  Colors.white.withOpacity(0.3),
+                                ),
+                                backgroundColor:
+                                    MaterialStateProperty.all(fgColor),
+                                shape: MaterialStateProperty.all(
+                                  RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                              ),
+                              child: const Text(
+                                "Next",
+                                style: TextStyle(color: Colors.white),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         Container(
