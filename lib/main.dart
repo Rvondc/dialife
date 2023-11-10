@@ -869,8 +869,8 @@ class BMIGraph extends StatelessWidget {
             padding: const EdgeInsets.only(
               left: 7,
               right: 7,
-              top: 16,
-              bottom: 36,
+              top: 10,
+              bottom: 30,
             ),
             child: Row(
               children: [
@@ -890,7 +890,7 @@ class BMIGraph extends StatelessWidget {
                       )
                     ],
                   ),
-                  width: 3,
+                  width: 2,
                 ),
                 Expanded(
                   flex: backOffset,
@@ -917,14 +917,12 @@ class BMIGraph extends StatelessWidget {
                       style: GoogleFonts.inter(
                         color: pointerColor,
                         fontWeight: FontWeight.bold,
-                        fontSize: 18,
                       ),
                     ),
                     TextSpan(
                       text: description,
                       style: GoogleFonts.inter(
                         color: Colors.black,
-                        fontSize: 18,
                       ),
                     ),
                   ],
