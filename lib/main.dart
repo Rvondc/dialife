@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:collection/collection.dart';
 import 'package:dialife/blood_glucose_tracking/calculate_average.dart';
 import 'package:dialife/blood_glucose_tracking/entities.dart';
 import 'package:dialife/blood_glucose_tracking/glucose_tracking.dart';
@@ -206,23 +209,45 @@ class _RootState extends State<Root> {
               }
 
               return FutureBuilder(
-                future: dbContainer.data!.query("User"),
-                builder: (context, data) {
+                future: Future.wait(
+                  [
+                    dbContainer.data!.query("User"),
+                    loadMunicipalityData(),
+                  ],
+                ),
+                builder: (context, AsyncSnapshot<List<dynamic>> data) {
                   if (data.connectionState != ConnectionState.done ||
                       data.data == null) {
                     return loading;
                   }
 
-                  if (data.data!.isEmpty) {
+                  final municipalityData =
+                      data.data![1] as Map<String, dynamic>;
+                  final vals = municipalityData.values
+                      .map((region) => region["province_list"])
+                      .toList()
+                      .cast<Map<String, dynamic>>();
+
+                  final provinceList = vals
+                      .map((provinceList) => provinceList.entries.toList())
+                      .flattened
+                      .toList();
+
+                  final provinceMap = {
+                    for (var element in provinceList) element.key: element.value
+                  };
+
+                  if (data.data![0].isEmpty) {
                     return SafeArea(
                       child: UserSetup(
                         reset: reset,
+                        provinceMap: provinceMap,
                         db: dbContainer.data!,
                       ),
                     );
                   }
 
-                  final user = User.fromMap(data.data!.first);
+                  final user = User.fromMap(data.data![0].first);
 
                   return Container(
                     constraints: const BoxConstraints.expand(),
@@ -1027,6 +1052,14 @@ class LastUpdatedSection extends StatelessWidget {
       );
     });
   }
+}
+
+Future<Map<String, dynamic>> loadMunicipalityData() async {
+  final raw =
+      await rootBundle.loadString("assets/municipalities_and_barangays.json");
+  final data = jsonDecode(raw) as Map<String, dynamic>;
+
+  return data;
 }
 
 Future<Database> initAppDatabase(String path) async {
