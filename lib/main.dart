@@ -12,7 +12,7 @@ import 'package:dialife/bmi_tracking/bmi_tracking.dart';
 import 'package:dialife/bmi_tracking/entities.dart';
 import 'package:dialife/bmi_tracking/input_form.dart';
 import 'package:dialife/bmi_tracking/record_editor.dart';
-// import 'package:dialife/local_notifications/local_notifications.dart';
+import 'package:dialife/local_notifications/local_notifications.dart';
 import 'package:dialife/medication_tracking/medication_tracking.dart';
 import 'package:dialife/setup.dart';
 import 'package:dialife/user.dart';
@@ -26,7 +26,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // await LocalNotification.init();
+  await LocalNotification.init();
 
   runApp(const Main());
 }

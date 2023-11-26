@@ -1,5 +1,6 @@
 import 'package:datepicker_dropdown/datepicker_dropdown.dart';
 import 'package:dialife/blood_glucose_tracking/glucose_tracking.dart';
+import 'package:dropdown_textfield/dropdown_textfield.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -7,11 +8,13 @@ import 'package:sqflite/sqflite.dart';
 
 class UserSetup extends StatefulWidget {
   final Database db;
+  final Map<String, dynamic> provinceMap;
   final void Function() reset;
 
   const UserSetup({
     super.key,
     required this.reset,
+    required this.provinceMap,
     required this.db,
   });
 
@@ -29,22 +32,41 @@ class _UserSetupState extends State<UserSetup> {
   final TextEditingController _contactNumberController =
       TextEditingController();
 
-  final TextEditingController _provinceController = TextEditingController();
-
-  final TextEditingController _municipalityController = TextEditingController();
-
-  final TextEditingController _barangayController = TextEditingController();
+  final _provinceController = SingleValueDropDownController();
+  final _municipalityController = SingleValueDropDownController();
+  final _barangayController = SingleValueDropDownController();
 
   final TextEditingController _addressDescriptionController =
       TextEditingController();
 
   final TextEditingController _zipCodeController = TextEditingController();
   final PageController _setupController = PageController();
+  late List<String> _provinceList;
 
   bool _isMale = true;
   int? _birtdayDay;
   int? _birthdayMonth;
   int? _birthdayYear;
+
+  @override
+  void initState() {
+    _provinceList = widget.provinceMap.keys.toList();
+
+    _provinceController.addListener(() {
+      _municipalityController.clearDropDown();
+      _barangayController.clearDropDown();
+
+      setState(() {});
+    });
+
+    _municipalityController.addListener(() {
+      _barangayController.clearDropDown();
+
+      setState(() {});
+    });
+
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -608,10 +630,14 @@ class _UserSetupState extends State<UserSetup> {
                                   "Province",
                                   style: GoogleFonts.istokWeb(),
                                 ),
-                                TextField(
-                                  decoration: InputDecoration(
+                                DropDownTextField(
+                                  controller: _provinceController,
+                                  enableSearch: true,
+                                  dropDownItemCount: 4,
+                                  textFieldDecoration: InputDecoration(
                                     filled: true,
                                     isDense: true,
+                                    fillColor: const Color(0xFFE4E4E4),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(3),
                                     ),
@@ -619,9 +645,11 @@ class _UserSetupState extends State<UserSetup> {
                                       left: 8,
                                       top: 25,
                                     ),
-                                    fillColor: const Color(0xFFE4E4E4),
                                   ),
-                                  controller: _provinceController,
+                                  dropDownList: _provinceList
+                                      .map((province) => DropDownValueModel(
+                                          name: province, value: province))
+                                      .toList(),
                                 ),
                               ],
                             ),
@@ -634,8 +662,10 @@ class _UserSetupState extends State<UserSetup> {
                                   "Municipality",
                                   style: GoogleFonts.istokWeb(),
                                 ),
-                                TextField(
-                                  decoration: InputDecoration(
+                                DropDownTextField(
+                                  dropDownItemCount: 4,
+                                  controller: _municipalityController,
+                                  textFieldDecoration: InputDecoration(
                                     filled: true,
                                     isDense: true,
                                     border: OutlineInputBorder(
@@ -647,7 +677,27 @@ class _UserSetupState extends State<UserSetup> {
                                     ),
                                     fillColor: const Color(0xFFE4E4E4),
                                   ),
-                                  controller: _municipalityController,
+                                  enableSearch: true,
+                                  isEnabled:
+                                      _provinceController.dropDownValue != null,
+                                  dropDownList: () {
+                                    if (_provinceController.dropDownValue ==
+                                        null) {
+                                      return const <DropDownValueModel>[];
+                                    }
+
+                                    final municipalities = widget.provinceMap[
+                                            _provinceController.dropDownValue!
+                                                .name]["municipality_list"]
+                                        as Map<String, dynamic>;
+
+                                    return municipalities.keys
+                                        .map((municipality) =>
+                                            DropDownValueModel(
+                                                name: municipality,
+                                                value: municipality))
+                                        .toList();
+                                  }(),
                                 ),
                               ],
                             ),
@@ -664,8 +714,10 @@ class _UserSetupState extends State<UserSetup> {
                                   "Barangay",
                                   style: GoogleFonts.istokWeb(),
                                 ),
-                                TextField(
-                                  decoration: InputDecoration(
+                                DropDownTextField(
+                                  dropDownItemCount: 4,
+                                  controller: _barangayController,
+                                  textFieldDecoration: InputDecoration(
                                     filled: true,
                                     isDense: true,
                                     border: OutlineInputBorder(
@@ -677,7 +729,36 @@ class _UserSetupState extends State<UserSetup> {
                                     ),
                                     fillColor: const Color(0xFFE4E4E4),
                                   ),
-                                  controller: _barangayController,
+                                  enableSearch: true,
+                                  isEnabled:
+                                      _municipalityController.dropDownValue !=
+                                          null,
+                                  dropDownList: () {
+                                    if (_municipalityController.dropDownValue ==
+                                        null) {
+                                      return const <DropDownValueModel>[];
+                                    }
+
+                                    final municipalities = widget.provinceMap[
+                                            _provinceController.dropDownValue!
+                                                .name]["municipality_list"]
+                                        as Map<String, dynamic>;
+
+                                    final barangays = (municipalities[
+                                                _municipalityController
+                                                    .dropDownValue!.name]
+                                            ["barangay_list"] as List<dynamic>)
+                                        .cast<String>();
+
+                                    return barangays
+                                        .map(
+                                          (municipality) => DropDownValueModel(
+                                            name: municipality,
+                                            value: municipality,
+                                          ),
+                                        )
+                                        .toList();
+                                  }(),
                                 ),
                               ],
                             ),
@@ -692,6 +773,7 @@ class _UserSetupState extends State<UserSetup> {
                                 ),
                                 TextField(
                                   keyboardType: TextInputType.number,
+                                  maxLength: 4,
                                   inputFormatters: [
                                     FilteringTextInputFormatter.digitsOnly,
                                   ],
@@ -706,6 +788,7 @@ class _UserSetupState extends State<UserSetup> {
                                       top: 25,
                                     ),
                                     fillColor: const Color(0xFFE4E4E4),
+                                    counterText: "",
                                   ),
                                   controller: _zipCodeController,
                                 ),
@@ -780,9 +863,15 @@ class _UserSetupState extends State<UserSetup> {
                 const SizedBox(height: 30),
                 TextButton(
                   onPressed: () async {
-                    if (_provinceController.text.isEmpty ||
-                        _municipalityController.text.isEmpty ||
-                        _barangayController.text.isEmpty ||
+                    if (_provinceController.dropDownValue == null ||
+                        _municipalityController.dropDownValue == null ||
+                        _barangayController.dropDownValue == null) {
+                      return;
+                    }
+
+                    if (_provinceController.dropDownValue!.name.isEmpty ||
+                        _municipalityController.dropDownValue!.name.isEmpty ||
+                        _barangayController.dropDownValue!.name.isEmpty ||
                         _zipCodeController.text.isEmpty) {
                       await ScaffoldMessenger.of(context)
                           .showSnackBar(
@@ -808,10 +897,11 @@ class _UserSetupState extends State<UserSetup> {
                           _birthdayMonth!,
                           _birtdayDay!,
                         ).toIso8601String(),
-                        "province": _provinceController.text,
+                        "province": _provinceController.dropDownValue!.name,
                         "is_male": _isMale,
-                        "municipality": _municipalityController.text,
-                        "barangay": _barangayController.text,
+                        "municipality":
+                            _municipalityController.dropDownValue!.name,
+                        "barangay": _barangayController.dropDownValue!.name,
                         "address_description":
                             _addressDescriptionController.text,
                         "zip_code": _zipCodeController.text,
@@ -864,430 +954,3 @@ class _UserSetupState extends State<UserSetup> {
     );
   }
 }
-
-// Form(
-//           key: _formKey,
-//           child: Column(
-//             children: [
-//               const AutoSizeText(
-//                 "First Time Setup",
-//                 textAlign: TextAlign.center,
-//                 maxLines: 2,
-//                 style: TextStyle(
-//                   fontWeight: FontWeight.bold,
-//                   fontSize: 48,
-//                   height: 1,
-//                 ),
-//               ),
-//               const SizedBox(height: 10),
-//               const Text("Enter User Data: "),
-//               const SizedBox(height: 20),
-//               Row(
-//                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-//                 children: [
-//                   Expanded(
-//                     child: Material(
-//                       elevation: 4,
-//                       shape: RoundedRectangleBorder(
-//                         borderRadius: BorderRadius.circular(10),
-//                       ),
-//                       child: TextFormField(
-//                         controller: _firstNameController,
-//                         validator: (value) {
-//                           if (value == null || value.isEmpty) {
-//                             return "First Name Required";
-//                           }
-
-//                           return null;
-//                         },
-//                         autovalidateMode: AutovalidateMode.onUserInteraction,
-//                         decoration: InputDecoration(
-//                           isDense: true,
-//                           contentPadding: const EdgeInsets.all(12),
-//                           border: OutlineInputBorder(
-//                             borderRadius: BorderRadius.circular(8),
-//                             borderSide: BorderSide.none,
-//                           ),
-//                           hintText: "First Name",
-//                           fillColor: Colors.white,
-//                           filled: true,
-//                         ),
-//                       ),
-//                     ),
-//                   ),
-//                   const SizedBox(width: 15),
-//                   Expanded(
-//                     child: Material(
-//                       elevation: 4,
-//                       shape: RoundedRectangleBorder(
-//                         borderRadius: BorderRadius.circular(10),
-//                       ),
-//                       child: TextFormField(
-//                         controller: _lastNameController,
-//                         autovalidateMode: AutovalidateMode.onUserInteraction,
-//                         validator: (value) {
-//                           if (value == null || value.isEmpty) {
-//                             return "Last Name Required";
-//                           }
-
-//                           return null;
-//                         },
-//                         decoration: InputDecoration(
-//                           isDense: true,
-//                           contentPadding: const EdgeInsets.all(12),
-//                           border: OutlineInputBorder(
-//                             borderRadius: BorderRadius.circular(8),
-//                             borderSide: BorderSide.none,
-//                           ),
-//                           hintText: "Last Name",
-//                           fillColor: Colors.white,
-//                           filled: true,
-//                         ),
-//                       ),
-//                     ),
-//                   ),
-//                 ],
-//               ),
-//               const SizedBox(height: 10),
-//               Row(
-//                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-//                 children: [
-//                   Expanded(
-//                     child: Material(
-//                       elevation: 4,
-//                       shape: RoundedRectangleBorder(
-//                         borderRadius: BorderRadius.circular(10),
-//                       ),
-//                       child: TextFormField(
-//                         controller: _middleNameController,
-//                         decoration: InputDecoration(
-//                           isDense: true,
-//                           contentPadding: const EdgeInsets.all(12),
-//                           border: OutlineInputBorder(
-//                             borderRadius: BorderRadius.circular(8),
-//                             borderSide: BorderSide.none,
-//                           ),
-//                           hintText: "Middle Name",
-//                           fillColor: Colors.white,
-//                           filled: true,
-//                         ),
-//                       ),
-//                     ),
-//                   ),
-//                   const SizedBox(width: 15),
-//                   Expanded(
-//                     child: GestureDetector(
-//                       onTap: () async {
-//                         final birthday = await showDatePicker(
-//                           context: context,
-//                           initialDate: DateTime.now(),
-//                           firstDate: DateTime.fromMillisecondsSinceEpoch(0),
-//                           lastDate: DateTime.now(),
-//                         );
-
-//                         if (birthday == null) {
-//                           return;
-//                         }
-
-//                         setState(() {
-//                           _birthday = birthday;
-//                           _dateTimeErr = false;
-//                         });
-//                       },
-//                       child: Material(
-//                         elevation: 4,
-//                         shape: RoundedRectangleBorder(
-//                           borderRadius: BorderRadius.circular(10),
-//                         ),
-//                         child: Container(
-//                           height: 48,
-//                           padding: const EdgeInsets.all(8),
-//                           decoration: BoxDecoration(
-//                             borderRadius: BorderRadius.circular(10),
-//                             color: Colors.white,
-//                           ),
-//                           child: Row(
-//                             children: [
-//                               const Icon(Icons.calendar_month_outlined),
-//                               const SizedBox(width: 5),
-//                               Text(
-//                                 _birthday == null
-//                                     ? "BIRTHDAY"
-//                                     : DateFormat("dd/MM/yyyy")
-//                                         .format(_birthday!),
-//                                 style: TextStyle(
-//                                   color: !_dateTimeErr
-//                                       ? Colors.black.withOpacity(0.6)
-//                                       : Colors.red,
-//                                   fontWeight: FontWeight.bold,
-//                                 ),
-//                               ),
-//                             ],
-//                           ),
-//                         ),
-//                       ),
-//                     ),
-//                   ),
-//                 ],
-//               ),
-//               const SizedBox(height: 10),
-//               Material(
-//                 elevation: 4,
-//                 shape: RoundedRectangleBorder(
-//                   borderRadius: BorderRadius.circular(10),
-//                 ),
-//                 child: TextFormField(
-//                   keyboardType: TextInputType.number,
-//                   autovalidateMode: AutovalidateMode.onUserInteraction,
-//                   controller: _contactNumberController,
-//                   inputFormatters: [
-//                     LengthLimitingTextInputFormatter(11),
-//                   ],
-//                   validator: (value) {
-//                     if (value == null || value.isEmpty) {
-//                       return "Contact Number Required";
-//                     }
-
-//                     return null;
-//                   },
-//                   decoration: InputDecoration(
-//                     isDense: true,
-//                     contentPadding: const EdgeInsets.all(12),
-//                     border: OutlineInputBorder(
-//                       borderRadius: BorderRadius.circular(10),
-//                       borderSide: BorderSide.none,
-//                     ),
-//                     hintText: "Contact Number",
-//                     fillColor: Colors.white,
-//                     filled: true,
-//                   ),
-//                 ),
-//               ),
-//               const SizedBox(height: 30),
-//               const Text("Enter Address Data: "),
-//               const SizedBox(height: 20),
-//               Row(
-//                 children: [
-//                   Expanded(
-//                     child: Material(
-//                       elevation: 4,
-//                       shape: RoundedRectangleBorder(
-//                         borderRadius: BorderRadius.circular(10),
-//                       ),
-//                       child: TextFormField(
-//                         controller: _provinceController,
-//                         autovalidateMode: AutovalidateMode.onUserInteraction,
-//                         validator: (value) {
-//                           if (value == null || value.isEmpty) {
-//                             return "Provice Required";
-//                           }
-
-//                           return null;
-//                         },
-//                         decoration: InputDecoration(
-//                           isDense: true,
-//                           contentPadding: const EdgeInsets.all(12),
-//                           border: OutlineInputBorder(
-//                             borderRadius: BorderRadius.circular(8),
-//                             borderSide: BorderSide.none,
-//                           ),
-//                           hintText: "Province",
-//                           fillColor: Colors.white,
-//                           filled: true,
-//                         ),
-//                       ),
-//                     ),
-//                   ),
-//                   const SizedBox(width: 10),
-//                   Expanded(
-//                     child: Material(
-//                       elevation: 4,
-//                       shape: RoundedRectangleBorder(
-//                         borderRadius: BorderRadius.circular(10),
-//                       ),
-//                       child: TextFormField(
-//                         controller: _municipalityController,
-//                         autovalidateMode: AutovalidateMode.onUserInteraction,
-//                         validator: (value) {
-//                           if (value == null || value.isEmpty) {
-//                             return "Municipality Required";
-//                           }
-
-//                           return null;
-//                         },
-//                         decoration: InputDecoration(
-//                           isDense: true,
-//                           contentPadding: const EdgeInsets.all(12),
-//                           border: OutlineInputBorder(
-//                             borderRadius: BorderRadius.circular(8),
-//                             borderSide: BorderSide.none,
-//                           ),
-//                           hintText: "Municipality",
-//                           fillColor: Colors.white,
-//                           filled: true,
-//                         ),
-//                       ),
-//                     ),
-//                   ),
-//                 ],
-//               ),
-//               const SizedBox(height: 10),
-//               Row(
-//                 children: [
-//                   Expanded(
-//                     child: Material(
-//                       elevation: 4,
-//                       shape: RoundedRectangleBorder(
-//                         borderRadius: BorderRadius.circular(10),
-//                       ),
-//                       child: TextFormField(
-//                         controller: _barangayController,
-//                         autovalidateMode: AutovalidateMode.onUserInteraction,
-//                         validator: (value) {
-//                           if (value == null || value.isEmpty) {
-//                             return "Barangay Required";
-//                           }
-
-//                           return null;
-//                         },
-//                         decoration: InputDecoration(
-//                           isDense: true,
-//                           contentPadding: const EdgeInsets.all(12),
-//                           border: OutlineInputBorder(
-//                             borderRadius: BorderRadius.circular(8),
-//                             borderSide: BorderSide.none,
-//                           ),
-//                           hintText: "Barangay",
-//                           fillColor: Colors.white,
-//                           filled: true,
-//                         ),
-//                       ),
-//                     ),
-//                   ),
-//                   const SizedBox(width: 10),
-//                   Expanded(
-//                     child: Material(
-//                       elevation: 4,
-//                       shape: RoundedRectangleBorder(
-//                         borderRadius: BorderRadius.circular(10),
-//                       ),
-//                       child: TextFormField(
-//                         controller: _zipCodeController,
-//                         keyboardType: TextInputType.number,
-//                         autovalidateMode: AutovalidateMode.onUserInteraction,
-//                         validator: (value) {
-//                           if (value == null || value.isEmpty) {
-//                             return "ZIP Code Required";
-//                           }
-
-//                           return null;
-//                         },
-//                         decoration: InputDecoration(
-//                           isDense: true,
-//                           contentPadding: const EdgeInsets.all(12),
-//                           border: OutlineInputBorder(
-//                             borderRadius: BorderRadius.circular(8),
-//                             borderSide: BorderSide.none,
-//                           ),
-//                           hintText: "ZIP Code",
-//                           fillColor: Colors.white,
-//                           filled: true,
-//                         ),
-//                       ),
-//                     ),
-//                   ),
-//                 ],
-//               ),
-//               const SizedBox(height: 10),
-//               Material(
-//                 elevation: 4,
-//                 shape: RoundedRectangleBorder(
-//                   borderRadius: BorderRadius.circular(10),
-//                 ),
-//                 child: TextField(
-//                   controller: _addressDescriptionController,
-//                   maxLength: 255,
-//                   maxLines: 5,
-//                   decoration: InputDecoration(
-//                     isDense: true,
-//                     contentPadding: const EdgeInsets.all(12),
-//                     border: OutlineInputBorder(
-//                       borderRadius: BorderRadius.circular(8),
-//                       borderSide: BorderSide.none,
-//                     ),
-//                     hintText: "Address Description",
-//                     fillColor: Colors.white,
-//                     floatingLabelBehavior: FloatingLabelBehavior.always,
-//                     filled: true,
-//                   ),
-//                 ),
-//               ),
-//               const SizedBox(height: 10),
-//               TextButton(
-//                 style: ButtonStyle(
-//                   backgroundColor: MaterialStateProperty.all(fgColor),
-//                 ),
-//                 onPressed: () async {
-//                   if (_formKey.currentState == null) {
-//                     return;
-//                   }
-
-//                   if (_birthday == null) {
-//                     setState(() {
-//                       _dateTimeErr = true;
-//                     });
-//                   }
-
-//                   if (!_formKey.currentState!.validate() || _dateTimeErr) {
-//                     return;
-//                   }
-
-//                   ScaffoldMessenger.of(context).showSnackBar(
-//                     const SnackBar(
-//                       content: Text("Registering..."),
-//                       duration: Duration(milliseconds: 200),
-//                     ),
-//                   );
-
-//                   await widget.db.insert(
-//                     "User",
-//                     {
-//                       "first_name": _firstNameController.text,
-//                       "last_name": _lastNameController.text,
-//                       "middle_name": _middleNameController.text,
-//                       "contact_number": _contactNumberController.text,
-//                       "birthdate": _birthday!.toIso8601String(),
-//                       "province": _provinceController.text,
-//                       "municipality": _municipalityController.text,
-//                       "barangay": _barangayController.text,
-//                       "address_description": _addressDescriptionController.text,
-//                       "zip_code": _zipCodeController.text,
-//                     },
-//                   );
-
-//                   if (!context.mounted) {
-//                     return;
-//                   }
-
-//                   await ScaffoldMessenger.of(context)
-//                       .showSnackBar(
-//                         const SnackBar(
-//                           content: Text("Success"),
-//                           duration: Duration(milliseconds: 200),
-//                         ),
-//                       )
-//                       .closed;
-
-//                   await Future.delayed(
-//                       const Duration(milliseconds: 500), widget.reset);
-//                 },
-//                 child: const Text(
-//                   "SUBMIT",
-//                   style: TextStyle(
-//                     color: Colors.white,
-//                   ),
-//                 ),
-//               ),
-//             ],
-//           ),
-//         ),
