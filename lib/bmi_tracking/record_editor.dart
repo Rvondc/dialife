@@ -153,8 +153,32 @@ class _BMIRecordEditorInternalState extends State<_BMIRecordEditorInternal> {
             },
             child: Dismissible(
               key: ValueKey(index),
+              confirmDismiss: (direction) async {
+                final result = ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    duration: const Duration(seconds: 1),
+                    content: const Text('Delete?'),
+                    action: SnackBarAction(
+                      label: 'Undo',
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                      },
+                    ),
+                  ),
+                );
+
+                if (await result.closed == SnackBarClosedReason.action) {
+                  return false;
+                }
+
+                return true;
+              },
               onDismissed: (direction) async {
-                // TODO: Delete record in database
+                await widget.db.delete(
+                  "BMIRecord",
+                  where: "id = ?",
+                  whereArgs: [current.id],
+                );
               },
               child: Container(
                 margin: const EdgeInsets.only(top: 10),
