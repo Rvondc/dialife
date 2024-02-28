@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math';
 
 // class Facility {
@@ -60,6 +61,10 @@ class GlucoseRecord {
       "notes": notes,
       "blood_test_date": bloodTestDate,
     };
+  }
+
+  String toCSVRow() {
+    return "$id, $glucoseLevel, ${base64.encode(utf8.encode(notes))}, $bloodTestDate, $isA1C";
   }
 
   GlucoseRecord copyWith({

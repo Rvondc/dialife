@@ -1,13 +1,19 @@
+import 'dart:io';
+
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:dialife/blood_glucose_tracking/calculate_average.dart';
 import 'package:dialife/blood_glucose_tracking/entities.dart';
 import 'package:dialife/blood_glucose_tracking/no_data.dart';
 import 'package:dialife/blood_glucose_tracking/utils.dart';
 import 'package:dialife/user.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_switch/flutter_switch.dart';
 import 'package:intl/intl.dart';
+import 'package:material_symbols_icons/symbols.dart';
+import 'package:path/path.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:toggle_switch/toggle_switch.dart';
@@ -91,7 +97,9 @@ class _GlucoseTrackingInternalScaffold extends StatelessWidget {
     if (glucoseRecords.isEmpty) {
       return Scaffold(
         backgroundColor: Colors.grey.shade200,
-        appBar: AppBar(title: const Text("Glucose")),
+        appBar: AppBar(
+          title: const Text("Glucose"),
+        ),
         body: SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 30),
@@ -113,7 +121,49 @@ class _GlucoseTrackingInternalScaffold extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.grey.shade200,
-      appBar: AppBar(title: const Text("Glucose")),
+      appBar: AppBar(
+        title: const Text("Glucose"),
+        actions: [
+          IconButton(
+            onPressed: () async {
+              final directory = await FilePicker.platform.getDirectoryPath();
+              await FilePicker.platform.clearTemporaryFiles();
+              if (!await Permission.storage.status.isGranted) {
+                await Permission.storage.request();
+              }
+
+              if (directory == null) {
+                return;
+              }
+
+              final path = Directory(directory);
+              final file =
+                  File(join(path.path, "blood_glucose_tracking.dialife.csv"));
+
+              if (await file.exists()) {
+                await file.delete();
+              }
+
+              try {
+                for (var record in glucoseRecords) {
+                  await file.writeAsString("${record.toCSVRow()}\n",
+                      mode: FileMode.writeOnlyAppend);
+                }
+
+                await file.create();
+              } catch (e) {
+                // TODO: Handle failure
+                rethrow;
+              }
+            },
+            icon: const Icon(
+              Symbols.export_notes_rounded,
+              color: Colors.black,
+              size: 32,
+            ),
+          ),
+        ],
+      ),
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
       floatingActionButton: FloatingActionButton(
         shape: const CircleBorder(),
@@ -499,12 +549,11 @@ class _GlucoseTrackingInternalState extends State<_GlucoseTrackingInternal> {
                       glucoseDataPoints.insert(
                           0,
                           normalGlucoseRecMap[normalGlucoseRecMap
-                                      .where((element) =>
-                                          element.value.id ==
-                                          glucoseDataPoints.first.id)
-                                      .first
-                                      .key -
-                                  1]
+                                  .where((element) =>
+                                      element.value.id ==
+                                      glucoseDataPoints.first.id)
+                                  .first
+                                  .key]
                               .value);
                     }
 
@@ -641,9 +690,9 @@ class _GlucoseTrackingInternalState extends State<_GlucoseTrackingInternal> {
                           }
 
                           return _unit == Units.milligramsPerDeciliter
-                              ? 200
+                              ? 200.0
                               : mgDLToMmolL(200);
-                        }() as double?,
+                        }(),
                         plotBands: [
                           PlotBand(
                             start: _unit == Units.milligramsPerDeciliter
@@ -804,11 +853,13 @@ class _GlucoseTrackingInternalState extends State<_GlucoseTrackingInternal> {
           margin: const EdgeInsets.all(12),
           child: TextButton(
             onPressed: () async {
-              await Navigator.of(context)
-                  .pushNamed("/blood-glucose-tracking/editor", arguments: {
-                "user": widget.user,
-                "db": widget.db,
-              });
+              await Navigator.of(context).pushNamed(
+                "/blood-glucose-tracking/editor",
+                arguments: {
+                  "user": widget.user,
+                  "db": widget.db,
+                },
+              );
 
               widget.reset();
             },
@@ -836,7 +887,7 @@ Widget glucoseRecordListTile(
   return Material(
     elevation: 4,
     shadowColor: fgColor,
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    borderRadius: BorderRadius.circular(12),
     child: ListTile(
       leading: Icon(
         Icons.receipt,

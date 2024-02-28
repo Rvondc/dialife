@@ -614,7 +614,7 @@ class _GlucoseRecordInputFormInternalState
                         [
                           _glucoseController.text,
                           _notesController.text,
-                          _isA1C.toString(),
+                          _isA1C,
                           date.toIso8601String()
                         ]);
                   } else {

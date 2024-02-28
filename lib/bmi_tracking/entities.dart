@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math';
 
 class BMIRecord {
@@ -27,6 +28,10 @@ class BMIRecord {
       "notes": notes,
       "created_at": createdAt,
     };
+  }
+
+  String toCSVRow() {
+    return "$id, $heightInMeters, $weightInKilograms, ${base64.encode(utf8.encode(notes))}, $createdAt";
   }
 
   static List<BMIRecord> mock(int count, int daySpan) {

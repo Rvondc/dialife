@@ -234,7 +234,7 @@ class _BMIRecordInputFormInternalState
                         child: Padding(
                           padding: const EdgeInsets.only(right: 5),
                           child: Text(
-                            "${(widget._user.exactAge.inDays / 365).round()} Years Old",
+                            "${(widget._user.exactAge.inDays / 365).floor()} Years Old",
                             textAlign: TextAlign.center,
                             style: GoogleFonts.istokWeb(
                               fontWeight: FontWeight.bold,
