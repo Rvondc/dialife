@@ -188,26 +188,6 @@ class __GlucoseRecordEditorInternalState
               widget.reset();
             },
             child: Dismissible(
-              confirmDismiss: (direction) async {
-                final result = ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    duration: const Duration(seconds: 1),
-                    content: const Text('Delete?'),
-                    action: SnackBarAction(
-                      label: 'Undo',
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                      },
-                    ),
-                  ),
-                );
-
-                if (await result.closed == SnackBarClosedReason.action) {
-                  return false;
-                }
-
-                return true;
-              },
               key: ValueKey(index),
               onDismissed: (direction) async {
                 await widget.db.delete(
@@ -229,6 +209,22 @@ class __GlucoseRecordEditorInternalState
                         : Units.milligramsPerDeciliter,
                     current.isA1C),
               ),
+              confirmDismiss: (direction) async {
+                final result = ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    duration: const Duration(seconds: 1),
+                    content: const Text('Delete?'),
+                    action: SnackBarAction(
+                      label: 'Undo',
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                      },
+                    ),
+                  ),
+                );
+
+                return await result.closed != SnackBarClosedReason.action;
+              },
             ),
           );
         },

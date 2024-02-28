@@ -43,6 +43,9 @@ class _UserSetupState extends State<UserSetup> {
   final PageController _setupController = PageController();
   late List<String> _provinceList;
 
+  final _pinController = TextEditingController();
+  final _confirmPinController = TextEditingController();
+
   bool _isMale = true;
   int? _birtdayDay;
   int? _birthdayMonth;
@@ -855,6 +858,198 @@ class _UserSetupState extends State<UserSetup> {
                               ),
                             ),
                           ),
+                          const Expanded(child: SizedBox()),
+                          TextButton(
+                            onPressed: () {
+                              _setupController.nextPage(
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              );
+                            },
+                            style: ButtonStyle(
+                              padding: MaterialStateProperty.all(
+                                const EdgeInsets.all(12),
+                              ),
+                              overlayColor: MaterialStateProperty.all(
+                                Colors.white.withOpacity(0.3),
+                              ),
+                              backgroundColor:
+                                  MaterialStateProperty.all(fgColor),
+                              shape: MaterialStateProperty.all(
+                                RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                            ),
+                            child: const SizedBox(
+                              width: 75,
+                              child: Text(
+                                "Next",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.all(30),
+          color: const Color(0xFFE4E4E4),
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                const SizedBox(height: 10),
+                Text(
+                  "DiaLife",
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.italianno(
+                    color: fgColor,
+                    fontSize: 64,
+                    height: 1,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  "Enter your address",
+                  style: GoogleFonts.istokWeb(
+                    fontSize: 16,
+                    letterSpacing: 1,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 25),
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.7,
+                  child: Text(
+                    "Setup Passcode",
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.istokWeb(),
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Container(
+                  padding: const EdgeInsets.only(
+                    top: 36,
+                    bottom: 10,
+                    left: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const Text("Passcode"),
+                      Material(
+                        elevation: 4,
+                        child: SizedBox(
+                          width: 200,
+                          child: TextField(
+                            keyboardType: TextInputType.number,
+                            decoration: InputDecoration(
+                              labelText: "",
+                              labelStyle: const TextStyle(fontSize: 32),
+                              counterText: "",
+                              filled: true,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(3),
+                              ),
+                              isDense: true,
+                              contentPadding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              fillColor: Colors.white,
+                            ),
+                            textAlign: TextAlign.center,
+                            controller: _pinController,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly
+                            ],
+                            maxLength: 4,
+                            obscureText: true,
+                            style: const TextStyle(
+                              fontSize: 48,
+                              letterSpacing: 30,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 25),
+                      const Text("Confirm Passcode"),
+                      Material(
+                        elevation: 4,
+                        child: SizedBox(
+                          width: 200,
+                          child: TextField(
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly
+                            ],
+                            decoration: InputDecoration(
+                              labelText: "",
+                              labelStyle: const TextStyle(fontSize: 32),
+                              counterText: "",
+                              filled: true,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(3),
+                              ),
+                              isDense: true,
+                              contentPadding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              fillColor: Colors.white,
+                            ),
+                            textAlign: TextAlign.center,
+                            controller: _confirmPinController,
+                            maxLength: 4,
+                            obscureText: true,
+                            keyboardType: TextInputType.number,
+                            style: const TextStyle(
+                              fontSize: 48,
+                              letterSpacing: 30,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 50),
+                      Row(
+                        children: [
+                          TextButton(
+                            onPressed: () {
+                              _setupController.previousPage(
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              );
+                            },
+                            style: ButtonStyle(
+                              padding: MaterialStateProperty.all(
+                                const EdgeInsets.all(12),
+                              ),
+                              overlayColor: MaterialStateProperty.all(
+                                Colors.white.withOpacity(0.3),
+                              ),
+                              backgroundColor:
+                                  MaterialStateProperty.all(fgColor),
+                              shape: MaterialStateProperty.all(
+                                RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                            ),
+                            child: const SizedBox(
+                              width: 75,
+                              child: Text(
+                                "Back",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ],
@@ -872,12 +1067,30 @@ class _UserSetupState extends State<UserSetup> {
                     if (_provinceController.dropDownValue!.name.isEmpty ||
                         _municipalityController.dropDownValue!.name.isEmpty ||
                         _barangayController.dropDownValue!.name.isEmpty ||
-                        _zipCodeController.text.isEmpty) {
+                        _pinController.text.isEmpty ||
+                        _confirmPinController.text.isEmpty) {
                       await ScaffoldMessenger.of(context)
                           .showSnackBar(
                             const SnackBar(
                               duration: Duration(milliseconds: 300),
                               content: Text('Incomplete Form'),
+                            ),
+                          )
+                          .closed;
+
+                      return;
+                    }
+
+                    if (_zipCodeController.text.isEmpty) {
+                      _zipCodeController.text = "----";
+                    }
+
+                    if (_pinController.text != _confirmPinController.text) {
+                      await ScaffoldMessenger.of(context)
+                          .showSnackBar(
+                            const SnackBar(
+                              duration: Duration(milliseconds: 300),
+                              content: Text("Pins don't match."),
                             ),
                           )
                           .closed;
@@ -907,6 +1120,10 @@ class _UserSetupState extends State<UserSetup> {
                         "zip_code": _zipCodeController.text,
                       },
                     );
+
+                    await widget.db.insert("Passcode", {
+                      "code": _pinController.text,
+                    });
 
                     if (!context.mounted) {
                       return;

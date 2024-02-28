@@ -1,6 +1,10 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:dialife/blood_glucose_tracking/glucose_tracking.dart';
 import 'package:dialife/user.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -44,7 +48,49 @@ class BMITrackingNoData extends StatelessWidget {
                           shape: BoxShape.circle,
                         ),
                         child: IconButton(
-                          onPressed: () {},
+                          onPressed: () async {
+                            await FilePicker.platform.clearTemporaryFiles();
+                            final fileResult =
+                                await FilePicker.platform.pickFiles(
+                              allowedExtensions: ["csv"],
+                              type: FileType.custom,
+                            );
+
+                            if (fileResult == null) {
+                              return;
+                            }
+
+                            final platformFile = fileResult.files.first;
+                            if (platformFile.path == null) {
+                              return;
+                            }
+
+                            if (platformFile.name !=
+                                "bmi_tracking.dialife.csv") {
+                              // TODO: Error
+                              return;
+                            }
+
+                            final file = File(platformFile.path!);
+
+                            for (var line in await file.readAsLines()) {
+                              final parts = line.split(",");
+
+                              await db.rawInsert(
+                                  "INSERT INTO BMIRecord (id, height, weight, notes, created_at) VALUES (?, ?, ?, ?, ?)",
+                                  [
+                                    parts[0].trim(),
+                                    double.parse(parts[1].trim()) * 100,
+                                    double.parse(parts[2].trim()),
+                                    utf8.decode(base64.decode(parts[3].trim())),
+                                    parts[4].trim(),
+                                  ]);
+                            }
+
+                            if (context.mounted) {
+                              Navigator.of(context).pop();
+                            }
+                          },
                           color: fgColor,
                           iconSize: 48,
                           icon: const Icon(Icons.import_export),

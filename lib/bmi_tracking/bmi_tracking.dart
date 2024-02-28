@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:dialife/blood_glucose_tracking/glucose_tracking.dart';
 import 'package:dialife/blood_glucose_tracking/utils.dart';
@@ -6,10 +8,14 @@ import 'package:dialife/bmi_tracking/entities.dart';
 import 'package:dialife/bmi_tracking/no_data.dart';
 import 'package:dialife/main.dart';
 import 'package:dialife/user.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:material_symbols_icons/symbols.dart';
+import 'package:path/path.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:toggle_switch/toggle_switch.dart';
@@ -106,6 +112,44 @@ class _BMITrackingInteralScaffold extends StatelessWidget {
       backgroundColor: Colors.grey.shade200,
       appBar: AppBar(
         title: const Text("BMI"),
+        actions: [
+          IconButton(
+            onPressed: () async {
+              final directory = await FilePicker.platform.getDirectoryPath();
+              if (!await Permission.storage.status.isGranted) {
+                await Permission.storage.request();
+              }
+
+              if (directory == null) {
+                return;
+              }
+
+              final path = Directory(directory);
+              final file = File(join(path.path, "bmi_tracking.dialife.csv"));
+
+              if (await file.exists()) {
+                await file.delete();
+              }
+
+              try {
+                for (var record in records) {
+                  await file.writeAsString("${record.toCSVRow()}\n",
+                      mode: FileMode.writeOnlyAppend);
+                }
+
+                await file.create();
+              } catch (e) {
+                // TODO: Handle failure
+                rethrow;
+              }
+            },
+            icon: const Icon(
+              Symbols.export_notes_rounded,
+              color: Colors.black,
+              size: 32,
+            ),
+          ),
+        ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
       floatingActionButton: FloatingActionButton(

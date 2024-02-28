@@ -1,4 +1,5 @@
 class User {
+  final int id;
   final String firstName;
   final String middleName;
   final String lastName;
@@ -12,6 +13,7 @@ class User {
   final String contactNumber;
 
   const User({
+    required this.id,
     required this.firstName,
     required this.middleName,
     required this.lastName,
@@ -39,6 +41,7 @@ class User {
 
   static User fromMap(Map<String, dynamic> map) {
     return User(
+      id: map["id"],
       firstName: map["first_name"],
       middleName: map["middle_name"],
       lastName: map["last_name"],
