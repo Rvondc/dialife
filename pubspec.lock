@@ -113,6 +113,7 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.18.0"
+
   convert:
     dependency: transitive
     description:
@@ -121,6 +122,8 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.1"
+
+
   crypto:
     dependency: transitive
     description:
@@ -169,6 +172,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.8"
+  easy_date_timeline:
+    dependency: "direct main"
+    description:
+      name: easy_date_timeline
+      sha256: "645b2021f921f79f29c8ca56d7fbf93b119261bf8c62a0fa0a2ce28c4e17070d"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.3"
   equatable:
     dependency: transitive
     description:
@@ -209,6 +220,7 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.65.0"
+
   flutter:
     dependency: "direct main"
     description: flutter
@@ -352,6 +364,7 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.18.1"
+
   js:
     dependency: transitive
     description:
@@ -368,6 +381,7 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.8.1"
+
   leak_tracker:
     dependency: transitive
     description:
@@ -429,6 +443,7 @@ packages:
     description:
       name: meta
       sha256: d584fa6707a52763a52446f02cc621b077888fb63b93bbcb1143a7be5a0c0c04
+
       url: "https://pub.dev"
     source: hosted
     version: "1.11.0"
@@ -448,11 +463,17 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.0.3"
+
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.11.0"
+
   path:
     dependency: "direct main"
     description:
       name: path
       sha256: "087ce49c3f0dc39180befefc60fdb4acd8f8620e5682fe2476afd0b3688bb4af"
+
       url: "https://pub.dev"
     source: hosted
     version: "1.9.0"
@@ -464,6 +485,11 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.1"
+
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.9.0"
+
   path_provider:
     dependency: "direct main"
     description:
@@ -597,6 +623,7 @@ packages:
     description:
       name: plugin_platform_interface
       sha256: "4820fbfdb9478b1ebae27888254d445073732dae3d6ea81f0b7e06d5dedc3f02"
+
       url: "https://pub.dev"
     source: hosted
     version: "2.1.8"
@@ -624,6 +651,11 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.1"
+
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.1.8"
+
   rxdart:
     dependency: "direct main"
     description:
@@ -869,6 +901,7 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.5.0"
+
   yaml:
     dependency: transitive
     description:
@@ -880,3 +913,8 @@ packages:
 sdks:
   dart: ">=3.3.0 <4.0.0"
   flutter: ">=3.19.0"
+
+sdks:
+  dart: ">=3.3.0 <4.0.0"
+  flutter: ">=3.10.0"
+
