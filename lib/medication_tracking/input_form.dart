@@ -109,7 +109,8 @@ class _NewMedicationReminderInputFormState
         backgroundColor: const Color(0xFF6078F8),
         elevation: 4,
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.miniCenterFloat,
+      floatingActionButtonLocation:
+          FloatingActionButtonLocation.miniCenterFloat,
       body: content(),
     );
   }
@@ -796,7 +797,7 @@ class _NewMedicationReminderInputFormState
               seconds: difference.inSeconds,
             ),
           );
-          debugPrint(difference.inSeconds.toString());
+          // debugPrint(difference.inSeconds.toString());
 
           lastMedicationRecordDetailsId++;
         }

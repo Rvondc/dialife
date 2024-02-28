@@ -1,7 +1,6 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:collection/collection.dart';
 import 'package:dialife/blood_glucose_tracking/glucose_tracking.dart';
-import 'package:dialife/local_notifications/local_notifications.dart';
 import 'package:dialife/main.dart';
 import 'package:dialife/medication_tracking/entities.dart';
 import 'package:dialife/medication_tracking/utils.dart';
@@ -11,7 +10,6 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:path/path.dart';
 import 'package:easy_date_timeline/easy_date_timeline.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -193,7 +191,7 @@ class __MedicationTrackingInternalState
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Column(
-                children: [                  
+                children: [
                   Text(
                     "MEDICATION REMINDER",
                     style: GoogleFonts.montserrat(
