@@ -1,4 +1,6 @@
+import 'dart:ui' as ui;
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:collection/collection.dart';
 import 'package:dialife/blood_glucose_tracking/calculate_average.dart';
 import 'package:dialife/blood_glucose_tracking/entities.dart';
 import 'package:dialife/blood_glucose_tracking/glucose_tracking.dart';
@@ -9,6 +11,11 @@ import 'package:dialife/bmi_tracking/bmi_tracking.dart';
 import 'package:dialife/bmi_tracking/entities.dart';
 import 'package:dialife/bmi_tracking/input_form.dart';
 import 'package:dialife/bmi_tracking/record_editor.dart';
+import 'package:dialife/doctors_appointment/entities.dart';
+import 'package:dialife/doctors_appointment/input_form.dart';
+import 'package:dialife/local_notifications/local_notifications.dart';
+import 'package:dialife/medication_tracking/entities.dart';
+import 'package:dialife/medication_tracking/input_form.dart';
 // import 'package:dialife/local_notifications/local_notifications.dart';
 import 'package:dialife/medication_tracking/medication_tracking.dart';
 import 'package:dialife/setup.dart';
@@ -17,13 +24,16 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:intl/intl.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'dart:math' as math;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // await LocalNotification.init();
+  await LocalNotification.init();
 
   runApp(const Main());
 }
@@ -130,10 +140,43 @@ class Main extends StatelessWidget {
               ),
               settings: const RouteSettings(name: "/bmi-tracking/input"),
             );
-          case "/insulin-tracking":
+          case "/medication-tracking":
+            // debugPrint("Settings arguments:" + settings.arguments.toString());
+            final args = settings.arguments as Map<String, dynamic>;
+            // debugPrint(args["user"].toString());
+
             return MaterialPageRoute(
-              builder: (context) => const InsulinTracking(),
-              settings: const RouteSettings(name: "/insulin-tracking"),
+              builder: (context) => MedicationTracking(
+                db: args["db"],
+                user: args["user"],
+              ),
+              settings: const RouteSettings(name: "/medication-tracking"),
+            );
+          case "/medication-tracking/input":
+            // debugPrint(settings.arguments.toString());
+            final args = settings.arguments as Map<String, dynamic>;
+            // debugPrint("args : ${args.toString()}");
+
+            return MaterialPageRoute(
+              builder: (context) => NewMedicationReminderInputForm(
+                db: args["db"],
+                user: args["user"],
+              ),
+              settings: const RouteSettings(
+                name: "/medication-tracking/input",
+              ),
+            );
+          case "/doctors-appointment/input":
+            final args = settings.arguments as Map<String, dynamic>;
+
+            return MaterialPageRoute(
+              builder: (context) => NewDoctorsAppointmentForm(
+                db: args["db"],
+                user: args["user"],
+              ),
+              settings: const RouteSettings(
+                name: "/doctors-appointment/input",
+              ),
             );
         }
 
@@ -153,6 +196,8 @@ class Root extends StatefulWidget {
 class _RootState extends State<Root> {
   List<GlucoseRecord>? _glucoseRecords;
   List<BMIRecord>? _bmiRecords;
+  List<DoctorsAppointmentRecord>? _doctorsAppointmentRecords;
+  List<MedicationRecordDetails>? _medicationRecordDetails;
 
   @override
   Widget build(BuildContext context) {
@@ -302,17 +347,31 @@ class _RootState extends State<Root> {
                                 [
                                   dbContainer.data!.query("GlucoseRecord"),
                                   dbContainer.data!.query("BMIRecord"),
+                                  dbContainer.data!
+                                      .query("MedicationRecordDetails"),
+                                  dbContainer.data!
+                                      .query("DoctorsAppointmentRecords"),
                                 ],
                               ),
                               loading: const SpinKitCircle(color: fgColor),
                               builder: (context, data) {
                                 if (_glucoseRecords == null ||
-                                    _bmiRecords == null) {
+                                    _bmiRecords == null ||
+                                    _medicationRecordDetails == null ||
+                                    _doctorsAppointmentRecords == null) {
                                   final glucoseRecords =
                                       GlucoseRecord.fromListOfMaps(data[0]);
 
                                   final bmiRecords =
                                       BMIRecord.fromListOfMaps(data[1]);
+
+                                  final medicationRecordDetails =
+                                      MedicationRecordDetails.fromListOfMaps(
+                                          data[2]);
+
+                                  final doctorsAppointmentRecords =
+                                      DoctorsAppointmentRecord.fromListOfMaps(
+                                          data[3]);
 
                                   glucoseRecords.sort(
                                     (a, b) => a.bloodTestDate
@@ -324,10 +383,18 @@ class _RootState extends State<Root> {
                                         a.createdAt.compareTo(b.createdAt),
                                   );
 
+                                  doctorsAppointmentRecords.sort((a, b) => a
+                                      .appointmentDatetime
+                                      .compareTo(b.appointmentDatetime));
+
                                   Future.delayed(Duration.zero, () {
                                     setState(() {
                                       _glucoseRecords = glucoseRecords;
                                       _bmiRecords = bmiRecords;
+                                      _medicationRecordDetails =
+                                          medicationRecordDetails;
+                                      _doctorsAppointmentRecords =
+                                          doctorsAppointmentRecords;
                                     });
                                   });
                                 }
@@ -575,25 +642,134 @@ class _RootState extends State<Root> {
                         ),
 
                         // Currently empty container
-                        Container(
-                          margin: const EdgeInsets.only(
-                            right: 10,
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            top: 16,
                             left: 10,
-                            top: 15,
+                            right: 10,
                           ),
-                          width: double.infinity,
-                          height: 68,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(10.0),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.25),
-                                blurRadius: 4.0,
-                                spreadRadius: 0.0,
-                                offset: const Offset(0.0, 4.0),
+                          child: Material(
+                            borderRadius: BorderRadius.circular(10),
+                            elevation: 4,
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.of(context).pushNamed(
+                                    "/doctors-appointment/input",
+                                    arguments: {
+                                      "user": user,
+                                      "db": dbContainer.data!,
+                                    });
+                              },
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(10.0),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                        top: 12,
+                                        left: 15,
+                                      ),
+                                      child: Row(
+                                        // mainAxisAlignment: MainAxisAlignment.center,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          const Icon(
+                                            Icons.notifications_none,
+                                            size: 32,
+                                          ),
+                                          const SizedBox(width: 5),
+                                          Text(
+                                            "Doctor's Appointment",
+                                            style: GoogleFonts.inter(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const Divider(thickness: 1),
+                                    Builder(
+                                      builder: (context) {
+                                        // debugPrint(
+                                        //     "D O C T O R S  A P P O I N T M E N T  R E C O R D S ${_doctorsAppointmentRecords!.first.toMap()}");
+                                        if (_doctorsAppointmentRecords ==
+                                                null ||
+                                            _doctorsAppointmentRecords
+                                                    ?.isEmpty ==
+                                                true) {
+                                          return const Text("No Appointments");
+                                        }
+
+                                        DoctorsAppointmentRecord lastRecord =
+                                            _doctorsAppointmentRecords!.first;
+
+                                        debugPrint(lastRecord.doctorName);
+
+                                        return Material(
+                                          child: Container(
+                                            padding: const EdgeInsets.all(15),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      "Dr. ${lastRecord.doctorName}",
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 14,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                        lastRecord
+                                                            .appointmentPurpose,
+                                                        style:
+                                                            GoogleFonts.inter(
+                                                          fontSize: 12,
+                                                        )),
+                                                  ],
+                                                ),
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.end,
+                                                  children: [
+                                                    Text(
+                                                      DateFormat("MMMM d, yyyy")
+                                                          .format(lastRecord
+                                                              .appointmentDatetime),
+                                                      style: GoogleFonts.inter(
+                                                          fontSize: 14,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                    Text(
+                                                      DateFormat("H:mm a")
+                                                          .format(lastRecord
+                                                              .appointmentDatetime),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                    const Divider(thickness: 1),
+                                  ],
+                                ),
                               ),
-                            ],
+                            ),
                           ),
                         ),
                         Padding(
@@ -618,7 +794,147 @@ class _RootState extends State<Root> {
                                   children: [
                                     Expanded(
                                       flex: 4,
-                                      child: Container(),
+                                      child: GestureDetector(
+                                        onTap: () async {
+                                          await Navigator.of(context).pushNamed(
+                                            "/medication-tracking",
+                                            arguments: {
+                                              "db": dbContainer.data!,
+                                              "user": user
+                                            },
+                                          );
+                                        },
+                                        child: Container(
+                                          padding: const EdgeInsets.only(
+                                            top: 8,
+                                          ),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceEvenly,
+                                                children: [
+                                                  ShaderMask(
+                                                    blendMode: BlendMode.srcIn,
+                                                    shaderCallback:
+                                                        (Rect bounds) {
+                                                      return ui.Gradient.linear(
+                                                        const Offset(0.0, 27.0),
+                                                        const Offset(0.0, 0.0),
+                                                        [
+                                                          const Color(
+                                                              0xFFF50812),
+                                                          const Color(
+                                                              0xFF3300FD)
+                                                        ],
+                                                      );
+                                                    },
+                                                    child: const Icon(
+                                                      Symbols.pill,
+                                                      size: 27,
+                                                      weight: 500,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    "MEDICATIONS",
+                                                    style:
+                                                        GoogleFonts.montserrat(
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              Builder(builder: (context) {
+                                                if (_medicationRecordDetails ==
+                                                        null ||
+                                                    _medicationRecordDetails!
+                                                        .isEmpty) {
+                                                  return const Text(
+                                                      "No Medications");
+                                                } else {
+                                                  final groupedRecords =
+                                                      groupBy(
+                                                          _medicationRecordDetails!,
+                                                          (record) => record
+                                                                  .medicationDatetime
+                                                                  .copyWith(
+                                                                hour: 0,
+                                                                minute: 0,
+                                                                second: 0,
+                                                                millisecond: 0,
+                                                                microsecond: 0,
+                                                              ));
+                                                  debugPrint(groupedRecords
+                                                      .values.length
+                                                      .toString());
+
+                                                  final filtered =
+                                                      groupedRecords.keys
+                                                          .where((param) {
+                                                    return param.isAfter(
+                                                        DateTime.now().copyWith(
+                                                            day: DateTime.now()
+                                                                    .day -
+                                                                1));
+                                                  }).toList();
+                                                  filtered.sort(
+                                                    (a, b) => a.compareTo(b),
+                                                  );
+
+                                                  return Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            8.0),
+                                                    child: Column(children: [
+                                                      ...groupedRecords[
+                                                              filtered[0]]!
+                                                          .take(4)
+                                                          .map((record) {
+                                                        return Column(
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .start,
+                                                            children: [
+                                                              const SizedBox(
+                                                                  height: 2),
+                                                              Text(
+                                                                record
+                                                                    .medicineName,
+                                                                style:
+                                                                    GoogleFonts
+                                                                        .inter(
+                                                                  fontSize: 14,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                ),
+                                                              ),
+                                                              Text(
+                                                                  "To Take -> ${DateFormat("h:mm a").format(record.medicationDatetime)}",
+                                                                  style:
+                                                                      GoogleFonts
+                                                                          .inter(
+                                                                    fontSize:
+                                                                        10,
+                                                                    color: Colors
+                                                                        .grey
+                                                                        .shade400,
+                                                                  )),
+                                                            ]);
+                                                      })
+                                                    ]),
+                                                  );
+                                                }
+                                              }),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
                                     ),
                                     Container(
                                       width: 1,
@@ -1070,9 +1386,55 @@ Future<Database> initAppDatabase(String path) async {
         ) 
       """);
 
+      await db.execute("""
+        CREATE TABLE MedicationReminderRecords (
+          id INTEGER PRIMARY KEY NOT NULL,
+          starts_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          ends_at DATETIME NOT NULL
+        )
+      """);
+
+      await db.execute("""
+        CREATE TABLE MedicationRecordDetails (
+          id INTEGER PRIMARY KEY NOT NULL,
+          medication_reminder_record_id INTEGER NOT NULL,
+          medicine_name VARCHAR(255) NOT NULL,
+          medicine_route VARCHAR(255) NOT NULL,
+          medicine_form VARCHAR(255) NOT NULL,
+          medicine_dosage DECIMAL(5, 2) NOT NULL,
+          medication_datetime DATETIME NOT NULL,
+          FOREIGN KEY(medication_reminder_record_id) REFERENCES MedicationReminderRecords(id)
+        )
+      """);
+
+      await db.execute("""
+        CREATE TABLE DoctorsAppointmentRecords (
+          id INTEGER PRIMARY KEY NOT NULL,
+          doctor_name VARCHAR(255) NOT NULL,
+          apointment_datetime DATETIME NOT NULL,
+          appointment_purpose VARCHAR(255) NOT NULL
+        )
+      """);
+
       // return db.execute(
       //     "INSERT INTO BMIRecord (height, weight, created_at, notes) VALUES (1.73, 77.08, '2023-10-13', 'After lunch'), (1.73, 77.5, '2023-10-12', 'Before bed'), (1.73, 78.2, '2023-10-11', 'Deserunt deserunt eu duis sit minim deserunt et aute et ea dolore.')");
     },
     version: 1,
   );
+}
+
+DateTime findClosestFutureDate(Map<DateTime, dynamic> map) {
+  final now = DateTime.now();
+  DateTime closestDate = now;
+
+  map.forEach((date, value) {
+    if (date.isAfter(now)) {
+      final difference = (now.difference(date).inMilliseconds).abs();
+      if (difference < (now.difference(closestDate).inMilliseconds.abs())) {
+        closestDate = date;
+      }
+    }
+  });
+
+  return closestDate;
 }
