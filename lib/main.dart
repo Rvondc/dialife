@@ -1,5 +1,5 @@
 import 'dart:ui' as ui;
-import 'dart:convert'; 
+import 'dart:convert';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:collection/collection.dart';
 import 'package:dialife/blood_glucose_tracking/calculate_average.dart';
@@ -18,9 +18,6 @@ import 'package:dialife/doctors_appointment/input_form.dart';
 import 'package:dialife/local_notifications/local_notifications.dart';
 import 'package:dialife/medication_tracking/entities.dart';
 import 'package:dialife/medication_tracking/input_form.dart';
-// import 'package:dialife/local_notifications/local_notifications.dart';
-
-import 'package:dialife/local_notifications/local_notifications.dart';
 
 import 'package:dialife/medication_tracking/medication_tracking.dart';
 import 'package:dialife/setup.dart';
@@ -679,13 +676,15 @@ class _RootState extends State<Root> {
                             borderRadius: BorderRadius.circular(10),
                             elevation: 4,
                             child: GestureDetector(
-                              onTap: () {
-                                Navigator.of(context).pushNamed(
+                              onTap: () async {
+                                await Navigator.of(context).pushNamed(
                                     "/doctors-appointment/input",
                                     arguments: {
                                       "user": user,
                                       "db": dbContainer.data!,
                                     });
+
+                                reset();
                               },
                               child: Container(
                                 decoration: BoxDecoration(
@@ -830,6 +829,8 @@ class _RootState extends State<Root> {
                                               "user": user
                                             },
                                           );
+
+                                          reset();
                                         },
                                         child: Container(
                                           padding: const EdgeInsets.only(
@@ -882,7 +883,7 @@ class _RootState extends State<Root> {
                                                     _medicationRecordDetails!
                                                         .isEmpty) {
                                                   return const Text(
-                                                      "No Medications");
+                                                      "  No Medications");
                                                 } else {
                                                   final groupedRecords =
                                                       groupBy(
@@ -896,9 +897,9 @@ class _RootState extends State<Root> {
                                                                 millisecond: 0,
                                                                 microsecond: 0,
                                                               ));
-                                                  debugPrint(groupedRecords
-                                                      .values.length
-                                                      .toString());
+                                                  // debugPrint(groupedRecords
+                                                  //     .values.length
+                                                  //     .toString());
 
                                                   final filtered =
                                                       groupedRecords.keys
