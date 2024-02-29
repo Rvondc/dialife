@@ -61,7 +61,6 @@ class _ActivityLogInternalScaffold extends StatelessWidget {
   final List<ActivityRecord> records;
 
   const _ActivityLogInternalScaffold({
-    super.key,
     required this.db,
     required this.reset,
     required this.records,
@@ -91,6 +90,7 @@ class _ActivityLogInternalScaffold extends StatelessWidget {
         actions: [
           IconButton(
             onPressed: () async {
+              await FilePicker.platform.clearTemporaryFiles();
               final directory = await FilePicker.platform.getDirectoryPath();
               if (!await Permission.storage.status.isGranted) {
                 await Permission.storage.request();
@@ -170,7 +170,6 @@ class _ActivityLogInternal extends StatefulWidget {
   final List<ActivityRecord> records;
 
   const _ActivityLogInternal({
-    super.key,
     required this.db,
     required this.reset,
     required this.records,

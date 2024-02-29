@@ -74,7 +74,6 @@ class _MedicationTrackingInteralScaffold extends StatelessWidget {
   final void Function() reset;
 
   const _MedicationTrackingInteralScaffold({
-    super.key,
     required this.records,
     required this.db,
     required this.user,
@@ -148,7 +147,6 @@ class _MedicationTrackingInternal extends StatefulWidget {
   final void Function() reset;
 
   const _MedicationTrackingInternal({
-    super.key,
     required this.records,
     required this.db,
     required this.user,
@@ -278,9 +276,12 @@ class __MedicationTrackingInternalState
             return GestureDetector(
               onTap: () {},
               child: medicationReminderListTile(
+                firstRecord.id,
                 firstRecord.medicineName,
                 _selectedDate,
                 record.value,
+                widget.reset,
+                widget.db,
               ),
             );
           }),
@@ -291,9 +292,12 @@ class __MedicationTrackingInternalState
 }
 
 Widget medicationReminderListTile(
+  int id,
   String name,
   DateTime pickedDate,
   List<MedicationRecordDetails> values,
+  void Function() reset,
+  Database db,
 ) {
   MedicationRecordDetails firstRecord = values.first;
   List<DateTime> dateTimes = [];
@@ -353,23 +357,54 @@ Widget medicationReminderListTile(
                     ...unqiueTimes.map(
                       (value) {
                         DateTime now = DateTime.now();
-                        return Chip(
-                          label: Text(
-                            DateFormat("HH:mm a").format(
-                              DateTime(
-                                now.year,
-                                now.month,
-                                now.day,
-                                value.hour,
-                                value.minute,
+                        return Row(
+                          children: [
+                            Chip(
+                              label: Text(
+                                DateFormat("HH:mm a").format(
+                                  DateTime(
+                                    now.year,
+                                    now.month,
+                                    now.day,
+                                    value.hour,
+                                    value.minute,
+                                  ),
+                                ),
                               ),
+                              labelStyle: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              backgroundColor: const Color(0xFF326BFD),
                             ),
-                          ),
-                          labelStyle: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          backgroundColor: const Color(0xFF326BFD),
+                            const Expanded(child: SizedBox()),
+                            IconButton(
+                              onPressed: () async {
+                                final record = (await db.rawQuery(
+                                  "SELECT * FROM MedicationRecordDetails WHERE id = ?",
+                                  [id],
+                                ))
+                                    .first;
+
+                                await db.rawDelete(
+                                  "DELETE FROM MedicationReminderRecords WHERE id = ?",
+                                  [
+                                    record["medication_reminder_record_id"],
+                                  ],
+                                );
+
+                                await db.rawDelete(
+                                  "DELETE FROM MedicationRecordDetails WHERE medication_reminder_record_id = ?",
+                                  [
+                                    record["medication_reminder_record_id"],
+                                  ],
+                                );
+
+                                reset();
+                              },
+                              icon: const Icon(Icons.delete_outlined),
+                            )
+                          ],
                         );
                       },
                     ),

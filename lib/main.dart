@@ -1479,8 +1479,8 @@ class _RootState extends State<Root> {
   }
 
   generatePdfFile() async {
-    final path = await FilePicker.platform.getDirectoryPath();
     await FilePicker.platform.clearTemporaryFiles();
+    final path = await FilePicker.platform.getDirectoryPath();
 
     if (!await Permission.storage.status.isGranted) {
       await Permission.storage.request();

@@ -63,7 +63,6 @@ class _ContanctListInternal extends StatelessWidget {
   final Database db;
 
   const _ContanctListInternal({
-    super.key,
     required this.db,
     required this.reset,
     required this.contacts,

@@ -31,7 +31,6 @@ class _NutritionLogInternalScaffold extends StatelessWidget {
   final NutritionRecord? existing;
 
   const _NutritionLogInternalScaffold({
-    super.key,
     required this.existing,
     required this.db,
   });
@@ -58,7 +57,6 @@ class _NutritionLogInternal extends StatefulWidget {
   final NutritionRecord? existing;
 
   const _NutritionLogInternal({
-    super.key,
     required this.existing,
     required this.db,
   });

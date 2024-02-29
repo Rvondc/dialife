@@ -75,7 +75,6 @@ class _EditUserInternalScaffold extends StatelessWidget {
   final User user;
 
   const _EditUserInternalScaffold({
-    super.key,
     required this.provinceMap,
     required this.db,
     required this.user,
@@ -105,7 +104,6 @@ class _EditUserInternal extends StatefulWidget {
   final User user;
 
   const _EditUserInternal({
-    super.key,
     required this.user,
     required this.db,
     required Map<String, dynamic> provinceMap,

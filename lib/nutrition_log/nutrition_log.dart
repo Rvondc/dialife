@@ -66,7 +66,6 @@ class _NutritionLogInternalScaffold extends StatelessWidget {
   final void Function() reset;
 
   const _NutritionLogInternalScaffold({
-    super.key,
     required this.db,
     required this.reset,
     required this.records,
@@ -96,6 +95,7 @@ class _NutritionLogInternalScaffold extends StatelessWidget {
         actions: [
           IconButton(
             onPressed: () async {
+              await FilePicker.platform.clearTemporaryFiles();
               final directory = await FilePicker.platform.getDirectoryPath();
               if (!await Permission.storage.status.isGranted) {
                 await Permission.storage.request();
@@ -173,7 +173,6 @@ class _NutritionLogInternal extends StatelessWidget {
   final void Function() reset;
 
   const _NutritionLogInternal({
-    super.key,
     required this.reset,
     required this.db,
     required this.records,

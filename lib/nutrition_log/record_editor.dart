@@ -51,7 +51,6 @@ class _NutritionEditorInternalScaffold extends StatelessWidget {
   final Database db;
 
   const _NutritionEditorInternalScaffold({
-    super.key,
     required this.records,
     required this.reset,
     required this.db,
@@ -81,7 +80,6 @@ class _NutritionEditorInternal extends StatelessWidget {
   final Database db;
 
   const _NutritionEditorInternal({
-    super.key,
     required this.reset,
     required this.records,
     required this.db,

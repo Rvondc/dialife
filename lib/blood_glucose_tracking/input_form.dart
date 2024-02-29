@@ -42,7 +42,6 @@ class _GlucoseRecordInputFormInternalScaffold extends StatelessWidget {
   final GlucoseRecord? _existing;
 
   const _GlucoseRecordInputFormInternalScaffold({
-    super.key,
     required User user,
     required Database db,
     required GlucoseRecord? existing,
@@ -74,7 +73,6 @@ class _GlucoseRecordInputFormInternal extends StatefulWidget {
   final Database _database;
 
   const _GlucoseRecordInputFormInternal({
-    super.key,
     required User user,
     required Database db,
     required GlucoseRecord? existing,

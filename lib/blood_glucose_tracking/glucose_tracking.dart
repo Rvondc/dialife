@@ -85,7 +85,6 @@ class _GlucoseTrackingInternalScaffold extends StatelessWidget {
   final void Function() reset;
 
   const _GlucoseTrackingInternalScaffold({
-    super.key,
     required this.glucoseRecords,
     required this.db,
     required this.user,
@@ -126,8 +125,8 @@ class _GlucoseTrackingInternalScaffold extends StatelessWidget {
         actions: [
           IconButton(
             onPressed: () async {
-              final directory = await FilePicker.platform.getDirectoryPath();
               await FilePicker.platform.clearTemporaryFiles();
+              final directory = await FilePicker.platform.getDirectoryPath();
               if (!await Permission.storage.status.isGranted) {
                 await Permission.storage.request();
               }
@@ -213,7 +212,6 @@ class _GlucoseTrackingInternal extends StatefulWidget {
   final void Function() reset;
 
   const _GlucoseTrackingInternal({
-    super.key,
     required this.reset,
     required this.db,
     required this.user,

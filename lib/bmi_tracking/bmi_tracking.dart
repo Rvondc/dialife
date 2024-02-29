@@ -83,7 +83,6 @@ class _BMITrackingInteralScaffold extends StatelessWidget {
   final void Function() reset;
 
   const _BMITrackingInteralScaffold({
-    super.key,
     required this.reset,
     required this.db,
     required this.user,
@@ -115,6 +114,7 @@ class _BMITrackingInteralScaffold extends StatelessWidget {
         actions: [
           IconButton(
             onPressed: () async {
+              await FilePicker.platform.clearTemporaryFiles();
               final directory = await FilePicker.platform.getDirectoryPath();
               if (!await Permission.storage.status.isGranted) {
                 await Permission.storage.request();
@@ -207,7 +207,6 @@ class _BMITrackingInternal extends StatefulWidget {
   final void Function() reset;
 
   const _BMITrackingInternal({
-    super.key,
     required this.db,
     required this.reset,
     required this.user,

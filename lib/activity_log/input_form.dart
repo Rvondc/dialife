@@ -31,7 +31,6 @@ class _ActivityLogInternalScaffold extends StatelessWidget {
   final Database db;
 
   const _ActivityLogInternalScaffold({
-    super.key,
     required this.existing,
     required this.db,
   });
@@ -58,7 +57,6 @@ class _ActivityLogInternal extends StatefulWidget {
   final Database db;
 
   const _ActivityLogInternal({
-    super.key,
     required this.existing,
     required this.db,
   });
@@ -143,9 +141,7 @@ class _ActivityLogInternalState extends State<_ActivityLogInternal> {
                       Expanded(
                         flex: 2,
                         child: DropdownButtonFormField(
-                          value: widget.existing == null
-                              ? null
-                              : widget.existing!.type.asString.capitalize(),
+                          value: widget.existing?.type.asString.capitalize(),
                           decoration: InputDecoration(
                             fillColor: Colors.grey.shade200,
                             filled: true,

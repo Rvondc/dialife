@@ -60,7 +60,6 @@ class _ActivityRecordEditorInternalScaffold extends StatelessWidget {
   final List<ActivityRecord> records;
 
   const _ActivityRecordEditorInternalScaffold({
-    super.key,
     required this.db,
     required this.reset,
     required this.records,
@@ -103,7 +102,6 @@ class _ActivityRecordEditorInternal extends StatefulWidget {
   final List<ActivityRecord> records;
 
   const _ActivityRecordEditorInternal({
-    super.key,
     required this.db,
     required this.reset,
     required this.records,

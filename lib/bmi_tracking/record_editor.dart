@@ -71,7 +71,6 @@ class _BMIRecordEditorInternalScaffold extends StatelessWidget {
   final User user;
 
   const _BMIRecordEditorInternalScaffold({
-    super.key,
     required this.records,
     required this.reset,
     required this.db,
@@ -115,7 +114,6 @@ class _BMIRecordEditorInternal extends StatefulWidget {
   final User user;
 
   const _BMIRecordEditorInternal({
-    super.key,
     required this.user,
     required this.db,
     required this.reset,

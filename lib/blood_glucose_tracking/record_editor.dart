@@ -62,7 +62,6 @@ class _GlucoseRecordEditorInternalScaffold extends StatefulWidget {
   final List<GlucoseRecord> records;
 
   const _GlucoseRecordEditorInternalScaffold({
-    super.key,
     required this.db,
     required this.reset,
     required this.user,
@@ -149,7 +148,6 @@ class _GlucoseRecordEditorInternal extends StatefulWidget {
   final bool isMmolPerLiter;
 
   const _GlucoseRecordEditorInternal({
-    super.key,
     required this.db,
     required this.reset,
     required this.user,

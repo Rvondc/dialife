@@ -39,7 +39,6 @@ class _BMIRecordInputFormInternalScaffold extends StatelessWidget {
   final BMIRecord? _existing;
 
   const _BMIRecordInputFormInternalScaffold({
-    super.key,
     required User user,
     required Database db,
     required BMIRecord? existing,
@@ -69,7 +68,6 @@ class _BMIRecordInputFormInternal extends StatefulWidget {
   final BMIRecord? _existing;
 
   const _BMIRecordInputFormInternal({
-    super.key,
     required User user,
     required Database db,
     required BMIRecord? existing,
@@ -94,7 +92,7 @@ class _BMIRecordInputFormInternalState
   final _finalHeightController = TextEditingController();
   final _finalWeightController = TextEditingController();
 
-  Action? _currentAction = null;
+  Action? _currentAction;
   bool _isCentimeter = true;
   bool _isKilograms = true;
   DateTime? _date = DateTime.now();
