@@ -1,6 +1,7 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:collection/collection.dart';
 import 'package:dialife/blood_glucose_tracking/glucose_tracking.dart';
+import 'package:dialife/local_notifications/local_notifications.dart';
 import 'package:dialife/main.dart';
 import 'package:dialife/medication_tracking/entities.dart';
 import 'package:dialife/medication_tracking/utils.dart';
@@ -96,6 +97,10 @@ class _MedicationTrackingInteralScaffold extends StatelessWidget {
               "user": user,
             },
           );
+
+          // LocalNotification.cancelAll();
+          // debugPrint(
+          //     (await LocalNotification.pendingNotifRequests()).toString());
 
           reset();
         },
@@ -276,6 +281,7 @@ class __MedicationTrackingInternalState
             return GestureDetector(
               onTap: () {},
               child: medicationReminderListTile(
+                context,
                 firstRecord.id,
                 firstRecord.medicineName,
                 _selectedDate,
@@ -292,6 +298,7 @@ class __MedicationTrackingInternalState
 }
 
 Widget medicationReminderListTile(
+  BuildContext context,
   int id,
   String name,
   DateTime pickedDate,
@@ -324,67 +331,80 @@ Widget medicationReminderListTile(
           elevation: 4,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          child: ListTile(
-            leading: const Icon(
-              Symbols.pill,
-              color: Color(0xFF326BFD),
-            ),
-            title: AutoSizeText(
-              name,
-              maxLines: 1,
-              maxFontSize: 24,
-              minFontSize: 18,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Wrap(
-                  spacing: 10,
-                  runSpacing: -5,
-                  children: [
-                    Text(
-                        "Dosage: ${firstRecord.medicineDosage.toStringAsFixed(2)} mg,"),
-                    Text("Form: ${firstRecord.medicineForm},"),
-                    Text("Route: ${firstRecord.medicineRoute}"),
-                  ],
-                ),
-                const Divider(thickness: 1),
-                Wrap(
-                  spacing: 5,
-                  runSpacing: -5,
-                  children: [
-                    ...unqiueTimes.map(
-                      (value) {
-                        DateTime now = DateTime.now();
-                        return Row(
-                          children: [
-                            Chip(
-                              label: Text(
-                                DateFormat("HH:mm a").format(
-                                  DateTime(
-                                    now.year,
-                                    now.month,
-                                    now.day,
-                                    value.hour,
-                                    value.minute,
-                                  ),
-                                ),
-                              ),
-                              labelStyle: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              backgroundColor: const Color(0xFF326BFD),
-                            ),
-                            const Expanded(child: SizedBox()),
-                            IconButton(
+          child: GestureDetector(
+            onTap: () async {
+              final record = (await db.rawQuery(
+                "SELECT * FROM MedicationRecordDetails WHERE id = ?",
+                [id],
+              ))
+                  .first;
+
+              if (!context.mounted) return;
+              await Navigator.of(context).pushNamed(
+                "/medication-tracking/input",
+                arguments: {
+                  "db": db,
+                  "existing": MedicationRecordDetails.fromMap(record),
+                },
+              );
+
+              reset();
+            },
+            child: ListTile(
+              leading: const Icon(
+                Symbols.pill,
+                color: Color(0xFF326BFD),
+              ),
+              title: Row(
+                children: [
+                  AutoSizeText(
+                    name,
+                    maxLines: 1,
+                    maxFontSize: 24,
+                    minFontSize: 18,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const Expanded(child: SizedBox()),
+                  IconButton(
+                    onPressed: () async {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Delete Medication Reminder?'),
+                          // content: SingleChildScrollView(
+                          //   child: Column(
+                          //     children: <Widget>[
+                          //       Text('This is a demo alert dialog.'),
+                          //       Text('Would you like to confirm this message?'),
+                          //     ],
+                          //   ),
+                          // ),
+                          actions: <Widget>[
+                            TextButton(
+                              child: const Text('Confirm'),
                               onPressed: () async {
                                 final record = (await db.rawQuery(
                                   "SELECT * FROM MedicationRecordDetails WHERE id = ?",
                                   [id],
                                 ))
                                     .first;
+
+                                final notifRecords = await db.rawQuery(
+                                  "SELECT * FROM MedicationRecordDetails WHERE medication_reminder_record_id = ?",
+                                  [
+                                    record["medication_reminder_record_id"],
+                                  ],
+                                );
+
+                                final parsedIds =
+                                    MedicationRecordDetails.fromListOfMaps(
+                                            notifRecords)
+                                        .map((element) => element.notifId)
+                                        .toList();
+
+                                for (var id in parsedIds) {
+                                  await LocalNotification.cancel(id);
+                                }
 
                                 await db.rawDelete(
                                   "DELETE FROM MedicationReminderRecords WHERE id = ?",
@@ -401,16 +421,75 @@ Widget medicationReminderListTile(
                                 );
 
                                 reset();
+
+                                if (!context.mounted) return;
+                                Navigator.pop(context);
                               },
-                              icon: const Icon(Icons.delete_outlined),
-                            )
+                            ),
+                            TextButton(
+                              child: const Text('Cancel'),
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                            ),
                           ],
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ],
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.delete_outlined),
+                  ),
+                ],
+              ),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: -5,
+                    children: [
+                      Text(
+                          "Dosage: ${firstRecord.medicineDosage.toStringAsFixed(2)} mg,"),
+                      Text("Form: ${firstRecord.medicineForm},"),
+                      Text("Route: ${firstRecord.medicineRoute}"),
+                    ],
+                  ),
+                  const Divider(thickness: 1),
+                  Wrap(
+                    spacing: 5,
+                    runSpacing: -5,
+                    children: [
+                      ...unqiueTimes.map(
+                        (value) {
+                          DateTime now = DateTime.now();
+                          return Row(
+                            children: [
+                              Chip(
+                                label: Text(
+                                  DateFormat("HH:mm a").format(
+                                    DateTime(
+                                      now.year,
+                                      now.month,
+                                      now.day,
+                                      value.hour,
+                                      value.minute,
+                                    ),
+                                  ),
+                                ),
+                                labelStyle: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                backgroundColor: const Color(0xFF326BFD),
+                              ),
+                              const Expanded(child: SizedBox()),
+                            ],
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),

@@ -1,22 +1,23 @@
 import 'package:dialife/local_notifications/local_notifications.dart';
 import 'package:dialife/medication_tracking/entities.dart';
-import 'package:dialife/user.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:sqflite/sqflite.dart';
 
 class NewMedicationReminderInputForm extends StatefulWidget {
-  final User _user;
+  final MedicationRecordDetails? _existing;
   final Database _db;
+  // final User _user;
 
   const NewMedicationReminderInputForm({
     super.key,
-    required User user,
     required Database db,
-  })  : _user = user,
-        _db = db;
+    MedicationRecordDetails? existing,
+  })  : _db = db,
+        _existing = existing;
 
   @override
   State<NewMedicationReminderInputForm> createState() =>
@@ -37,6 +38,7 @@ class _NewMedicationReminderInputFormState
     ["SA", false],
     ["SU", false],
   ];
+
   final List<String> _medicineRoutes = [
     "Inhalation",
     "Intradermal (ID)",
@@ -51,6 +53,7 @@ class _NewMedicationReminderInputFormState
     "Transdermal",
     "Vaginal",
   ];
+
   final List<String> _medicineForms = [
     "Capsule",
     "Creams or ointments ",
@@ -69,6 +72,68 @@ class _NewMedicationReminderInputFormState
   String medicationFormDropdownValue = "Capsule";
 
   List _timesPicked = [];
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget._existing == null) {
+      return;
+    }
+
+    _medicineNameController.text = widget._existing!.medicineName;
+    _dosageController.text =
+        widget._existing!.medicineDosage.toStringAsFixed(2);
+    // _dateController.text =
+    //     DateFormat('dd/MM/yyyy').format(widget._existing!.medicationDatetime);
+
+    Future.delayed(
+      Duration.zero,
+      () async {
+        final unparsed = await widget._db.rawQuery(
+          "SELECT * FROM MedicationRecordDetails WHERE medication_reminder_record_id = ?",
+          [
+            widget._existing!.medicationReminderRecordId,
+          ],
+        );
+
+        final parsed = MedicationRecordDetails.fromListOfMaps(unparsed);
+        final duplicates = parsed
+            .map((e) => TimeOfDay(
+                  hour: e.medicationDatetime.hour,
+                  minute: e.medicationDatetime.minute,
+                ))
+            .toSet()
+            .toList();
+
+        final days = parsed
+            .map((e) => DateFormat("EE").format(e.medicationDatetime))
+            .toSet()
+            .toList();
+
+        setState(() {
+          _timesPicked = duplicates;
+          for (var day in days) {
+            switch (day) {
+              case "Mon":
+                _days[0] = ["M", true];
+              case "Tue":
+                _days[1] = ["T", true];
+              case "Wed":
+                _days[2] = ["W", true];
+              case "Thu":
+                _days[3] = ["TH", true];
+              case "Fri":
+                _days[4] = ["F", true];
+              case "Sat":
+                _days[5] = ["S", true];
+              case "Sun":
+                _days[6] = ["SU", true];
+            }
+          }
+        });
+      },
+    );
+  }
 
   String _formatTime(TimeOfDay time) {
     final now = DateTime.now();
@@ -98,7 +163,7 @@ class _NewMedicationReminderInputFormState
           _validateData();
         },
         label: Text(
-          "Add Reminder",
+          widget._existing == null ? "Add Reminder" : "Save Reminder",
           style: GoogleFonts.istokWeb(
             fontSize: 17,
             fontWeight: FontWeight.bold,
@@ -694,12 +759,11 @@ class _NewMedicationReminderInputFormState
         duration: Duration(milliseconds: 800),
       ));
     } else {
-      _addReminderToDb();
-      Navigator.of(context).pop();
+      _addReminderToDb().whenComplete(() => Navigator.of(context).pop());
     }
   }
 
-  _addReminderToDb() async {
+  Future<void> _addReminderToDb() async {
     Database db = widget._db;
 
     // splitEndDate = [day, month, year]
@@ -732,7 +796,16 @@ class _NewMedicationReminderInputFormState
     );
 
     // Insert record to MedicationReminderRecords table
-    await db.insert('MedicationReminderRecords', record.toMap());
+    if (widget._existing == null) {
+      await db.insert('MedicationReminderRecords', record.toMap());
+    } else {
+      await db.update(
+        "MedicationReminderRecords",
+        record.toMap(),
+        where: 'id = ?',
+        whereArgs: [widget._existing!.medicationReminderRecordId],
+      );
+    }
 
     // debugPrint("Record: ${record.toMap()}");
 
@@ -754,6 +827,8 @@ class _NewMedicationReminderInputFormState
         ? lastMedicationRecordDetails['id']
         : 0;
 
+    bool deleted = false;
+
     for (var date = startDate;
         date.isBefore(endDate.add(const Duration(days: 1)));
         date = date.add(const Duration(days: 1))) {
@@ -767,6 +842,40 @@ class _NewMedicationReminderInputFormState
           int minute = time.minute;
 
           // MedicationRecordDetails to be inserted
+
+          // Insert record to MedicationRecordDetails table
+          // if (widget._existing == null) {
+          //   await db.insert('MedicationRecordDetails', details.toMap());
+          // } else {
+          //   final detailsWithoutId = details.toMap();
+          //   detailsWithoutId.remove("id");
+          //   debugPrint(detailsWithoutId.toString());
+
+          //   await db.update(
+          //     "MedicationRecordDetails",
+          //     detailsWithoutId,
+          //     where: "medication_reminder_record_id = ?",
+          //     whereArgs: [widget._existing!.medicationReminderRecordId],
+          //   );
+          // }
+
+          DateTime now = DateTime.now();
+          Duration difference =
+              DateTime(year, month, day, hour, minute).difference(now);
+
+          // TODO: Save notification ID and delete corresponding notits
+          final notifId = await LocalNotification.schedNotif(
+            title: "Medication Reminder",
+            body: "Time to take ${_medicineNameController.text}",
+            payload: "payload",
+            delay: difference,
+            id: lastMedicationRecordDetailsId + 1,
+          );
+
+          if (notifId == null) {
+            continue;
+          }
+
           MedicationRecordDetails details = MedicationRecordDetails(
             id: lastMedicationRecordDetailsId + 1,
             medicationReminderRecordId: record.id,
@@ -775,31 +884,45 @@ class _NewMedicationReminderInputFormState
             medicineForm: medicationFormDropdownValue,
             medicineDosage: double.parse(_dosageController.text),
             medicationDatetime: DateTime(year, month, day, hour, minute),
+            notifId: notifId,
           );
 
-          // Insert record to MedicationRecordDetails table
-          await db.insert('MedicationRecordDetails', details.toMap());
+          lastMedicationRecordDetailsId++;
+
+          if (widget._existing == null) {
+            await db.insert("MedicationRecordDetails", details.toMap());
+          } else {
+            if (!deleted) {
+              final notifRecords = await db.rawQuery(
+                "SELECT * FROM MedicationRecordDetails WHERE medication_reminder_record_id = ?",
+                [widget._existing!.medicationReminderRecordId],
+              );
+
+              final parsedIds =
+                  MedicationRecordDetails.fromListOfMaps(notifRecords)
+                      .map((element) => element.notifId)
+                      .toList();
+
+              for (var id in parsedIds) {
+                await LocalNotification.cancel(id);
+              }
+
+              await db.delete(
+                "MedicationRecordDetails",
+                where: "medication_reminder_record_id = ?",
+                whereArgs: [widget._existing!.medicationReminderRecordId],
+              );
+
+              deleted = true;
+            }
+
+            await db.insert("MedicationRecordDetails", details.toMap());
+          }
 
           // debugPrint("Details: ${details.medicationDatetime}");
           // debugPrint(DateTime(year, month, day, hour, minute).toString());
-          DateTime now = DateTime.now();
-          Duration difference =
-              DateTime(year, month, day, hour, minute).difference(now);
 
-          LocalNotification.showSimpleNotification(
-            title: "Medication Reminder",
-            body: "Time to take ${details.medicineName}",
-            payload: "payload",
-            delay: Duration(
-              days: difference.inDays,
-              hours: difference.inHours,
-              minutes: difference.inMinutes,
-              seconds: difference.inSeconds,
-            ),
-          );
           // debugPrint(difference.inSeconds.toString());
-
-          lastMedicationRecordDetailsId++;
         }
       }
     }
