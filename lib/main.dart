@@ -194,7 +194,7 @@ class Main extends StatelessWidget {
             return MaterialPageRoute(
               builder: (context) => NewMedicationReminderInputForm(
                 db: args["db"],
-                user: args["user"],
+                existing: args["existing"],
               ),
               settings: const RouteSettings(
                 name: "/medication-tracking/input",
@@ -450,16 +450,47 @@ class _RootState extends State<Root> {
                             context,
                           ),
                           precacheImage(
+                            const AssetImage("assets/bmi_male.png"),
+                            context,
+                          ),
+                          precacheImage(
+                            const AssetImage(
+                                "assets/educational_material_logo.png"),
+                            context,
+                          ),
+                          precacheImage(
+                            const AssetImage("assets/bmi_female.png"),
+                            context,
+                          ),
+                          precacheImage(
                             const AssetImage("assets/eye_problems.png"),
+                            context,
+                          ),
+                          precacheImage(
+                            const AssetImage("assets/control_dm2.png"),
                             context,
                           ),
                           precacheImage(
                             const AssetImage("assets/foot_problems.png"),
                             context,
                           ),
+                          precacheImage(
+                            const AssetImage("assets/medicine.png"),
+                            context,
+                          ),
+                          precacheImage(
+                            const AssetImage("assets/lock.png"),
+                            context,
+                          ),
+                          precacheImage(
+                            const AssetImage("assets/pills_logo.png"),
+                            context,
+                          ),
                           GoogleFonts.pendingFonts([
                             GoogleFonts.montserrat(),
+                            GoogleFonts.montserrat(fontWeight: FontWeight.bold),
                             GoogleFonts.istokWeb(),
+                            GoogleFonts.istokWeb(fontWeight: FontWeight.bold),
                             GoogleFonts.italianno(),
                           ]),
                         ]);
@@ -580,7 +611,9 @@ class _RootState extends State<Root> {
                                       if (_glucoseRecords == null ||
                                           _bmiRecords == null ||
                                           _nutritionRecords == null ||
-                                          _activityRecords == null) {
+                                          _activityRecords == null ||
+                                          _medicationRecordDetails == null ||
+                                          _doctorsAppointmentRecords == null) {
                                         final glucoseRecords =
                                             GlucoseRecord.fromListOfMaps(
                                                 data[0]);
@@ -999,7 +1032,9 @@ class _RootState extends State<Root> {
                                             "db": dbContainer.data!,
                                           });
 
-                                      reset();
+                                      setState(() {
+                                        _doctorsAppointmentRecords = null;
+                                      });
                                     },
                                     child: Container(
                                       decoration: BoxDecoration(
@@ -1048,10 +1083,24 @@ class _RootState extends State<Root> {
                                                     "No Appointments");
                                               }
 
+                                              final validRecent =
+                                                  _doctorsAppointmentRecords!
+                                                      .where((rec) =>
+                                                          rec.appointmentDatetime
+                                                              .difference(
+                                                                DateTime.now(),
+                                                              )
+                                                              .inMinutes >
+                                                          -5);
+
+                                              if (validRecent.isEmpty) {
+                                                return const Text(
+                                                    "No Appointments");
+                                              }
+
                                               DoctorsAppointmentRecord
                                                   lastRecord =
-                                                  _doctorsAppointmentRecords!
-                                                      .first;
+                                                  validRecent.first;
 
                                               // debugPrint(lastRecord.doctorName);
 
@@ -1157,7 +1206,10 @@ class _RootState extends State<Root> {
                                                   },
                                                 );
 
-                                                reset();
+                                                setState(() {
+                                                  _medicationRecordDetails =
+                                                      null;
+                                                });
                                               },
                                               child: Container(
                                                 padding: const EdgeInsets.only(
@@ -2491,6 +2543,7 @@ Future<Database> initAppDatabase(String path) async {
           medicine_form VARCHAR(255) NOT NULL,
           medicine_dosage DECIMAL(5, 2) NOT NULL,
           medication_datetime DATETIME NOT NULL,
+          notification_id INTEGER NOT NULL,
           FOREIGN KEY(medication_reminder_record_id) REFERENCES MedicationReminderRecords(id)
         )
       """);
@@ -2522,7 +2575,7 @@ Future<Database> initAppDatabase(String path) async {
         )
       """);
     },
-    version: 2,
+    version: 3,
   );
 }
 
