@@ -40,6 +40,7 @@ class MedicationRecordDetails {
   final String medicineForm;
   final double medicineDosage;
   final DateTime medicationDatetime;
+  final int notifId;
 
   const MedicationRecordDetails({
     required this.id,
@@ -49,6 +50,7 @@ class MedicationRecordDetails {
     required this.medicineForm,
     required this.medicineDosage,
     required this.medicationDatetime,
+    required this.notifId,
   });
 
   @override
@@ -65,6 +67,7 @@ class MedicationRecordDetails {
       "medicine_form": medicineForm,
       "medicine_dosage": medicineDosage,
       "medication_datetime": medicationDatetime.toIso8601String(),
+      "notification_id": notifId,
     };
   }
 
@@ -83,6 +86,7 @@ class MedicationRecordDetails {
       medicineForm: map["medicine_form"],
       medicineDosage: map["medicine_dosage"].toDouble(),
       medicationDatetime: DateTime.parse(map["medication_datetime"]),
+      notifId: map["notification_id"]
     );
   }
 }
