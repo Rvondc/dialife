@@ -1,4 +1,5 @@
 import 'package:dialife/doctors_appointment/entities.dart';
+import 'package:dialife/local_notifications/local_notifications.dart';
 import 'package:dialife/user.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -26,6 +27,9 @@ class _NewDoctorsAppointmentFormState extends State<NewDoctorsAppointmentForm> {
   final TextEditingController _timeController = TextEditingController();
   final TextEditingController _doctorController = TextEditingController();
   final TextEditingController _purposeController = TextEditingController();
+
+  DateTime? _date;
+  TimeOfDay? _time;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -85,7 +89,7 @@ class _NewDoctorsAppointmentFormState extends State<NewDoctorsAppointmentForm> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Appoinment Info",
+                        "Appointment Info",
                         style: GoogleFonts.istokWeb(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -230,6 +234,7 @@ class _NewDoctorsAppointmentFormState extends State<NewDoctorsAppointmentForm> {
                                   lastDate: DateTime(DateTime.now().year + 10))
                               .then((selectedDate) {
                             if (selectedDate != null) {
+                              _date = selectedDate;
                               _dateController.text =
                                   DateFormat('dd/MM/yyyy').format(selectedDate);
                             }
@@ -303,6 +308,7 @@ class _NewDoctorsAppointmentFormState extends State<NewDoctorsAppointmentForm> {
                           );
 
                           if (pickedTime != null) {
+                            _time = pickedTime;
                             _timeController.text = DateFormat('hh:mm a').format(
                               DateTime(
                                 DateTime.now().year,
@@ -396,16 +402,14 @@ class _NewDoctorsAppointmentFormState extends State<NewDoctorsAppointmentForm> {
         ),
       );
     } else {
-      _addDataToDb();
-      Navigator.of(context).pop();
+      _addDataToDb().whenComplete(() => Navigator.of(context).pop());
     }
   }
 
-  _addDataToDb() async {
+  Future<void> _addDataToDb() async {
     Database db = widget._db;
-    List<String> splitDate = _dateController.text.split('/');
-    List<String> splitTime = _timeController.text.split(' ')[0].split(':');
 
+    // TODO: Add local notifications
     Map<String, dynamic>? lastRecord;
     if (await getLastRecord(db, "DoctorsAppointmentRecords") != null) {
       lastRecord = await getLastRecord(db, "DoctorsAppointmentRecords");
@@ -413,15 +417,31 @@ class _NewDoctorsAppointmentFormState extends State<NewDoctorsAppointmentForm> {
     int lastDoctorsAppointmentId =
         lastRecord != null ? lastRecord['id'] + 1 : 1;
 
+    final appointmentTime = DateTime(
+      _date!.year,
+      _date!.month,
+      _date!.day,
+      _time!.hour,
+      _time!.minute,
+    );
+
+    final id = await LocalNotification.schedNotif(
+      title: "Doctors Appointment",
+      body:
+          "Appointment with Dr. ${_doctorController.text}. Purpose: ${_purposeController.text}",
+      payload: "payload",
+      delay: appointmentTime.difference(DateTime.now()),
+      id: lastDoctorsAppointmentId + 500,
+    );
+
+    if (id == null) {
+      return;
+    }
+
     DoctorsAppointmentRecord newRecord = DoctorsAppointmentRecord(
       id: lastDoctorsAppointmentId,
       doctorName: _doctorController.text,
-      appointmentDatetime: DateTime(
-          int.parse(splitDate[2]),
-          int.parse(splitDate[1]),
-          int.parse(splitDate[0]),
-          int.parse(splitTime[0]),
-          int.parse(splitTime[1])),
+      appointmentDatetime: appointmentTime,
       appointmentPurpose: _purposeController.text,
     );
 
