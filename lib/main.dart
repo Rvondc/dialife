@@ -2,6 +2,7 @@ import 'dart:ui' as ui;
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:dialife/activity_log/utils.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:intl/intl.dart';
@@ -55,6 +56,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:path/path.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:printing/printing.dart';
+import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -206,7 +208,7 @@ class Main extends StatelessWidget {
             return MaterialPageRoute(
               builder: (context) => NewDoctorsAppointmentForm(
                 db: args["db"],
-                user: args["user"],
+                existing: args["existing"],
               ),
               settings: const RouteSettings(
                 name: "/doctors-appointment/input",
@@ -431,7 +433,7 @@ class _RootState extends State<Root> {
                       };
 
                       () async {
-                        if (!mounted) return;
+                        if (!context.mounted) return;
                         await Future.wait([
                           precacheImage(
                             const AssetImage("assets/glucose_logo.png"),
@@ -1028,7 +1030,6 @@ class _RootState extends State<Root> {
                                       await Navigator.of(context).pushNamed(
                                           "/doctors-appointment/input",
                                           arguments: {
-                                            "user": user,
                                             "db": dbContainer.data!,
                                           });
 
@@ -1050,7 +1051,6 @@ class _RootState extends State<Root> {
                                               left: 15,
                                             ),
                                             child: Row(
-                                              // mainAxisAlignment: MainAxisAlignment.center,
                                               crossAxisAlignment:
                                                   CrossAxisAlignment.center,
                                               children: [
@@ -1070,100 +1070,15 @@ class _RootState extends State<Root> {
                                             ),
                                           ),
                                           const Divider(thickness: 1),
-                                          Builder(
-                                            builder: (context) {
-                                              // debugPrint(
-                                              //     "D O C T O R S  A P P O I N T M E N T  R E C O R D S ${_doctorsAppointmentRecords!.first.toMap()}");
-                                              if (_doctorsAppointmentRecords ==
-                                                      null ||
-                                                  _doctorsAppointmentRecords
-                                                          ?.isEmpty ==
-                                                      true) {
-                                                return const Text(
-                                                    "No Appointments");
-                                              }
-
-                                              final validRecent =
-                                                  _doctorsAppointmentRecords!
-                                                      .where((rec) =>
-                                                          rec.appointmentDatetime
-                                                              .difference(
-                                                                DateTime.now(),
-                                                              )
-                                                              .inMinutes >
-                                                          -5);
-
-                                              if (validRecent.isEmpty) {
-                                                return const Text(
-                                                    "No Appointments");
-                                              }
-
-                                              DoctorsAppointmentRecord
-                                                  lastRecord =
-                                                  validRecent.first;
-
-                                              // debugPrint(lastRecord.doctorName);
-
-                                              return Material(
-                                                child: Container(
-                                                  padding:
-                                                      const EdgeInsets.all(15),
-                                                  child: Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceBetween,
-                                                    children: [
-                                                      Column(
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .start,
-                                                        children: [
-                                                          Text(
-                                                            "Dr. ${lastRecord.doctorName}",
-                                                            style: GoogleFonts
-                                                                .inter(
-                                                              fontSize: 14,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                            ),
-                                                          ),
-                                                          Text(
-                                                              lastRecord
-                                                                  .appointmentPurpose,
-                                                              style: GoogleFonts
-                                                                  .inter(
-                                                                fontSize: 12,
-                                                              )),
-                                                        ],
-                                                      ),
-                                                      Column(
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .end,
-                                                        children: [
-                                                          Text(
-                                                            DateFormat(
-                                                                    "MMMM d, yyyy")
-                                                                .format(lastRecord
-                                                                    .appointmentDatetime),
-                                                            style: GoogleFonts.inter(
-                                                                fontSize: 14,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold),
-                                                          ),
-                                                          Text(
-                                                            DateFormat("H:mm a")
-                                                                .format(lastRecord
-                                                                    .appointmentDatetime),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              );
+                                          DoctorsAppointment(
+                                            doctorsAppointmentRecords:
+                                                _doctorsAppointmentRecords,
+                                            db: dbContainer.data!,
+                                            resetRecords: () {
+                                              setState(() {
+                                                _doctorsAppointmentRecords =
+                                                    null;
+                                              });
                                             },
                                           ),
                                           const Divider(thickness: 1),
@@ -2214,6 +2129,154 @@ class _RootState extends State<Root> {
   }
 }
 
+class DoctorsAppointment extends StatefulWidget {
+  const DoctorsAppointment({
+    super.key,
+    required List<DoctorsAppointmentRecord>? doctorsAppointmentRecords,
+    required this.resetRecords,
+    required this.db,
+  }) : _doctorsAppointmentRecords = doctorsAppointmentRecords;
+
+  final List<DoctorsAppointmentRecord>? _doctorsAppointmentRecords;
+  final void Function() resetRecords;
+  final Database db;
+
+  @override
+  State<DoctorsAppointment> createState() => _DoctorsAppointmentState();
+}
+
+class _DoctorsAppointmentState extends State<DoctorsAppointment> {
+  final _carouselController = CarouselController();
+  final _pageController = PageController();
+
+  int _page = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget._doctorsAppointmentRecords == null ||
+        widget._doctorsAppointmentRecords?.isEmpty == true) {
+      return const Text("No Appointments");
+    }
+
+    final validRecent = widget._doctorsAppointmentRecords!.where((rec) =>
+        rec.appointmentDatetime
+            .difference(
+              DateTime.now(),
+            )
+            .inMinutes >
+        -5);
+
+    if (validRecent.isEmpty) {
+      return const Text("No Appointments");
+    }
+
+    return Material(
+      child: Container(
+        color: Colors.white,
+        padding: const EdgeInsets.symmetric(
+          horizontal: 15,
+        ),
+        child: Column(
+          children: [
+            CarouselSlider(
+              options: CarouselOptions(
+                aspectRatio: 8,
+                padEnds: false,
+                enlargeCenterPage: true,
+                enlargeFactor: 0.36,
+                enableInfiniteScroll: false,
+                viewportFraction: 1,
+                onPageChanged: (index, reason) {
+                  setState(() {
+                    _page = index;
+                  });
+                },
+              ),
+              carouselController: _carouselController,
+              items: validRecent.map((rec) {
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              "Dr. ${rec.doctorName}",
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            GestureDetector(
+                              onTap: () async {
+                                await Navigator.of(context).pushNamed(
+                                    "/doctors-appointment/input",
+                                    arguments: {
+                                      "db": widget.db,
+                                      "existing": rec,
+                                    });
+
+                                widget.resetRecords();
+                              },
+                              child: const Icon(
+                                Icons.edit_outlined,
+                                color: fgColor,
+                                size: 20,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Text(rec.appointmentPurpose,
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                            )),
+                      ],
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          DateFormat("MMMM d, yyyy")
+                              .format(rec.appointmentDatetime),
+                          style: GoogleFonts.inter(
+                              fontSize: 14, fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          DateFormat("h:mm a").format(rec.appointmentDatetime),
+                        ),
+                      ],
+                    ),
+                  ],
+                );
+              }).toList(),
+            ),
+            () {
+              if (validRecent.length > 1) {
+                return AnimatedSmoothIndicator(
+                  activeIndex: _page,
+                  effect: const ScrollingDotsEffect(
+                    dotColor: Colors.grey,
+                    fixedCenter: true,
+                    dotHeight: 5,
+                    dotWidth: 5,
+                    spacing: 4,
+                  ),
+                  count: validRecent.length,
+                );
+              } else {
+                return const SizedBox();
+              }
+            }(),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class BMIGraph extends StatelessWidget {
   final double frac;
 
@@ -2571,7 +2634,8 @@ Future<Database> initAppDatabase(String path) async {
           id INTEGER PRIMARY KEY NOT NULL,
           doctor_name VARCHAR(255) NOT NULL,
           apointment_datetime DATETIME NOT NULL,
-          appointment_purpose VARCHAR(255) NOT NULL
+          appointment_purpose VARCHAR(255) NOT NULL,
+          notification_id INTEGER NOT NULL
         )
       """);
     },

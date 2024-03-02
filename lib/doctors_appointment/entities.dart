@@ -3,12 +3,14 @@ class DoctorsAppointmentRecord {
   final String doctorName;
   final DateTime appointmentDatetime;
   final String appointmentPurpose;
+  final int notifId;
 
   const DoctorsAppointmentRecord({
     required this.id,
     required this.doctorName,
     required this.appointmentDatetime,
     required this.appointmentPurpose,
+    required this.notifId,
   });
 
   Map<String, dynamic> toMap() {
@@ -17,6 +19,7 @@ class DoctorsAppointmentRecord {
       "doctor_name": doctorName,
       "apointment_datetime": appointmentDatetime.toIso8601String(),
       "appointment_purpose": appointmentPurpose,
+      "notification_id": notifId,
     };
   }
 
@@ -26,6 +29,7 @@ class DoctorsAppointmentRecord {
       doctorName: map["doctor_name"],
       appointmentDatetime: DateTime.parse(map["apointment_datetime"]),
       appointmentPurpose: map["appointment_purpose"],
+      notifId: map["notification_id"]
     );
   }
 

@@ -38,7 +38,9 @@ class _ActivityLogState extends State<ActivityLog> {
 
     return waitForFuture(
       future: widget.db.query("ActivityRecord"),
-      loading: const SpinKitCircle(color: fgColor),
+      loading: const Scaffold(
+        body: SpinKitCircle(color: fgColor),
+      ),
       builder: (context, data) {
         final parsedActivityRecordData = ActivityRecord.fromListOfMaps(data);
 
