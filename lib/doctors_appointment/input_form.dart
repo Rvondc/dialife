@@ -1,21 +1,20 @@
 import 'package:dialife/doctors_appointment/entities.dart';
 import 'package:dialife/local_notifications/local_notifications.dart';
-import 'package:dialife/user.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:sqflite/sqflite.dart';
 
 class NewDoctorsAppointmentForm extends StatefulWidget {
-  final User _user;
   final Database _db;
+  final DoctorsAppointmentRecord? _existing;
 
   const NewDoctorsAppointmentForm({
     super.key,
-    required User user,
     required Database db,
-  })  : _user = user,
-        _db = db;
+    required DoctorsAppointmentRecord? existing,
+  })  : _db = db,
+        _existing = existing;
 
   @override
   State<NewDoctorsAppointmentForm> createState() =>
@@ -30,12 +29,35 @@ class _NewDoctorsAppointmentFormState extends State<NewDoctorsAppointmentForm> {
 
   DateTime? _date;
   TimeOfDay? _time;
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (widget._existing == null) {
+      return;
+    }
+
+    _dateController.text =
+        DateFormat('dd/MM/yyyy').format(widget._existing!.appointmentDatetime);
+    _date = widget._existing!.appointmentDatetime;
+
+    _timeController.text =
+        DateFormat('hh:mm a').format(widget._existing!.appointmentDatetime);
+    _time = TimeOfDay.fromDateTime(widget._existing!.appointmentDatetime);
+
+    _purposeController.text = widget._existing!.appointmentPurpose;
+    _doctorController.text = widget._existing!.doctorName;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey.shade200,
       appBar: AppBar(
-        title: const Text("New Appointment"),
+        title: Text(widget._existing == null
+            ? "New Appointment"
+            : "Change Appointment"),
       ),
       resizeToAvoidBottomInset: false,
       floatingActionButton: FloatingActionButton.extended(
@@ -44,7 +66,7 @@ class _NewDoctorsAppointmentFormState extends State<NewDoctorsAppointmentForm> {
           // Navigator.of(context).pop();
         },
         label: Text(
-          "Set Appointment",
+          widget._existing == null ? "Set Appointment" : "Update Appointment",
           style: GoogleFonts.istokWeb(
             fontSize: 17,
             fontWeight: FontWeight.bold,
@@ -384,6 +406,52 @@ class _NewDoctorsAppointmentFormState extends State<NewDoctorsAppointmentForm> {
                 ),
               ),
             ),
+            const SizedBox(height: 10),
+            () {
+              if (widget._existing != null) {
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Delete Appointment?'),
+                            actions: <Widget>[
+                              TextButton(
+                                child: const Text('Confirm'),
+                                onPressed: () async {
+                                  await widget._db.delete(
+                                    "DoctorsAppointmentRecords",
+                                    where: "id = ?",
+                                    whereArgs: [widget._existing!.id],
+                                  );
+
+                                  if (!context.mounted) return;
+
+                                  Navigator.pop(context);
+                                  Navigator.pop(context);
+                                },
+                              ),
+                              TextButton(
+                                child: const Text('Cancel'),
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.delete_outline),
+                    ),
+                  ],
+                );
+              } else {
+                return const SizedBox();
+              }
+            }(),
           ],
         ),
       ),
@@ -409,7 +477,6 @@ class _NewDoctorsAppointmentFormState extends State<NewDoctorsAppointmentForm> {
   Future<void> _addDataToDb() async {
     Database db = widget._db;
 
-    // TODO: Add local notifications
     Map<String, dynamic>? lastRecord;
     if (await getLastRecord(db, "DoctorsAppointmentRecords") != null) {
       lastRecord = await getLastRecord(db, "DoctorsAppointmentRecords");
@@ -424,6 +491,10 @@ class _NewDoctorsAppointmentFormState extends State<NewDoctorsAppointmentForm> {
       _time!.hour,
       _time!.minute,
     );
+
+    if (widget._existing != null) {
+      await LocalNotification.cancel(widget._existing!.notifId);
+    }
 
     final id = await LocalNotification.schedNotif(
       title: "Doctors Appointment",
@@ -443,9 +514,19 @@ class _NewDoctorsAppointmentFormState extends State<NewDoctorsAppointmentForm> {
       doctorName: _doctorController.text,
       appointmentDatetime: appointmentTime,
       appointmentPurpose: _purposeController.text,
+      notifId: id,
     );
 
-    await db.insert('DoctorsAppointmentRecords', newRecord.toMap());
+    if (widget._existing == null) {
+      await db.insert('DoctorsAppointmentRecords', newRecord.toMap());
+    } else {
+      await db.update(
+        'DoctorsAppointmentRecords',
+        newRecord.toMap(),
+        where: "id = ?",
+        whereArgs: [widget._existing!.id],
+      );
+    }
   }
 
   Future<Map<String, dynamic>?> getLastRecord(

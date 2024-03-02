@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:sqflite/sqflite.dart';
 
 class NewMedicationReminderInputForm extends StatefulWidget {
