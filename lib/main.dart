@@ -4,6 +4,8 @@ import 'dart:io';
 
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:dialife/activity_log/utils.dart';
+import 'package:dialife/api/api.dart';
+import 'package:dialife/api/entities.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
@@ -65,6 +67,10 @@ void main() async {
   FlutterNativeSplash.preserve(widgetsBinding: binding);
 
   await LocalNotification.init();
+  MonitoringAPI.init(
+    https: true,
+    baseUrl: "idontknowanymore.site",
+  );
 
   runApp(const Main());
 }
@@ -352,6 +358,7 @@ class _RootState extends State<Root> {
                   : () async {
                       await Navigator.of(context).pushNamed("/edit-user");
 
+                      // NOTE: Not putting a syncPatientState here means that it is only synced when the app is closed then opened again
                       reset();
                     },
               icon: Icon(
@@ -681,6 +688,54 @@ class _RootState extends State<Root> {
                                       if (_glucoseRecords == null) {
                                         return const SpinKitCircle(
                                             color: fgColor);
+                                      }
+
+                                      if (user.webId == null) {
+                                        () async {
+                                          try {
+                                            final webId = await MonitoringAPI
+                                                .createPatient(user);
+                                            final userMap = user.toMap();
+
+                                            userMap["web_id"] = webId;
+                                            await dbContainer.data!.update(
+                                              "User",
+                                              userMap,
+                                              where: "id = ?",
+                                              whereArgs: [user.id],
+                                            );
+                                          } catch (e) {
+                                            // TODO: Handle no internet
+                                          }
+                                        }();
+                                      } else {
+                                        () async {
+                                          try {
+                                            await MonitoringAPI
+                                                .syncPatientState(user);
+                                          } catch (e) {
+                                            try {
+                                              final webId = await MonitoringAPI
+                                                  .createPatient(user);
+
+                                              final userMap = user.toMap();
+
+                                              userMap["web_id"] = webId;
+                                              await dbContainer.data!.update(
+                                                "User",
+                                                userMap,
+                                                where: "id = ?",
+                                                whereArgs: [user.id],
+                                              );
+                                            } catch (e) {
+                                              // TODO: Handle no internet
+                                            }
+                                          }
+
+                                          await MonitoringAPI.uploadPatientRecord(
+                                              await APIPatientRecordUploadable
+                                                  .latestCompiled());
+                                        }();
                                       }
 
                                       return Column(
@@ -2147,7 +2202,6 @@ class DoctorsAppointment extends StatefulWidget {
 
 class _DoctorsAppointmentState extends State<DoctorsAppointment> {
   final _carouselController = CarouselController();
-  final _pageController = PageController();
 
   int _page = 0;
 

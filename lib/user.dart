@@ -11,6 +11,7 @@ class User {
   final String addressDescription;
   final String zipCode;
   final String contactNumber;
+  final int? webId;
 
   const User({
     required this.id,
@@ -25,6 +26,7 @@ class User {
     required this.birthday,
     required this.province,
     required this.municipality,
+    required this.webId,
   });
 
   String get name {
@@ -37,6 +39,40 @@ class User {
 
   Duration get exactAge {
     return DateTime.now().difference(birthday);
+  }
+
+  Map toApiInsertable() {
+    return {
+      "name": middleName.isEmpty
+          ? "$firstName $lastName"
+          : "$firstName ${middleName[0]}. $lastName",
+      "birthdate": birthday.toIso8601String(),
+      "province": province,
+      "municipality": municipality,
+      "barangay": barangay,
+      "zip_code": zipCode,
+      "sex": isMale ? "male" : "female",
+      "address_description": addressDescription,
+      "contact_number": contactNumber,
+    };
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      "id": id,
+      "first_name": firstName,
+      "middle_name": middleName,
+      "last_name": lastName,
+      "is_male": isMale ? 1 : 0,
+      "contact_number": contactNumber,
+      "zip_code": zipCode,
+      "address_description": addressDescription,
+      "barangay": barangay,
+      "birthdate": birthday.toIso8601String(),
+      "municipality": municipality,
+      "province": province,
+      "web_id": webId,
+    };
   }
 
   static User fromMap(Map<String, dynamic> map) {
@@ -53,6 +89,7 @@ class User {
       birthday: DateTime.parse(map["birthdate"]),
       municipality: map["municipality"],
       province: map["province"],
+      webId: map["web_id"],
     );
   }
 }
