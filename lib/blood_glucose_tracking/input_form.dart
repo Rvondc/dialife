@@ -105,6 +105,9 @@ class _GlucoseRecordInputFormInternalState
     _isA1C = widget._existing != null ? widget._existing!.isA1C : false;
     _isMmolPerLiter = true;
 
+    _date.value = DateTime.now();
+    _time.value = TimeOfDay.now();
+
     _converterController.addListener(() {
       if (_converterController.text.isEmpty) {
         return;
