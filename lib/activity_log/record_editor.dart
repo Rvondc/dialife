@@ -382,6 +382,31 @@ class _ActivityRecordEditorInternalState
                 );
               }).toList(),
               const SizedBox(height: 20),
+              Align(
+                alignment: Alignment.bottomLeft,
+                child: FloatingActionButton(
+                  onPressed: () async {
+                    if (_focusedDay.isAfter(DateTime.now())) {
+                      return;
+                    }
+
+                    await Navigator.of(context).pushNamed(
+                      "/activity-log/input",
+                      arguments: {
+                        "db": widget.db,
+                        "now": _focusedDay,
+                      },
+                    );
+                  },
+                  shape: const CircleBorder(),
+                  backgroundColor: fgColor,
+                  child: const Icon(
+                    Icons.add,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
             ],
           );
         } else {
