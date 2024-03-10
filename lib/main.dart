@@ -260,6 +260,7 @@ class Main extends StatelessWidget {
             return MaterialPageRoute(
               builder: (context) => ActivityLogInput(
                 db: args["db"],
+                now: args["now"],
                 existing: args["existing"],
               ),
               settings: const RouteSettings(name: "/activity-log/input"),
@@ -348,7 +349,9 @@ class _RootState extends State<Root> {
       children: [
         Scaffold(
           appBar: AppBar(
-            backgroundColor: Colors.grey.shade200,
+            backgroundColor: !_authenticated
+                ? const Color.fromARGB(255, 217, 231, 251)
+                : const Color(0xFFB2CFF6),
             toolbarHeight: 40,
             elevation: 0,
             leading: IconButton(
@@ -390,7 +393,7 @@ class _RootState extends State<Root> {
               ),
             ],
           ),
-          backgroundColor: Colors.grey.shade200,
+          backgroundColor: const Color(0xFFB2CFF6),
           body: FutureBuilder(
             future: getDatabasesPath(),
             builder: (context, data) {
@@ -526,964 +529,1014 @@ class _RootState extends State<Root> {
 
                       return Container(
                           constraints: const BoxConstraints.expand(),
-                          child: ListView(
+                          child: Stack(
                             children: [
-                              Text(
-                                'DiaLife',
-                                textAlign: TextAlign.center,
-                                style: GoogleFonts.italianno(
-                                  fontSize: 60,
-                                  color:
-                                      const Color.fromRGBO(76, 102, 240, 1.0),
+                              Align(
+                                alignment: Alignment.bottomCenter,
+                                child: Image.asset(
+                                  "assets/bg.png",
+                                  fit: BoxFit.cover,
                                 ),
                               ),
-                              // Current health status text label
-                              RichText(
-                                text: TextSpan(
-                                  children: <TextSpan>[
-                                    TextSpan(
-                                      text: "Welcome, ",
-                                      style: GoogleFonts.istokWeb(
-                                        fontSize: 20,
-                                        color: Colors.black,
-                                      ),
+                              ListView(
+                                children: [
+                                  Text(
+                                    'DiaLife',
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.italianno(
+                                      fontSize: 60,
+                                      color: const Color.fromRGBO(
+                                          76, 102, 240, 1.0),
                                     ),
-                                    TextSpan(
-                                      text: "${user.firstName}!",
-                                      style: GoogleFonts.istokWeb(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-
-                              // Container for health progress bar
-                              GestureDetector(
-                                onTap: () async {
-                                  await Navigator.of(context).pushNamed(
-                                    "/blood-glucose-tracking",
-                                    arguments: {
-                                      "user": user,
-                                      "db": dbContainer.data!,
-                                    },
-                                  );
-
-                                  setState(() {
-                                    _glucoseRecords = null;
-                                  });
-                                },
-                                child: Container(
-                                  width: double.infinity,
-                                  height: 280,
-                                  margin: const EdgeInsets.only(
-                                    left: 10,
-                                    right: 10,
-                                    top: 10,
                                   ),
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(10.0),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.25),
-                                        blurRadius: 4.0,
-                                        spreadRadius: 0.0,
-                                        offset: const Offset(0.0, 4.0),
-                                      ),
-                                    ],
-                                  ),
-                                  // TODO: Create glucose tracking component (MARKER)
-                                  child: waitForFuture(
-                                    future: Future.wait(
-                                      [
-                                        dbContainer.data!
-                                            .query("GlucoseRecord"),
-                                        dbContainer.data!.query("BMIRecord"),
-                                        dbContainer.data!
-                                            .query("NutritionRecord"),
-                                        dbContainer.data!
-                                            .query("ActivityRecord"),
-                                        dbContainer.data!
-                                            .query("MedicationRecordDetails"),
-                                        dbContainer.data!
-                                            .query("DoctorsAppointmentRecords"),
+                                  // Current health status text label
+                                  RichText(
+                                    text: TextSpan(
+                                      children: <TextSpan>[
+                                        TextSpan(
+                                          text: "Welcome, ",
+                                          style: GoogleFonts.istokWeb(
+                                            fontSize: 20,
+                                            color: Colors.black,
+                                          ),
+                                        ),
+                                        TextSpan(
+                                          text: "${user.firstName}!",
+                                          style: GoogleFonts.istokWeb(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black,
+                                          ),
+                                        ),
                                       ],
                                     ),
-                                    loading:
-                                        const SpinKitCircle(color: fgColor),
-                                    builder: (context, data) {
-                                      if (_glucoseRecords == null ||
-                                          _bmiRecords == null ||
-                                          _nutritionRecords == null ||
-                                          _activityRecords == null ||
-                                          _medicationRecordDetails == null ||
-                                          _doctorsAppointmentRecords == null) {
-                                        final glucoseRecords =
-                                            GlucoseRecord.fromListOfMaps(
-                                                data[0]);
-
-                                        final bmiRecords =
-                                            BMIRecord.fromListOfMaps(data[1]);
-
-                                        final nutritionRecords =
-                                            NutritionRecord.fromListOfMaps(
-                                                data[2]);
-
-                                        final activityRecords =
-                                            ActivityRecord.fromListOfMaps(
-                                                data[3]);
-
-                                        final medicationRecordDetails =
-                                            MedicationRecordDetails
-                                                .fromListOfMaps(data[4]);
-
-                                        final doctorsAppointmentRecords =
-                                            DoctorsAppointmentRecord
-                                                .fromListOfMaps(data[5]);
-
-                                        glucoseRecords.sort(
-                                          (a, b) => a.bloodTestDate
-                                              .compareTo(b.bloodTestDate),
-                                        );
-
-                                        bmiRecords.sort(
-                                          (a, b) => a.createdAt
-                                              .compareTo(b.createdAt),
-                                        );
-
-                                        nutritionRecords.sort(
-                                          (a, b) => a.createdAt
-                                              .compareTo(b.createdAt),
-                                        );
-
-                                        activityRecords.sort(
-                                          (a, b) => a.createdAt
-                                              .compareTo(b.createdAt),
-                                        );
-
-                                        doctorsAppointmentRecords.sort((a, b) =>
-                                            a.appointmentDatetime.compareTo(
-                                                b.appointmentDatetime));
-
-                                        Future.delayed(Duration.zero, () {
-                                          setState(() {
-                                            _glucoseRecords = glucoseRecords;
-                                            _bmiRecords = bmiRecords;
-                                            _nutritionRecords =
-                                                nutritionRecords;
-                                            _activityRecords = activityRecords;
-                                            _medicationRecordDetails =
-                                                medicationRecordDetails;
-                                            _doctorsAppointmentRecords =
-                                                doctorsAppointmentRecords;
-                                          });
-                                        });
-                                      }
-
-                                      if (_glucoseRecords == null) {
-                                        return const SpinKitCircle(
-                                            color: fgColor);
-                                      }
-
-                                      if (user.webId == null) {
-                                        () async {
-                                          try {
-                                            final webId = await MonitoringAPI
-                                                .createPatient(user);
-                                            final userMap = user.toMap();
-
-                                            userMap["web_id"] = webId;
-                                            await dbContainer.data!.update(
-                                              "User",
-                                              userMap,
-                                              where: "id = ?",
-                                              whereArgs: [user.id],
-                                            );
-                                          } catch (e) {
-                                            // TODO: Handle no internet
-                                          }
-                                        }();
-                                      } else {
-                                        () async {
-                                          try {
-                                            await MonitoringAPI
-                                                .syncPatientState(user);
-                                          } catch (e) {
-                                            try {
-                                              final webId = await MonitoringAPI
-                                                  .createPatient(user);
-
-                                              final userMap = user.toMap();
-
-                                              userMap["web_id"] = webId;
-                                              await dbContainer.data!.update(
-                                                "User",
-                                                userMap,
-                                                where: "id = ?",
-                                                whereArgs: [user.id],
-                                              );
-                                            } catch (e) {
-                                              // TODO: Handle no internet
-                                            }
-                                          }
-
-                                          await MonitoringAPI.uploadPatientRecord(
-                                              await APIPatientRecordUploadable
-                                                  .latestCompiled());
-                                        }();
-                                      }
-
-                                      return Column(
-                                        children: [
-                                          const Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              SizedBox(width: 20),
-                                              Text(
-                                                "Glucose Level",
-                                                style: TextStyle(fontSize: 20),
-                                              ),
-                                              Icon(
-                                                Icons.info_outline,
-                                                color: fgColor,
-                                                size: 20,
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 8),
-                                          Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 30,
-                                            ),
-                                            child: Material(
-                                              elevation: 5,
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(10),
-                                              ),
-                                              child: Container(
-                                                height: 55,
-                                                decoration: BoxDecoration(
-                                                  borderRadius:
-                                                      BorderRadius.circular(10),
-                                                  color:
-                                                      const Color(0xFF67E88B),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          const SizedBox(
-                                            height: 20,
-                                          ),
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceEvenly,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              SizedBox(
-                                                width: 100,
-                                                child: Column(
-                                                  children: [
-                                                    Container(
-                                                      width: 3,
-                                                      height: 20,
-                                                      color: const Color(
-                                                          0xFFCBCF10),
-                                                    ),
-                                                    const Text("Latest"),
-                                                    const SizedBox(height: 5),
-                                                    Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .center,
-                                                      children: [
-                                                        Builder(
-                                                          builder: (context) {
-                                                            if (_glucoseRecords ==
-                                                                    null ||
-                                                                _glucoseRecords!
-                                                                    .isEmpty) {
-                                                              return const Text(
-                                                                "--",
-                                                                style:
-                                                                    TextStyle(
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
-                                                                  fontSize: 20,
-                                                                ),
-                                                              );
-                                                            }
-
-                                                            return Text(
-                                                              _glucoseRecords!
-                                                                  .last
-                                                                  .glucoseLevel
-                                                                  .toStringAsFixed(
-                                                                      2),
-                                                              style:
-                                                                  const TextStyle(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                                fontSize: 20,
-                                                              ),
-                                                            );
-                                                          },
-                                                        ),
-                                                        const SizedBox(
-                                                            width: 3),
-                                                        const Text(
-                                                          "mmol/L",
-                                                          style: TextStyle(
-                                                            color:
-                                                                Colors.blueGrey,
-                                                            fontSize: 12,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              SizedBox(
-                                                width: 100,
-                                                child: Column(
-                                                  children: [
-                                                    Container(
-                                                      width: 3,
-                                                      height: 20,
-                                                      color: const Color(
-                                                          0xFF102ECF),
-                                                    ),
-                                                    const Text("Week Average"),
-                                                    const SizedBox(height: 5),
-                                                    Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .center,
-                                                      children: [
-                                                        Builder(
-                                                          builder: (context) {
-                                                            double? average =
-                                                                calcAverageGlucoseRecord(
-                                                              DateTime.now().subtract(
-                                                                  const Duration(
-                                                                      days: 7)),
-                                                              DateTime.now(),
-                                                              _glucoseRecords!,
-                                                            );
-
-                                                            if (average ==
-                                                                null) {
-                                                              return const Text(
-                                                                "--",
-                                                                style:
-                                                                    TextStyle(
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
-                                                                  fontSize: 20,
-                                                                ),
-                                                              );
-                                                            }
-
-                                                            return Text(
-                                                              average
-                                                                  .toStringAsFixed(
-                                                                      2),
-                                                              style:
-                                                                  const TextStyle(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                                fontSize: 20,
-                                                              ),
-                                                            );
-                                                          },
-                                                        ),
-                                                        const SizedBox(
-                                                            width: 3),
-                                                        const Text(
-                                                          "mmol/L",
-                                                          style: TextStyle(
-                                                            color:
-                                                                Colors.blueGrey,
-                                                            fontSize: 12,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              SizedBox(
-                                                width: 100,
-                                                child: Column(
-                                                  children: [
-                                                    Container(
-                                                      width: 3,
-                                                      height: 20,
-                                                      color: const Color(
-                                                          0xFF866000),
-                                                    ),
-                                                    const Text("Last Updated"),
-                                                    const SizedBox(height: 5),
-                                                    LastUpdatedSection(
-                                                        records:
-                                                            _glucoseRecords),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          Container(
-                                            margin: const EdgeInsets.symmetric(
-                                              vertical: 5,
-                                            ),
-                                            child: const Divider(
-                                              color: Colors.black,
-                                              endIndent: 20,
-                                              indent: 20,
-                                            ),
-                                          ),
-                                          TextButton(
-                                            onPressed: () async {
-                                              await Navigator.of(context)
-                                                  .pushNamed(
-                                                "/blood-glucose-tracking/editor",
-                                                arguments: {
-                                                  "user": user,
-                                                  "db": dbContainer.data!,
-                                                },
-                                              );
-
-                                              setState(() {
-                                                _glucoseRecords = null;
-                                              });
-                                            },
-                                            style: ButtonStyle(
-                                              overlayColor:
-                                                  MaterialStateProperty.all(
-                                                Colors.white.withOpacity(0.3),
-                                              ),
-                                              backgroundColor:
-                                                  MaterialStateProperty.all(
-                                                fgColor,
-                                              ),
-                                              shape: MaterialStateProperty.all(
-                                                RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(10),
-                                                ),
-                                              ),
-                                            ),
-                                            child: const Text(
-                                              "VIEW FULL HISTORY",
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      );
-                                    },
+                                    textAlign: TextAlign.center,
                                   ),
-                                ),
-                              ),
-                              // Currently empty container
-                              // Container(
-                              //   margin: const EdgeInsets.only(
-                              //     right: 10,
-                              //     left: 10,
-                              //     top: 15,
-                              //   ),
-                              //   width: double.infinity,
-                              //   height: 68,
-                              //   decoration: BoxDecoration(
-                              //     color: Colors.white,
-                              //     borderRadius: BorderRadius.circular(10.0),
-                              //     boxShadow: [
-                              //       BoxShadow(
-                              //         color: Colors.black.withOpacity(0.25),
-                              //         blurRadius: 4.0,
-                              //         spreadRadius: 0.0,
-                              //         offset: const Offset(0.0, 4.0),
-                              //       ),
-                              //     ],
-                              //   ),
-                              // ),
-                              GestureDetector(
-                                onTap: () {
-                                  Navigator.of(context).pushNamed("/education");
-                                },
-                                child: Container(
-                                  margin: const EdgeInsets.only(
-                                    right: 10,
-                                    left: 10,
-                                    top: 15,
-                                  ),
-                                  width: double.infinity,
-                                  padding: const EdgeInsets.all(8),
-                                  height: 68,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(10.0),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.25),
-                                        blurRadius: 4.0,
-                                        spreadRadius: 0.0,
-                                        offset: const Offset(0.0, 4.0),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        margin:
-                                            const EdgeInsets.only(right: 10),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFFD9D9D9),
-                                          borderRadius:
-                                              BorderRadius.circular(100),
-                                        ),
-                                        child: Image.asset(
-                                            "assets/educational_material_logo.png"),
-                                      ),
-                                      Text(
-                                        "Reading Materials",
-                                        style: GoogleFonts.istokWeb(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                  top: 16,
-                                  left: 10,
-                                  right: 10,
-                                ),
-                                child: Material(
-                                  borderRadius: BorderRadius.circular(10),
-                                  elevation: 4,
-                                  child: GestureDetector(
+
+                                  // Container for health progress bar
+                                  GestureDetector(
                                     onTap: () async {
                                       await Navigator.of(context).pushNamed(
-                                          "/doctors-appointment/input",
-                                          arguments: {
-                                            "db": dbContainer.data!,
-                                          });
+                                        "/blood-glucose-tracking",
+                                        arguments: {
+                                          "user": user,
+                                          "db": dbContainer.data!,
+                                        },
+                                      );
 
                                       setState(() {
-                                        _doctorsAppointmentRecords = null;
+                                        _glucoseRecords = null;
                                       });
                                     },
                                     child: Container(
+                                      width: double.infinity,
+                                      height: 280,
+                                      margin: const EdgeInsets.only(
+                                        left: 10,
+                                        right: 10,
+                                        top: 10,
+                                      ),
+                                      padding: const EdgeInsets.all(8),
                                       decoration: BoxDecoration(
-                                        color: Colors.white,
+                                        color: Colors.white.withOpacity(0.8),
                                         borderRadius:
                                             BorderRadius.circular(10.0),
-                                      ),
-                                      child: Column(
-                                        children: [
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                              top: 12,
-                                              left: 15,
-                                            ),
-                                            child: Row(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.center,
-                                              children: [
-                                                const Icon(
-                                                  Icons.notifications_none,
-                                                  size: 32,
-                                                ),
-                                                const SizedBox(width: 5),
-                                                Text(
-                                                  "Doctor's Appointment",
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 13,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color:
+                                                Colors.black.withOpacity(0.25),
+                                            blurRadius: 4.0,
+                                            spreadRadius: 0.0,
+                                            offset: const Offset(0.0, 4.0),
                                           ),
-                                          const Divider(thickness: 1),
-                                          DoctorsAppointment(
-                                            doctorsAppointmentRecords:
-                                                _doctorsAppointmentRecords,
-                                            db: dbContainer.data!,
-                                            resetRecords: () {
-                                              setState(() {
-                                                _doctorsAppointmentRecords =
-                                                    null;
-                                              });
-                                            },
-                                          ),
-                                          const Divider(thickness: 1),
                                         ],
                                       ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                  top: 16,
-                                  left: 10,
-                                  right: 10,
-                                ),
-                                child: AspectRatio(
-                                  aspectRatio: 1.48,
-                                  child: Material(
-                                    borderRadius: BorderRadius.circular(10),
-                                    elevation: 4,
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.stretch,
-                                        children: [
-                                          Expanded(
-                                            flex: 4,
-                                            child: GestureDetector(
-                                              onTap: () async {
-                                                await Navigator.of(context)
-                                                    .pushNamed(
-                                                  "/medication-tracking",
-                                                  arguments: {
-                                                    "db": dbContainer.data!,
-                                                    "user": user
-                                                  },
-                                                );
+                                      // TODO: Create glucose tracking component (MARKER)
+                                      child: waitForFuture(
+                                        future: Future.wait(
+                                          [
+                                            dbContainer.data!
+                                                .query("GlucoseRecord"),
+                                            dbContainer.data!
+                                                .query("BMIRecord"),
+                                            dbContainer.data!
+                                                .query("NutritionRecord"),
+                                            dbContainer.data!
+                                                .query("ActivityRecord"),
+                                            dbContainer.data!.query(
+                                                "MedicationRecordDetails"),
+                                            dbContainer.data!.query(
+                                                "DoctorsAppointmentRecords"),
+                                          ],
+                                        ),
+                                        loading:
+                                            const SpinKitCircle(color: fgColor),
+                                        builder: (context, data) {
+                                          if (_glucoseRecords == null ||
+                                              _bmiRecords == null ||
+                                              _nutritionRecords == null ||
+                                              _activityRecords == null ||
+                                              _medicationRecordDetails ==
+                                                  null ||
+                                              _doctorsAppointmentRecords ==
+                                                  null) {
+                                            final glucoseRecords =
+                                                GlucoseRecord.fromListOfMaps(
+                                                    data[0]);
 
-                                                setState(() {
-                                                  _medicationRecordDetails =
-                                                      null;
-                                                });
-                                              },
-                                              child: Container(
-                                                padding: const EdgeInsets.only(
-                                                  top: 8,
+                                            final bmiRecords =
+                                                BMIRecord.fromListOfMaps(
+                                                    data[1]);
+
+                                            final nutritionRecords =
+                                                NutritionRecord.fromListOfMaps(
+                                                    data[2]);
+
+                                            final activityRecords =
+                                                ActivityRecord.fromListOfMaps(
+                                                    data[3]);
+
+                                            final medicationRecordDetails =
+                                                MedicationRecordDetails
+                                                    .fromListOfMaps(data[4]);
+
+                                            final doctorsAppointmentRecords =
+                                                DoctorsAppointmentRecord
+                                                    .fromListOfMaps(data[5]);
+
+                                            glucoseRecords.sort(
+                                              (a, b) => a.bloodTestDate
+                                                  .compareTo(b.bloodTestDate),
+                                            );
+
+                                            bmiRecords.sort(
+                                              (a, b) => a.createdAt
+                                                  .compareTo(b.createdAt),
+                                            );
+
+                                            nutritionRecords.sort(
+                                              (a, b) => a.createdAt
+                                                  .compareTo(b.createdAt),
+                                            );
+
+                                            activityRecords.sort(
+                                              (a, b) => a.createdAt
+                                                  .compareTo(b.createdAt),
+                                            );
+
+                                            doctorsAppointmentRecords.sort(
+                                                (a, b) => a.appointmentDatetime
+                                                    .compareTo(
+                                                        b.appointmentDatetime));
+
+                                            Future.delayed(Duration.zero, () {
+                                              setState(() {
+                                                _glucoseRecords =
+                                                    glucoseRecords;
+                                                _bmiRecords = bmiRecords;
+                                                _nutritionRecords =
+                                                    nutritionRecords;
+                                                _activityRecords =
+                                                    activityRecords;
+                                                _medicationRecordDetails =
+                                                    medicationRecordDetails;
+                                                _doctorsAppointmentRecords =
+                                                    doctorsAppointmentRecords;
+                                              });
+                                            });
+                                          }
+
+                                          if (_glucoseRecords == null) {
+                                            return const SpinKitCircle(
+                                                color: fgColor);
+                                          }
+
+                                          if (user.webId == null) {
+                                            () async {
+                                              try {
+                                                final webId =
+                                                    await MonitoringAPI
+                                                        .createPatient(user);
+                                                final userMap = user.toMap();
+
+                                                userMap["web_id"] = webId;
+                                                await dbContainer.data!.update(
+                                                  "User",
+                                                  userMap,
+                                                  where: "id = ?",
+                                                  whereArgs: [user.id],
+                                                );
+                                              } catch (e) {
+                                                // TODO: Handle no internet
+                                              }
+                                            }();
+                                          } else {
+                                            () async {
+                                              try {
+                                                await MonitoringAPI
+                                                    .syncPatientState(user);
+                                              } catch (e) {
+                                                try {
+                                                  final webId =
+                                                      await MonitoringAPI
+                                                          .createPatient(user);
+
+                                                  final userMap = user.toMap();
+
+                                                  userMap["web_id"] = webId;
+                                                  await dbContainer.data!
+                                                      .update(
+                                                    "User",
+                                                    userMap,
+                                                    where: "id = ?",
+                                                    whereArgs: [user.id],
+                                                  );
+                                                } catch (e) {
+                                                  // TODO: Handle no internet
+                                                }
+                                              }
+
+                                              await MonitoringAPI
+                                                  .uploadPatientRecord(
+                                                      await APIPatientRecordUploadable
+                                                          .latestCompiled());
+                                            }();
+                                          }
+
+                                          return Column(
+                                            children: [
+                                              const Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  SizedBox(width: 20),
+                                                  Text(
+                                                    "Glucose Level",
+                                                    style:
+                                                        TextStyle(fontSize: 20),
+                                                  ),
+                                                  Icon(
+                                                    Icons.info_outline,
+                                                    color: fgColor,
+                                                    size: 20,
+                                                  ),
+                                                ],
+                                              ),
+                                              const SizedBox(height: 8),
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                  horizontal: 30,
                                                 ),
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .spaceEvenly,
+                                                child: Material(
+                                                  elevation: 5,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            10),
+                                                  ),
+                                                  child: Container(
+                                                    height: 55,
+                                                    decoration: BoxDecoration(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              10),
+                                                      color: const Color(
+                                                          0xFF67E88B),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(
+                                                height: 20,
+                                              ),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceEvenly,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  SizedBox(
+                                                    width: 100,
+                                                    child: Column(
                                                       children: [
-                                                        ShaderMask(
-                                                          blendMode:
-                                                              BlendMode.srcIn,
-                                                          shaderCallback:
-                                                              (Rect bounds) {
-                                                            return ui.Gradient
-                                                                .linear(
-                                                              const Offset(
-                                                                  0.0, 27.0),
-                                                              const Offset(
-                                                                  0.0, 0.0),
-                                                              [
-                                                                const Color(
-                                                                    0xFFF50812),
-                                                                const Color(
-                                                                    0xFF3300FD)
-                                                              ],
-                                                            );
-                                                          },
-                                                          child: const Icon(
-                                                            Symbols.pill,
-                                                            size: 27,
-                                                            weight: 500,
-                                                          ),
+                                                        Container(
+                                                          width: 3,
+                                                          height: 20,
+                                                          color: const Color(
+                                                              0xFFCBCF10),
                                                         ),
-                                                        Text(
-                                                          "MEDICATIONS",
-                                                          style: GoogleFonts
-                                                              .montserrat(
-                                                            fontSize: 12,
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                          ),
+                                                        const Text("Latest"),
+                                                        const SizedBox(
+                                                            height: 5),
+                                                        Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .center,
+                                                          children: [
+                                                            Builder(
+                                                              builder:
+                                                                  (context) {
+                                                                if (_glucoseRecords ==
+                                                                        null ||
+                                                                    _glucoseRecords!
+                                                                        .isEmpty) {
+                                                                  return const Text(
+                                                                    "--",
+                                                                    style:
+                                                                        TextStyle(
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .bold,
+                                                                      fontSize:
+                                                                          20,
+                                                                    ),
+                                                                  );
+                                                                }
+
+                                                                return Text(
+                                                                  _glucoseRecords!
+                                                                      .last
+                                                                      .glucoseLevel
+                                                                      .toStringAsFixed(
+                                                                          2),
+                                                                  style:
+                                                                      const TextStyle(
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                    fontSize:
+                                                                        20,
+                                                                  ),
+                                                                );
+                                                              },
+                                                            ),
+                                                            const SizedBox(
+                                                                width: 3),
+                                                            const Text(
+                                                              "mmol/L",
+                                                              style: TextStyle(
+                                                                color: Colors
+                                                                    .blueGrey,
+                                                                fontSize: 12,
+                                                              ),
+                                                            ),
+                                                          ],
                                                         ),
                                                       ],
                                                     ),
-                                                    Builder(builder: (context) {
-                                                      if (_medicationRecordDetails ==
-                                                              null ||
-                                                          _medicationRecordDetails!
-                                                              .isEmpty) {
-                                                        return const Text(
-                                                            "  No Medications");
-                                                      } else {
-                                                        final groupedRecords =
-                                                            groupBy(
-                                                                _medicationRecordDetails!,
-                                                                (record) =>
-                                                                    record
-                                                                        .medicationDatetime
-                                                                        .copyWith(
-                                                                      hour: 0,
-                                                                      minute: 0,
-                                                                      second: 0,
-                                                                      millisecond:
-                                                                          0,
-                                                                      microsecond:
-                                                                          0,
-                                                                    ));
-                                                        // debugPrint(groupedRecords
-                                                        //     .values.length
-                                                        //     .toString());
-
-                                                        final filtered =
-                                                            groupedRecords.keys
-                                                                .where((param) {
-                                                          return param.isAfter(
-                                                              DateTime.now().copyWith(
-                                                                  day: DateTime
-                                                                              .now()
-                                                                          .day -
-                                                                      1));
-                                                        }).toList();
-                                                        filtered.sort(
-                                                          (a, b) =>
-                                                              a.compareTo(b),
-                                                        );
-
-                                                        return Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .all(8.0),
-                                                          child: Column(
-                                                            children: [
-                                                              ...groupedRecords[
-                                                                      filtered[
-                                                                          0]]!
-                                                                  .take(4)
-                                                                  .map(
-                                                                      (record) {
-                                                                return Column(
-                                                                  crossAxisAlignment:
-                                                                      CrossAxisAlignment
-                                                                          .start,
-                                                                  children: [
-                                                                    const SizedBox(
-                                                                        height:
-                                                                            2),
-                                                                    Text(
-                                                                      record
-                                                                          .medicineName,
-                                                                      style: GoogleFonts
-                                                                          .inter(
-                                                                        fontSize:
-                                                                            14,
-                                                                        fontWeight:
-                                                                            FontWeight.bold,
-                                                                      ),
-                                                                    ),
-                                                                    Text(
-                                                                        "To Take -> ${DateFormat("h:mm a").format(record.medicationDatetime)}",
-                                                                        style: GoogleFonts
-                                                                            .inter(
-                                                                          fontSize:
-                                                                              10,
-                                                                          color: Colors
-                                                                              .grey
-                                                                              .shade400,
-                                                                        )),
-                                                                  ],
+                                                  ),
+                                                  SizedBox(
+                                                    width: 100,
+                                                    child: Column(
+                                                      children: [
+                                                        Container(
+                                                          width: 3,
+                                                          height: 20,
+                                                          color: const Color(
+                                                              0xFF102ECF),
+                                                        ),
+                                                        const Text(
+                                                            "Week Average"),
+                                                        const SizedBox(
+                                                            height: 5),
+                                                        Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .center,
+                                                          children: [
+                                                            Builder(
+                                                              builder:
+                                                                  (context) {
+                                                                double?
+                                                                    average =
+                                                                    calcAverageGlucoseRecord(
+                                                                  DateTime.now()
+                                                                      .subtract(
+                                                                          const Duration(
+                                                                              days: 7)),
+                                                                  DateTime
+                                                                      .now(),
+                                                                  _glucoseRecords!,
                                                                 );
-                                                              })
-                                                            ],
-                                                          ),
-                                                        );
-                                                      }
-                                                    }),
-                                                  ],
+
+                                                                if (average ==
+                                                                    null) {
+                                                                  return const Text(
+                                                                    "--",
+                                                                    style:
+                                                                        TextStyle(
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .bold,
+                                                                      fontSize:
+                                                                          20,
+                                                                    ),
+                                                                  );
+                                                                }
+
+                                                                return Text(
+                                                                  average
+                                                                      .toStringAsFixed(
+                                                                          2),
+                                                                  style:
+                                                                      const TextStyle(
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                    fontSize:
+                                                                        20,
+                                                                  ),
+                                                                );
+                                                              },
+                                                            ),
+                                                            const SizedBox(
+                                                                width: 3),
+                                                            const Text(
+                                                              "mmol/L",
+                                                              style: TextStyle(
+                                                                color: Colors
+                                                                    .blueGrey,
+                                                                fontSize: 12,
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  SizedBox(
+                                                    width: 100,
+                                                    child: Column(
+                                                      children: [
+                                                        Container(
+                                                          width: 3,
+                                                          height: 20,
+                                                          color: const Color(
+                                                              0xFF866000),
+                                                        ),
+                                                        const Text(
+                                                            "Last Updated"),
+                                                        const SizedBox(
+                                                            height: 5),
+                                                        LastUpdatedSection(
+                                                            records:
+                                                                _glucoseRecords),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              Container(
+                                                margin:
+                                                    const EdgeInsets.symmetric(
+                                                  vertical: 5,
+                                                ),
+                                                child: const Divider(
+                                                  color: Colors.black,
+                                                  endIndent: 20,
+                                                  indent: 20,
                                                 ),
                                               ),
-                                            ),
-                                          ),
-                                          Container(
-                                            width: 1,
-                                            color: const Color(0xFFC4C4C4),
-                                          ),
-                                          Expanded(
-                                            flex: 6,
-                                            child: GestureDetector(
-                                              onTap: () async {
-                                                await Navigator.of(context)
-                                                    .pushNamed(
-                                                  "/bmi-tracking",
-                                                  arguments: {
-                                                    "db": dbContainer.data!,
-                                                    "user": user,
-                                                  },
-                                                );
+                                              TextButton(
+                                                onPressed: () async {
+                                                  await Navigator.of(context)
+                                                      .pushNamed(
+                                                    "/blood-glucose-tracking/editor",
+                                                    arguments: {
+                                                      "user": user,
+                                                      "db": dbContainer.data!,
+                                                    },
+                                                  );
 
-                                                // TODO:
-                                                setState(() {
-                                                  _bmiRecords = null;
-                                                });
-                                              },
-                                              child: Container(
-                                                padding: const EdgeInsets.only(
-                                                  top: 8,
-                                                ),
-                                                decoration: const BoxDecoration(
-                                                  color: Colors.white,
-                                                  borderRadius:
-                                                      BorderRadius.only(
-                                                    topRight:
-                                                        Radius.circular(10),
-                                                    bottomRight:
-                                                        Radius.circular(10),
+                                                  setState(() {
+                                                    _glucoseRecords = null;
+                                                  });
+                                                },
+                                                style: ButtonStyle(
+                                                  overlayColor:
+                                                      MaterialStateProperty.all(
+                                                    Colors.white
+                                                        .withOpacity(0.3),
+                                                  ),
+                                                  backgroundColor:
+                                                      MaterialStateProperty.all(
+                                                    fgColor,
+                                                  ),
+                                                  shape:
+                                                      MaterialStateProperty.all(
+                                                    RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              10),
+                                                    ),
                                                   ),
                                                 ),
-                                                child: Column(
-                                                  children: [
-                                                    Text(
-                                                      "Your Current BMI Level",
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 13,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                    ),
-                                                    Image.asset(
-                                                      user.isMale
-                                                          ? "assets/bmi_male.png"
-                                                          : "assets/bmi_female.png",
-                                                      width: 230,
-                                                    ),
-                                                    const Divider(
-                                                      height: 0,
-                                                      endIndent: 0,
-                                                      indent: 0,
-                                                    ),
-                                                    Expanded(
-                                                      child: Builder(
-                                                        builder: (context) {
-                                                          if (_bmiRecords ==
-                                                              null) {
-                                                            // TODO: Loading
-                                                            return Container();
-                                                          } else if (_bmiRecords!
-                                                              .isEmpty) {
-                                                            // TODO: No Data
-                                                            return const Align(
-                                                              alignment:
-                                                                  Alignment
-                                                                      .center,
-                                                              child: Padding(
-                                                                padding: EdgeInsets
-                                                                    .symmetric(
-                                                                        horizontal:
-                                                                            8.0),
-                                                                child:
-                                                                    AutoSizeText(
-                                                                  "Please enter your Body Mass Index (BMI)",
-                                                                  textAlign:
-                                                                      TextAlign
-                                                                          .center,
-                                                                  maxLines: 2,
-                                                                  minFontSize:
-                                                                      4,
-                                                                ),
-                                                              ),
-                                                            );
-                                                          }
-
-                                                          final latestBmiRecord =
-                                                              _bmiRecords!
-                                                                  .first;
-                                                          double fraction;
-
-                                                          if (latestBmiRecord
-                                                                  .bmi <
-                                                              19) {
-                                                            fraction = 0.23 *
-                                                                (latestBmiRecord
-                                                                        .bmi /
-                                                                    19.0);
-                                                          } else if (latestBmiRecord
-                                                                      .bmi >=
-                                                                  19 &&
-                                                              latestBmiRecord
-                                                                      .bmi <=
-                                                                  24) {
-                                                            fraction = (0.27 *
-                                                                    ((latestBmiRecord.bmi -
-                                                                            19) /
-                                                                        5)) +
-                                                                0.23;
-                                                          } else if (latestBmiRecord
-                                                                      .bmi >
-                                                                  24 &&
-                                                              latestBmiRecord
-                                                                      .bmi <=
-                                                                  29) {
-                                                            fraction = (0.27 *
-                                                                    ((latestBmiRecord.bmi -
-                                                                            24) /
-                                                                        5)) +
-                                                                0.5;
-                                                          } else {
-                                                            fraction = clampDouble(
-                                                                (0.23 *
-                                                                    ((latestBmiRecord.bmi -
-                                                                            29) /
-                                                                        11)),
-                                                                0,
-                                                                1);
-                                                          }
-
-                                                          return BMIGraph(
-                                                              frac: fraction);
-                                                        },
-                                                      ),
-                                                    ),
-                                                  ],
+                                                child: const Text(
+                                                  "VIEW FULL HISTORY",
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                  ),
                                                 ),
                                               ),
+                                            ],
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                  GestureDetector(
+                                    onTap: () {
+                                      Navigator.of(context)
+                                          .pushNamed("/education");
+                                    },
+                                    child: Container(
+                                      margin: const EdgeInsets.only(
+                                        right: 10,
+                                        left: 10,
+                                        top: 15,
+                                      ),
+                                      width: double.infinity,
+                                      padding: const EdgeInsets.all(8),
+                                      height: 68,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.8),
+                                        borderRadius:
+                                            BorderRadius.circular(10.0),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color:
+                                                Colors.black.withOpacity(0.25),
+                                            blurRadius: 4.0,
+                                            spreadRadius: 0.0,
+                                            offset: const Offset(0.0, 4.0),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                            margin: const EdgeInsets.only(
+                                                right: 10),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFFD9D9D9),
+                                              borderRadius:
+                                                  BorderRadius.circular(100),
+                                            ),
+                                            child: Image.asset(
+                                                "assets/educational_material_logo.png"),
+                                          ),
+                                          Text(
+                                            "Reading Materials",
+                                            style: GoogleFonts.istokWeb(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16,
                                             ),
                                           ),
                                         ],
                                       ),
                                     ),
                                   ),
-                                ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                      top: 16,
+                                      left: 10,
+                                      right: 10,
+                                    ),
+                                    child: GestureDetector(
+                                      onTap: () async {
+                                        await Navigator.of(context).pushNamed(
+                                            "/doctors-appointment/input",
+                                            arguments: {
+                                              "db": dbContainer.data!,
+                                            });
+
+                                        setState(() {
+                                          _doctorsAppointmentRecords = null;
+                                        });
+                                      },
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: Colors.white.withOpacity(0.8),
+                                          borderRadius:
+                                              BorderRadius.circular(10.0),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black
+                                                  .withOpacity(0.25),
+                                              blurRadius: 4.0,
+                                              spreadRadius: 0.0,
+                                              offset: const Offset(0.0, 4.0),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Column(
+                                          children: [
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                top: 12,
+                                                left: 15,
+                                              ),
+                                              child: Row(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.center,
+                                                children: [
+                                                  const Icon(
+                                                    Icons.notifications_none,
+                                                    size: 32,
+                                                  ),
+                                                  const SizedBox(width: 5),
+                                                  Text(
+                                                    "Doctor's Appointment",
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 13,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            const Divider(thickness: 1),
+                                            DoctorsAppointment(
+                                              doctorsAppointmentRecords:
+                                                  _doctorsAppointmentRecords,
+                                              db: dbContainer.data!,
+                                              resetRecords: () {
+                                                setState(() {
+                                                  _doctorsAppointmentRecords =
+                                                      null;
+                                                });
+                                              },
+                                            ),
+                                            const Divider(thickness: 1),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                      top: 16,
+                                      left: 10,
+                                      right: 10,
+                                    ),
+                                    child: AspectRatio(
+                                      aspectRatio: 1.48,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: Colors.white.withOpacity(0.8),
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black
+                                                  .withOpacity(0.25),
+                                              blurRadius: 4.0,
+                                              spreadRadius: 0.0,
+                                              offset: const Offset(0.0, 4.0),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.stretch,
+                                          children: [
+                                            Expanded(
+                                              flex: 4,
+                                              child: GestureDetector(
+                                                onTap: () async {
+                                                  await Navigator.of(context)
+                                                      .pushNamed(
+                                                    "/medication-tracking",
+                                                    arguments: {
+                                                      "db": dbContainer.data!,
+                                                      "user": user
+                                                    },
+                                                  );
+
+                                                  setState(() {
+                                                    _medicationRecordDetails =
+                                                        null;
+                                                  });
+                                                },
+                                                child: Container(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                    top: 8,
+                                                  ),
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceEvenly,
+                                                        children: [
+                                                          ShaderMask(
+                                                            blendMode:
+                                                                BlendMode.srcIn,
+                                                            shaderCallback:
+                                                                (Rect bounds) {
+                                                              return ui.Gradient
+                                                                  .linear(
+                                                                const Offset(
+                                                                    0.0, 27.0),
+                                                                const Offset(
+                                                                    0.0, 0.0),
+                                                                [
+                                                                  const Color(
+                                                                      0xFFF50812),
+                                                                  const Color(
+                                                                      0xFF3300FD)
+                                                                ],
+                                                              );
+                                                            },
+                                                            child: const Icon(
+                                                              Symbols.pill,
+                                                              size: 27,
+                                                              weight: 500,
+                                                            ),
+                                                          ),
+                                                          Text(
+                                                            "Medications",
+                                                            style: GoogleFonts
+                                                                .montserrat(
+                                                              fontSize: 12,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      Builder(
+                                                          builder: (context) {
+                                                        if (_medicationRecordDetails ==
+                                                                null ||
+                                                            _medicationRecordDetails!
+                                                                .isEmpty) {
+                                                          return const Text(
+                                                              "  No Medications");
+                                                        } else {
+                                                          final groupedRecords =
+                                                              groupBy(
+                                                                  _medicationRecordDetails!,
+                                                                  (record) =>
+                                                                      record
+                                                                          .medicationDatetime
+                                                                          .copyWith(
+                                                                        hour: 0,
+                                                                        minute:
+                                                                            0,
+                                                                        second:
+                                                                            0,
+                                                                        millisecond:
+                                                                            0,
+                                                                        microsecond:
+                                                                            0,
+                                                                      ));
+                                                          // debugPrint(groupedRecords
+                                                          //     .values.length
+                                                          //     .toString());
+
+                                                          final filtered =
+                                                              groupedRecords
+                                                                  .keys
+                                                                  .where(
+                                                                      (param) {
+                                                            return param.isAfter(
+                                                                DateTime.now()
+                                                                    .copyWith(
+                                                                        day: DateTime.now().day -
+                                                                            1));
+                                                          }).toList();
+                                                          filtered.sort(
+                                                            (a, b) =>
+                                                                a.compareTo(b),
+                                                          );
+
+                                                          return Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .all(8.0),
+                                                            child: Column(
+                                                              children: [
+                                                                ...groupedRecords[
+                                                                        filtered[
+                                                                            0]]!
+                                                                    .take(4)
+                                                                    .map(
+                                                                        (record) {
+                                                                  return Column(
+                                                                    crossAxisAlignment:
+                                                                        CrossAxisAlignment
+                                                                            .start,
+                                                                    children: [
+                                                                      const SizedBox(
+                                                                          height:
+                                                                              2),
+                                                                      Text(
+                                                                        record
+                                                                            .medicineName,
+                                                                        style: GoogleFonts
+                                                                            .inter(
+                                                                          fontSize:
+                                                                              14,
+                                                                          fontWeight:
+                                                                              FontWeight.bold,
+                                                                        ),
+                                                                      ),
+                                                                      Text(
+                                                                          "To Take -> ${DateFormat("h:mm a").format(record.medicationDatetime)}",
+                                                                          style:
+                                                                              GoogleFonts.inter(
+                                                                            fontSize:
+                                                                                10,
+                                                                            color:
+                                                                                Colors.grey.shade400,
+                                                                          )),
+                                                                    ],
+                                                                  );
+                                                                })
+                                                              ],
+                                                            ),
+                                                          );
+                                                        }
+                                                      }),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            Container(
+                                              width: 1,
+                                              color: const Color(0xFFC4C4C4),
+                                            ),
+                                            Expanded(
+                                              flex: 6,
+                                              child: GestureDetector(
+                                                onTap: () async {
+                                                  await Navigator.of(context)
+                                                      .pushNamed(
+                                                    "/bmi-tracking",
+                                                    arguments: {
+                                                      "db": dbContainer.data!,
+                                                      "user": user,
+                                                    },
+                                                  );
+
+                                                  // TODO:
+                                                  setState(() {
+                                                    _bmiRecords = null;
+                                                  });
+                                                },
+                                                child: Container(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                    top: 8,
+                                                  ),
+                                                  decoration:
+                                                      const BoxDecoration(
+                                                    borderRadius:
+                                                        BorderRadius.only(
+                                                      topRight:
+                                                          Radius.circular(10),
+                                                      bottomRight:
+                                                          Radius.circular(10),
+                                                    ),
+                                                  ),
+                                                  child: Column(
+                                                    children: [
+                                                      Text(
+                                                        "Your Current BMI Level",
+                                                        style:
+                                                            GoogleFonts.inter(
+                                                          fontSize: 13,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                      Image.asset(
+                                                        user.isMale
+                                                            ? "assets/bmi_male.png"
+                                                            : "assets/bmi_female.png",
+                                                        width: 230,
+                                                      ),
+                                                      const Divider(
+                                                        height: 0,
+                                                        endIndent: 0,
+                                                        indent: 0,
+                                                      ),
+                                                      Expanded(
+                                                        child: Builder(
+                                                          builder: (context) {
+                                                            if (_bmiRecords ==
+                                                                null) {
+                                                              // TODO: Loading
+                                                              return Container();
+                                                            } else if (_bmiRecords!
+                                                                .isEmpty) {
+                                                              // TODO: No Data
+                                                              return const Align(
+                                                                alignment:
+                                                                    Alignment
+                                                                        .center,
+                                                                child: Padding(
+                                                                  padding: EdgeInsets
+                                                                      .symmetric(
+                                                                          horizontal:
+                                                                              8.0),
+                                                                  child:
+                                                                      AutoSizeText(
+                                                                    "Please enter your Body Mass Index (BMI)",
+                                                                    textAlign:
+                                                                        TextAlign
+                                                                            .center,
+                                                                    maxLines: 2,
+                                                                    minFontSize:
+                                                                        4,
+                                                                  ),
+                                                                ),
+                                                              );
+                                                            }
+
+                                                            final latestBmiRecord =
+                                                                _bmiRecords!
+                                                                    .first;
+                                                            double fraction;
+
+                                                            if (latestBmiRecord
+                                                                    .bmi <
+                                                                19) {
+                                                              fraction = 0.23 *
+                                                                  (latestBmiRecord
+                                                                          .bmi /
+                                                                      19.0);
+                                                            } else if (latestBmiRecord
+                                                                        .bmi >=
+                                                                    19 &&
+                                                                latestBmiRecord
+                                                                        .bmi <=
+                                                                    24) {
+                                                              fraction = (0.27 *
+                                                                      ((latestBmiRecord.bmi -
+                                                                              19) /
+                                                                          5)) +
+                                                                  0.23;
+                                                            } else if (latestBmiRecord
+                                                                        .bmi >
+                                                                    24 &&
+                                                                latestBmiRecord
+                                                                        .bmi <=
+                                                                    29) {
+                                                              fraction = (0.27 *
+                                                                      ((latestBmiRecord.bmi -
+                                                                              24) /
+                                                                          5)) +
+                                                                  0.5;
+                                                            } else {
+                                                              fraction = clampDouble(
+                                                                  (0.23 *
+                                                                      ((latestBmiRecord.bmi -
+                                                                              29) /
+                                                                          11)),
+                                                                  0,
+                                                                  1);
+                                                            }
+
+                                                            return BMIGraph(
+                                                                frac: fraction);
+                                                          },
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  NutritionAndActivity(
+                                    db: dbContainer.data!,
+                                    resetNutritionRecords:
+                                        resetNutritionRecords,
+                                    resetActivityRecords: resetActivityRecords,
+                                    nutritionRecords: _nutritionRecords ?? [],
+                                    activityRecords: _activityRecords ?? [],
+                                  ),
+                                  const SizedBox(height: 30),
+                                ],
                               ),
-                              NutritionAndActivity(
-                                db: dbContainer.data!,
-                                resetNutritionRecords: resetNutritionRecords,
-                                resetActivityRecords: resetActivityRecords,
-                                nutritionRecords: _nutritionRecords ?? [],
-                                activityRecords: _activityRecords ?? [],
-                              ),
-                              const SizedBox(height: 30),
                             ],
                           )
                           // Currently empty container
@@ -2226,7 +2279,7 @@ class _DoctorsAppointmentState extends State<DoctorsAppointment> {
 
     return Material(
       child: Container(
-        color: Colors.white,
+        color: Colors.white.withOpacity(0.8),
         padding: const EdgeInsets.symmetric(
           horizontal: 15,
         ),
@@ -2666,11 +2719,11 @@ Future<Database> initAppDatabase(String path) async {
       """);
 
       await db.execute("""
-
         CREATE TABLE Doctor (
           id INTEGER PRIMARY KEY NOT NULL,
-          facebook_id VARCHAR(20) NOT NULL,
+          facebook_id VARCHAR(20),
           name VARCHAR(255) NOT NULL,
+          contact_number VARCHAR(20),
           address VARCHAR(255) NOT NULL,
           description VARCHAR(255) NOT NULL
         )
@@ -2693,7 +2746,7 @@ Future<Database> initAppDatabase(String path) async {
         )
       """);
     },
-    version: 3,
+    version: 4,
   );
 }
 
