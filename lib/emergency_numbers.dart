@@ -444,6 +444,91 @@ class EmergencyNumbers extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () async {
+                      await launchUrlString("tel:09173066741");
+                    },
+                    child: AspectRatio(
+                      aspectRatio: 1,
+                      child: Material(
+                        elevation: 4,
+                        borderRadius: BorderRadius.circular(10),
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          child: Column(
+                            children: [
+                              AutoSizeText(
+                                "Roxas City Emergency Response Team",
+                                textAlign: TextAlign.center,
+                                maxLines: 2,
+                                style: GoogleFonts.montserrat(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const Expanded(child: SizedBox()),
+                              AutoSizeText(
+                                "0917 306 6741",
+                                textAlign: TextAlign.center,
+                                maxLines: 2,
+                                maxFontSize: 40,
+                                style: GoogleFonts.montserrat(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 48,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () async {
+                      await launchUrlString("tel:(036) 621 1125 ");
+                    },
+                    child: AspectRatio(
+                      aspectRatio: 1,
+                      child: Material(
+                        elevation: 4,
+                        borderRadius: BorderRadius.circular(10),
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          child: Column(
+                            children: [
+                              AutoSizeText(
+                                "Philippine Red Cross Capiz Chapter",
+                                textAlign: TextAlign.center,
+                                maxLines: 2,
+                                style: GoogleFonts.montserrat(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const Expanded(child: SizedBox()),
+                              AutoSizeText(
+                                "(036) 621 1125",
+                                textAlign: TextAlign.center,
+                                maxLines: 2,
+                                maxFontSize: 40,
+                                style: GoogleFonts.montserrat(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 48,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),
