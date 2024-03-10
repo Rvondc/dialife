@@ -92,6 +92,7 @@ class LocalNotification {
       importance: Importance.max,
       priority: Priority.high,
       ticker: 'ticker',
+      sound: const RawResourceAndroidNotificationSound("notif"),
       vibrationPattern: Int64List.fromList([0, 1000, 500, 1000]),
     );
 
@@ -135,34 +136,33 @@ class LocalNotification {
     return id;
   }
 
-  // SHOW PERIODIC NOTIFICATION IN REGULAR INTERVAL
-  // static Future showPeriodicNotification({
-  //   required String title,
-  //   required String body,
-  //   required String payload,
-  // }) async {
-  //   AndroidNotificationDetails androidNotificationDetails =
-  //       AndroidNotificationDetails(
-  //     'channel 1',
-  //     'periodic notification',
-  //     channelDescription: 'your channel description',
-  //     importance: Importance.max,
-  //     priority: Priority.high,
-  //     ticker: 'ticker',
-  //     vibrationPattern: Int64List.fromList([0, 1000, 500, 1000]),
-  //   );
+  static Future showPeriodicNotification({
+    required String title,
+    required String body,
+    required String payload,
+  }) async {
+    AndroidNotificationDetails androidNotificationDetails =
+        AndroidNotificationDetails(
+      'channel 1',
+      'periodic notification',
+      channelDescription: 'your channel description',
+      importance: Importance.max,
+      priority: Priority.high,
+      ticker: 'ticker',
+      vibrationPattern: Int64List.fromList([0, 1000, 500, 1000]),
+    );
 
-  //   NotificationDetails notificationDetails =
-  //       NotificationDetails(android: androidNotificationDetails);
+    NotificationDetails notificationDetails =
+        NotificationDetails(android: androidNotificationDetails);
 
-  //   await _flutterLocalNotificationsPlugin.periodicallyShow(
-  //     1,
-  //     title,
-  //     body,
-  //     RepeatInterval.everyMinute,
-  //     notificationDetails,
-  //   );
-  // }
+    await _flutterLocalNotificationsPlugin.periodicallyShow(
+      1,
+      title,
+      body,
+      RepeatInterval.everyMinute,
+      notificationDetails,
+    );
+  }
 
   //SHOW A SCHEDULED NOTIFICATION
   // static Future showScheduleNotification({
