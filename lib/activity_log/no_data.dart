@@ -107,7 +107,7 @@ class ActivityLogNoData extends StatelessWidget {
                         child: IconButton(
                           onPressed: () async {
                             await Navigator.of(context).pushNamed(
-                              "/activity-log/input",
+                              "/activity-log/editor",
                               arguments: {
                                 "db": db,
                               },

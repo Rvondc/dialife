@@ -139,7 +139,7 @@ class _ActivityLogInternalScaffold extends StatelessWidget {
         ),
         onPressed: () async {
           await Navigator.of(context).pushNamed(
-            "/activity-log/input",
+            "/activity-log/editor",
             arguments: {
               "db": db,
             },

@@ -9,11 +9,13 @@ import 'package:sqflite/sqflite.dart';
 
 class ActivityLogInput extends StatelessWidget {
   final ActivityRecord? existing;
+  final DateTime? now;
   final Database db;
 
   const ActivityLogInput({
     super.key,
     required this.existing,
+    required this.now,
     required this.db,
   });
 
@@ -21,6 +23,7 @@ class ActivityLogInput extends StatelessWidget {
   Widget build(BuildContext context) {
     return _ActivityLogInternalScaffold(
       db: db,
+      now: now,
       existing: existing,
     );
   }
@@ -28,10 +31,12 @@ class ActivityLogInput extends StatelessWidget {
 
 class _ActivityLogInternalScaffold extends StatelessWidget {
   final ActivityRecord? existing;
+  final DateTime? now;
   final Database db;
 
   const _ActivityLogInternalScaffold({
     required this.existing,
+    required this.now,
     required this.db,
   });
 
@@ -44,6 +49,7 @@ class _ActivityLogInternalScaffold extends StatelessWidget {
         child: SingleChildScrollView(
           child: _ActivityLogInternal(
             db: db,
+            now: now,
             existing: existing,
           ),
         ),
@@ -54,10 +60,12 @@ class _ActivityLogInternalScaffold extends StatelessWidget {
 
 class _ActivityLogInternal extends StatefulWidget {
   final ActivityRecord? existing;
+  final DateTime? now;
   final Database db;
 
   const _ActivityLogInternal({
     required this.existing,
+    required this.now,
     required this.db,
   });
 
@@ -82,6 +90,7 @@ class _ActivityLogInternalState extends State<_ActivityLogInternal> {
   void initState() {
     super.initState();
 
+    _date.value = widget.now;
     if (widget.existing == null) {
       return;
     }
@@ -96,6 +105,8 @@ class _ActivityLogInternalState extends State<_ActivityLogInternal> {
       hour: widget.existing!.createdAt.hour,
       minute: widget.existing!.createdAt.minute,
     );
+
+    // NOTE: now has priority over existing
   }
 
   @override
