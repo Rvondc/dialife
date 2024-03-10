@@ -44,7 +44,7 @@ class _NutritionAndActivityState extends State<NutritionAndActivity> {
         right: 10,
       ),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white.withOpacity(0.8),
         borderRadius: BorderRadius.circular(10.0),
         boxShadow: [
           BoxShadow(
