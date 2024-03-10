@@ -29,6 +29,8 @@ class _ContactListInputState extends State<ContactListInput> {
 
   final _contactNameController = TextEditingController();
 
+  final _contactNumberController = TextEditingController();
+
   final _dropdownController = SingleValueDropDownController();
 
   List<int> _ids = [];
@@ -71,7 +73,7 @@ class _ContactListInputState extends State<ContactListInput> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Text(
-                        "MESSENGER CONTACTS",
+                        "CONTACTS",
                         textAlign: TextAlign.center,
                         style: GoogleFonts.montserrat(
                             fontSize: 20,
@@ -133,7 +135,7 @@ class _ContactListInputState extends State<ContactListInput> {
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 prefixIcon: const Icon(Icons.search_outlined),
-                                labelText: 'Search Name',
+                                labelText: 'Search Name (Optional)',
                                 fillColor: Colors.grey.shade200,
                                 filled: true,
                               ),
@@ -269,6 +271,20 @@ class _ContactListInputState extends State<ContactListInput> {
                         ),
                       ),
                       const SizedBox(height: 10),
+                      TextField(
+                        controller: _contactNumberController,
+                        decoration: InputDecoration(
+                          contentPadding: EdgeInsets.zero,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          prefixIcon: const Icon(Icons.phone_outlined),
+                          labelText: 'Contact Number (Optional)',
+                          fillColor: Colors.grey.shade200,
+                          filled: true,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
                       Stack(
                         children: [
                           TextField(
@@ -323,26 +339,30 @@ class _ContactListInputState extends State<ContactListInput> {
                         await ScaffoldMessenger.of(context)
                             .showSnackBar(
                               const SnackBar(
-                                duration: Duration(milliseconds: 300),
-                                content: Text('Incomplete Form'),
+                                duration: Duration(milliseconds: 1000),
+                                content: Text(
+                                    'Must either have messenger contact or phone number'),
                               ),
                             )
                             .closed;
                       }
 
-                      if (_contactNameController.text.isEmpty ||
-                          _dropdownController.dropDownValue == null) {
+                      if ((_contactNameController.text.isEmpty ||
+                              _dropdownController.dropDownValue == null) &&
+                          (_contactNumberController.text.isEmpty ||
+                              _contactNameController.text.isEmpty)) {
                         await error();
                         return;
                       }
 
                       widget.db.rawInsert(
-                        'INSERT INTO Doctor (facebook_id, name, address, description) VALUES (?, ?, ?, ?)',
+                        'INSERT INTO Doctor (facebook_id, name, address, description, contact_number) VALUES (?, ?, ?, ?, ?)',
                         [
-                          _dropdownController.dropDownValue!.value,
+                          _dropdownController.dropDownValue?.value,
                           _contactNameController.text,
                           "",
                           _descriptionController.text,
+                          _contactNumberController.text,
                         ],
                       );
 
