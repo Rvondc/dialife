@@ -1,4 +1,5 @@
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:blur/blur.dart';
 import 'package:dialife/blood_glucose_tracking/glucose_tracking.dart';
 import 'package:dialife/blood_glucose_tracking/utils.dart';
 import 'package:dialife/main.dart';
@@ -29,229 +30,241 @@ class _PasscodeState extends State<Passcode> {
   Widget build(context) {
     const loading = SpinKitCircle(color: fgColor);
     final scaffold = Scaffold(
-      backgroundColor: Colors.grey.shade200,
-      body: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 30),
-        alignment: Alignment.topCenter,
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              Text(
-                "DiaLife",
-                textAlign: TextAlign.center,
-                style: GoogleFonts.italianno(
-                  color: fgColor,
-                  fontSize: 64,
-                  height: 1,
-                ),
-              ),
-              Text(
-                "Never share your passcode to anyone",
-                style: GoogleFonts.montserrat(
-                  height: 1,
-                ),
-              ),
-              const SizedBox(height: 30),
-              Material(
-                elevation: 4,
-                borderRadius: BorderRadius.circular(10),
-                child: Container(
-                  padding: const EdgeInsets.only(
-                    left: 24,
-                    right: 24,
-                    bottom: 24,
-                    top: 12,
+      backgroundColor: const Color.fromARGB(255, 217, 231, 251),
+      body: Stack(
+        children: [
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Image.asset("assets/bg.png").blurred(blur: 5),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 30),
+            alignment: Alignment.topCenter,
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  Text(
+                    "DiaLife",
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.italianno(
+                      color: fgColor,
+                      fontSize: 64,
+                      height: 1,
+                    ),
                   ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
+                  Text(
+                    "Never share your passcode to anyone",
+                    style: GoogleFonts.montserrat(
+                      height: 1,
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+                  Material(
+                    elevation: 4,
                     borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Column(
-                    children: [
-                      AutoSizeText(
-                        "Enter your passcode",
-                        maxLines: 1,
-                        minFontSize: 16,
-                        maxFontSize: 32,
-                        style: GoogleFonts.istokWeb(
-                          fontWeight: FontWeight.bold,
-                          color: fgColor,
-                        ),
+                    child: Container(
+                      padding: const EdgeInsets.only(
+                        left: 24,
+                        right: 24,
+                        bottom: 24,
+                        top: 12,
                       ),
-                      const SizedBox(height: 12),
-                      Image.asset("assets/lock.png", width: 50),
-                      const SizedBox(height: 36),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Column(
                         children: [
-                          Material(
-                            elevation: 2,
-                            borderRadius: BorderRadius.circular(15),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade300,
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                              width: 25,
-                              height: 25,
-                              child: () {
-                                if (_passcode.isNotEmpty) {
-                                  return Center(
-                                    child: Container(
-                                      width: 25,
-                                      height: 25,
-                                      decoration: BoxDecoration(
-                                        color: fgColor,
-                                        borderRadius: BorderRadius.circular(15),
-                                      ),
-                                    ),
-                                  );
-                                }
-                              }(),
+                          AutoSizeText(
+                            "Enter your passcode",
+                            maxLines: 1,
+                            minFontSize: 16,
+                            maxFontSize: 32,
+                            style: GoogleFonts.istokWeb(
+                              fontWeight: FontWeight.bold,
+                              color: fgColor,
                             ),
                           ),
-                          const SizedBox(width: 5),
-                          Material(
-                            elevation: 2,
-                            borderRadius: BorderRadius.circular(15),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade300,
+                          const SizedBox(height: 12),
+                          Image.asset("assets/lock.png", width: 50),
+                          const SizedBox(height: 36),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Material(
+                                elevation: 2,
                                 borderRadius: BorderRadius.circular(15),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade300,
+                                    borderRadius: BorderRadius.circular(15),
+                                  ),
+                                  width: 25,
+                                  height: 25,
+                                  child: () {
+                                    if (_passcode.isNotEmpty) {
+                                      return Center(
+                                        child: Container(
+                                          width: 25,
+                                          height: 25,
+                                          decoration: BoxDecoration(
+                                            color: fgColor,
+                                            borderRadius:
+                                                BorderRadius.circular(15),
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  }(),
+                                ),
                               ),
-                              width: 25,
-                              height: 25,
-                              child: () {
-                                if (_passcode.length > 1) {
-                                  return Center(
-                                    child: Container(
-                                      width: 25,
-                                      height: 25,
-                                      decoration: BoxDecoration(
-                                        color: fgColor,
-                                        borderRadius: BorderRadius.circular(15),
-                                      ),
-                                    ),
-                                  );
-                                }
-                              }(),
-                            ),
-                          ),
-                          const SizedBox(width: 5),
-                          Material(
-                            elevation: 2,
-                            borderRadius: BorderRadius.circular(15),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade300,
+                              const SizedBox(width: 5),
+                              Material(
+                                elevation: 2,
                                 borderRadius: BorderRadius.circular(15),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade300,
+                                    borderRadius: BorderRadius.circular(15),
+                                  ),
+                                  width: 25,
+                                  height: 25,
+                                  child: () {
+                                    if (_passcode.length > 1) {
+                                      return Center(
+                                        child: Container(
+                                          width: 25,
+                                          height: 25,
+                                          decoration: BoxDecoration(
+                                            color: fgColor,
+                                            borderRadius:
+                                                BorderRadius.circular(15),
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  }(),
+                                ),
                               ),
-                              width: 25,
-                              height: 25,
-                              child: () {
-                                if (_passcode.length > 2) {
-                                  return Center(
-                                    child: Container(
-                                      width: 25,
-                                      height: 25,
-                                      decoration: BoxDecoration(
-                                        color: fgColor,
-                                        borderRadius: BorderRadius.circular(15),
-                                      ),
-                                    ),
-                                  );
-                                }
-                              }(),
-                            ),
-                          ),
-                          const SizedBox(width: 5),
-                          Material(
-                            elevation: 2,
-                            borderRadius: BorderRadius.circular(15),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade300,
+                              const SizedBox(width: 5),
+                              Material(
+                                elevation: 2,
                                 borderRadius: BorderRadius.circular(15),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade300,
+                                    borderRadius: BorderRadius.circular(15),
+                                  ),
+                                  width: 25,
+                                  height: 25,
+                                  child: () {
+                                    if (_passcode.length > 2) {
+                                      return Center(
+                                        child: Container(
+                                          width: 25,
+                                          height: 25,
+                                          decoration: BoxDecoration(
+                                            color: fgColor,
+                                            borderRadius:
+                                                BorderRadius.circular(15),
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  }(),
+                                ),
                               ),
-                              width: 25,
-                              height: 25,
-                              child: () {
-                                if (_passcode.length > 3) {
-                                  return Center(
-                                    child: Container(
-                                      height: 25,
-                                      width: 25,
-                                      decoration: BoxDecoration(
-                                        color: fgColor,
-                                        borderRadius: BorderRadius.circular(15),
-                                      ),
-                                    ),
-                                  );
-                                }
-                              }(),
-                            ),
+                              const SizedBox(width: 5),
+                              Material(
+                                elevation: 2,
+                                borderRadius: BorderRadius.circular(15),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade300,
+                                    borderRadius: BorderRadius.circular(15),
+                                  ),
+                                  width: 25,
+                                  height: 25,
+                                  child: () {
+                                    if (_passcode.length > 3) {
+                                      return Center(
+                                        child: Container(
+                                          height: 25,
+                                          width: 25,
+                                          decoration: BoxDecoration(
+                                            color: fgColor,
+                                            borderRadius:
+                                                BorderRadius.circular(15),
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  }(),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
-              const SizedBox(height: 30),
-              NumPad(
-                rightWidget: IconButton(
-                  onPressed: () {
-                    if (_passcode.isNotEmpty) {
-                      setState(() {
-                        _passcode =
-                            _passcode.substring(0, _passcode.length - 1);
-                      });
-                    }
-                  },
-                  color: fgColor,
-                  icon: const Icon(Icons.arrow_back_outlined),
-                ),
-                highlightColor: fgColor,
-                onType: (val) async {
-                  if (_passcode.length < 4) {
-                    setState(() {
-                      _passcode += val;
-                    });
-                  }
+                  const SizedBox(height: 30),
+                  NumPad(
+                    rightWidget: IconButton(
+                      onPressed: () {
+                        if (_passcode.isNotEmpty) {
+                          setState(() {
+                            _passcode =
+                                _passcode.substring(0, _passcode.length - 1);
+                          });
+                        }
+                      },
+                      color: fgColor,
+                      icon: const Icon(Icons.arrow_back_outlined),
+                    ),
+                    highlightColor: fgColor,
+                    onType: (val) async {
+                      if (_passcode.length < 4) {
+                        setState(() {
+                          _passcode += val;
+                        });
+                      }
 
-                  if (_passcode.length == 4 && _db != null) {
-                    final passcode =
-                        await _db!.rawQuery("SELECT * FROM Passcode");
-                    if ((passcode.first["code"] as String) == _passcode) {
-                      widget.setAuth(true);
-                      return;
-                    }
+                      if (_passcode.length == 4 && _db != null) {
+                        final passcode =
+                            await _db!.rawQuery("SELECT * FROM Passcode");
+                        if ((passcode.first["code"] as String) == _passcode) {
+                          widget.setAuth(true);
+                          return;
+                        }
 
-                    if (!context.mounted) return;
+                        if (!context.mounted) return;
 
-                    await ScaffoldMessenger.of(context)
-                        .showSnackBar(
-                          const SnackBar(
-                            duration: Duration(milliseconds: 300),
-                            content: Text('Try Again'),
-                          ),
-                        )
-                        .closed;
-                    setState(() {
-                      _passcode = "";
-                    });
-                  }
-                },
+                        await ScaffoldMessenger.of(context)
+                            .showSnackBar(
+                              const SnackBar(
+                                duration: Duration(milliseconds: 300),
+                                content: Text('Try Again'),
+                              ),
+                            )
+                            .closed;
+                        setState(() {
+                          _passcode = "";
+                        });
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  AutoSizeText(
+                    "Swipe left for emergency numbers",
+                    maxLines: 2,
+                    style: GoogleFonts.montserrat(),
+                  ),
+                ],
               ),
-              const SizedBox(height: 20),
-              AutoSizeText(
-                "Swipe left for emergency numbers",
-                maxLines: 2,
-                style: GoogleFonts.montserrat(),
-              ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
 
