@@ -1,6 +1,7 @@
 import 'package:dialife/local_notifications/local_notifications.dart';
 import 'package:dialife/medication_tracking/entities.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:material_symbols_icons/symbols.dart';
@@ -71,6 +72,7 @@ class _NewMedicationReminderInputFormState
   String medicationFormDropdownValue = "Capsule";
 
   List _timesPicked = [];
+  bool _lifetime = false;
 
   @override
   void initState() {
@@ -474,6 +476,10 @@ class _NewMedicationReminderInputFormState
                                     Expanded(
                                       child: TextField(
                                         keyboardType: TextInputType.number,
+                                        inputFormatters: [
+                                          FilteringTextInputFormatter
+                                              .digitsOnly,
+                                        ],
                                         controller: _dosageController,
                                         onChanged: (value) {
                                           setState(() {
@@ -599,12 +605,32 @@ class _NewMedicationReminderInputFormState
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Medication Duration',
-                        style: GoogleFonts.montserrat(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w500,
-                        ),
+                      Row(
+                        children: [
+                          Text(
+                            'Medication Duration',
+                            style: GoogleFonts.montserrat(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const Expanded(child: SizedBox()),
+                          Text(
+                            "For Life",
+                            style: GoogleFonts.montserrat(fontSize: 12),
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              setState(() {
+                                _dateController.text = "";
+                                _lifetime = !_lifetime;
+                              });
+                            },
+                            icon: _lifetime
+                                ? const Icon(Icons.check_box)
+                                : const Icon(Icons.check_box_outline_blank),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 5),
                       Row(
@@ -625,7 +651,7 @@ class _NewMedicationReminderInputFormState
                                 fontWeight: FontWeight.bold,
                               ),
                               decoration: InputDecoration(
-                                hintText: 'DD/MM/YYYY',
+                                hintText: _lifetime ? 'For Life' : 'DD/MM/YYYY',
                                 hintStyle: GoogleFonts.istokWeb(
                                   fontSize: 17,
                                   fontWeight: FontWeight.bold,
@@ -649,6 +675,10 @@ class _NewMedicationReminderInputFormState
                                 ),
                               ),
                               onTap: () async {
+                                if (_lifetime) {
+                                  return;
+                                }
+
                                 await showDatePicker(
                                   context: context,
                                   initialDate: DateTime.now(),
@@ -747,7 +777,7 @@ class _NewMedicationReminderInputFormState
         content: Text('Please Set Medication Time'),
         duration: Duration(milliseconds: 800),
       ));
-    } else if (_dateController.text.trim().isEmpty) {
+    } else if (_dateController.text.trim().isEmpty && !_lifetime) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text('Please Select Medication Duration Date'),
         duration: Duration(milliseconds: 800),
@@ -766,18 +796,25 @@ class _NewMedicationReminderInputFormState
     Database db = widget._db;
 
     // splitEndDate = [day, month, year]
-    List<String> splitEndDate = _dateController.text.split('/');
+    DateTime endDate;
+
+    if (!_lifetime) {
+      List<String> splitEndDate = _dateController.text.split('/');
+      endDate = DateTime(
+        int.parse(splitEndDate[2]),
+        int.parse(splitEndDate[1]),
+        int.parse(splitEndDate[0]),
+      );
+    } else {
+      endDate = DateTime.now().add(const Duration(days: 90));
+    }
+
     DateTime now = DateTime.now();
     List<int> desiredWeekdays = [];
     DateTime startDate = DateTime(
       now.year,
       now.month,
       now.day,
-    );
-    DateTime endDate = DateTime(
-      int.parse(splitEndDate[2]),
-      int.parse(splitEndDate[1]),
-      int.parse(splitEndDate[0]),
     );
 
     // MedicationReminderRecord last record
