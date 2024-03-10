@@ -107,7 +107,7 @@ class _DiabetesListState extends State<DiabetesList> {
                         WidgetSpan(child: SizedBox(width: 30)),
                         TextSpan(
                             text:
-                                "It is a chronic medical condition characterized by elevated levels of blood glucose (sugar). This occurs either because the body does not produce enough insulin, a hormone that regulates blood sugar, or because the body's cells do not respond effectively to insulin.")
+                                "According to the American Diabetes Association (ADA), diabetes is a group of metabolic diseases characterized by high blood sugar (glucose) levels that result from defects in insulin secretion, insulin action, or both. Insulin is a hormone produced by the pancreas that allows glucose to enter cells, where it is used for energy. In diabetes, either the pancreas doesn't produce enough insulin or the body's cells do not respond properly to the insulin that is produced. This leads to elevated blood sugar levels, which can cause various complications if left untreated.")
                       ],
                     );
                   } else {
@@ -176,7 +176,12 @@ class _DiabetesListState extends State<DiabetesList> {
                         WidgetSpan(child: SizedBox(width: 30)),
                         TextSpan(
                             text:
-                                """This type occurs when the immune system mistakenly attacks and destroys the insulin-producing beta cells in the pancreas. People with Type 1 diabetes need to take insulin regularly to manage their blood sugar levels."""),
+                                """(formerly Insulin-Dependent Diabetes Mellitus, IDDM): It is an autoimmune disease in which the body's immune system attacks and destroys insulin-producing beta cells in the pancreas. Therefore, the body does not produce insulin."""),
+                        TextSpan(
+                          text:
+                              "\n\nReference: American Diabetes Association. (2021). Introduction: Standards of Medical Care in Diabetes—2021. Diabetes Care, 44(Supplement 1), S1-S2. [DOI: 10.2337/dc21-S001]",
+                          style: TextStyle(fontSize: 10),
+                        ),
                         TextSpan(
                           text: "\n\nB. Type 2 Diabetes: \n",
                           style: TextStyle(fontWeight: FontWeight.bold),
@@ -184,7 +189,12 @@ class _DiabetesListState extends State<DiabetesList> {
                         WidgetSpan(child: SizedBox(width: 30)),
                         TextSpan(
                             text:
-                                """This is the most common form of diabetes, typically developing in adulthood. In Type 2 diabetes, the body doesn't use insulin properly, and over time, it may not produce enough insulin. Lifestyle factors, genetics, and obesity are often associated with the development of Type 2 diabetes."""),
+                                """(formerly Non-Insulin-Dependent Diabetes Mellitus, NIDDM): It is characterized by insulin resistance, where the body's cells do not respond effectively to insulin, and by impaired insulin secretion from the pancreas."""),
+                        TextSpan(
+                          text:
+                              "\n\nReference: American Diabetes Association. (2021). Introduction: Standards of Medical Care in Diabetes—2021. Diabetes Care, 44(Supplement 1), S1-S2. [DOI: 10.2337/dc21-S001]",
+                          style: TextStyle(fontSize: 10),
+                        ),
                         TextSpan(
                           text: "\n\nC. Gestational Diabetes: \n",
                           style: TextStyle(fontWeight: FontWeight.bold),
@@ -192,7 +202,25 @@ class _DiabetesListState extends State<DiabetesList> {
                         WidgetSpan(child: SizedBox(width: 30)),
                         TextSpan(
                             text:
-                                """This type occurs during pregnancy when the body cannot produce enough insulin to meet the increased demands. It usually resolves after childbirth, but women who have had gestational diabetes are at an increased risk of developing Type 2 diabetes later in life."""),
+                                """It occurs during pregnancy when the body cannot produce enough insulin to meet the increased needs of pregnancy."""),
+                        TextSpan(
+                          text:
+                              "\n\nAmerican Diabetes Association. (2021). Management of Diabetes in Pregnancy: Standards of Medical Care in Diabetes—2021. Diabetes Care, 44(Supplement 1), S200-S210. [DOI: 10.2337/dc21-S015]",
+                          style: TextStyle(fontSize: 10),
+                        ),
+                        TextSpan(
+                          text: "\n\nD. Other Specific Types of Diabetes: \n",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        WidgetSpan(child: SizedBox(width: 30)),
+                        TextSpan(
+                            text:
+                                """ This category includes various forms of diabetes resulting from specific causes, such as genetic defects of beta-cell function or insulin action, diseases of the exocrine pancreas (e.g., pancreatitis), endocrinopathies, drug- or chemical-induced diabetes, infections, and other genetic syndromes."""),
+                        TextSpan(
+                          text:
+                              "\n\nReference: American Diabetes Association. (2020). 2. Classification and Diagnosis of Diabetes: Standards of Medical Care in Diabetes—2020. Diabetes Care, 43(Supplement 1), S14-S31. [DOI: 10.2337/dc20-S002]",
+                          style: TextStyle(fontSize: 10),
+                        ),
                       ],
                     );
                   } else {
@@ -258,6 +286,359 @@ class _DiabetesListState extends State<DiabetesList> {
             ),
             child: ListTile(
               title: Text(
+                "Common Symptoms",
+                style: GoogleFonts.istokWeb(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 24,
+                ),
+              ),
+              tileColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              subtitle: Text.rich(() {
+                TextSpan text;
+
+                if (_lang == Language.english) {
+                  text = TextSpan(
+                    children: [
+                      const TextSpan(
+                        text: "● Excessive thirst (Polydipsia)\n",
+                        style: TextStyle(
+                          fontSize: 16,
+                        ),
+                      ),
+                      const TextSpan(
+                        text: "● Frequent urination (Polyuria)\n",
+                        style: TextStyle(
+                          fontSize: 16,
+                        ),
+                      ),
+                      const TextSpan(
+                        text: "● Unexplained weight loss\n",
+                        style: TextStyle(
+                          fontSize: 16,
+                        ),
+                      ),
+                      const TextSpan(
+                        text: "● Fatigue\n",
+                        style: TextStyle(
+                          fontSize: 16,
+                        ),
+                      ),
+                      const TextSpan(
+                        text: "● Blurred vision\n",
+                        style: TextStyle(
+                          fontSize: 16,
+                        ),
+                      ),
+                      const TextSpan(
+                        text: "● Slow healing of wounds\n",
+                        style: TextStyle(
+                          fontSize: 16,
+                        ),
+                      ),
+                      const TextSpan(
+                        text: "● Frequent infections\n",
+                        style: TextStyle(
+                          fontSize: 16,
+                        ),
+                      ),
+                      const TextSpan(
+                        text: "● Tingling or numbness in extremities\n",
+                        style: TextStyle(
+                          fontSize: 16,
+                        ),
+                      ),
+                      const TextSpan(
+                        text: "● Increased hunger (Polyphagia)",
+                        style: TextStyle(
+                          fontSize: 16,
+                        ),
+                      ),
+                      WidgetSpan(child: Image.asset("assets/dm_symptoms.png")),
+                      const TextSpan(
+                        text:
+                            "\n\nReference: American Diabetes Association. (2021). Introduction: Standards of Medical Care in Diabetes—2021. Diabetes Care, 44(Supplement 1), S1-S2. [DOI: 10.2337/dc21-S001]",
+                        style: TextStyle(fontSize: 10),
+                      ),
+                    ],
+                  );
+                } else {
+                  text = const TextSpan(
+                    children: [
+                      TextSpan(text: "Not Available for Hiligaynon"),
+                    ],
+                  );
+                }
+
+                return text;
+              }()),
+            ),
+          ),
+          Container(
+            margin: const EdgeInsets.only(
+              left: 10,
+              right: 10,
+              bottom: 10,
+            ),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              color: Colors.white,
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0xFF7F7A7A),
+                  offset: Offset(2, 2),
+                  spreadRadius: 1,
+                )
+              ],
+            ),
+            child: ListTile(
+              title: Text(
+                "Risk Factors",
+                style: GoogleFonts.istokWeb(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 24,
+                ),
+              ),
+              tileColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              subtitle: Text.rich(
+                () {
+                  TextSpan text;
+
+                  if (_lang == Language.english) {
+                    text = const TextSpan(
+                      children: [
+                        TextSpan(
+                          text:
+                              "The American Diabetes Association (ADA) identifies several risk factors for developing type 2 diabetes. These risk factors include:\n\n",
+                          style: TextStyle(
+                            fontSize: 16,
+                          ),
+                        ),
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: "Family History: ",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            TextSpan(
+                              text:
+                                  "Having a parent or sibling with diabetes increases the risk.\n",
+                              style: TextStyle(
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: "Obesity or Overweight: ",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            TextSpan(
+                              text:
+                                  "Being overweight or obese, especially if the weight is concentrated around the abdomen (central obesity), increases the risk.\n",
+                              style: TextStyle(
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: "Physical Inactivity: ",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            TextSpan(
+                              text:
+                                  "Leading a sedentary lifestyle with little or no physical activity increases the risk.\n",
+                              style: TextStyle(
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: "Age: ",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            TextSpan(
+                              text:
+                                  "The risk of type 2 diabetes increases with age, particularly after the age of 45.\n",
+                              style: TextStyle(
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: "Race or Ethnicity: ",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            TextSpan(
+                              text:
+                                  "Certain racial and ethnic groups, including African Americans, Hispanic/Latino Americans, Native Americans, Asian Americans, and Pacific Islanders, have a higher risk.\n",
+                              style: TextStyle(
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: "Gestational Diabetes: ",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            TextSpan(
+                              text:
+                                  "Having gestational diabetes during pregnancy or giving birth to a baby weighing more than 9 pounds increases the risk.\n",
+                              style: TextStyle(
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: "Polycystic Ovary Syndrom (PCOS): ",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            TextSpan(
+                              text:
+                                  "Women with PCOS have a higher risk of developing type 2 diabetes.\n",
+                              style: TextStyle(
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: "Hypertension (High Blood Pressure): ",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            TextSpan(
+                              text:
+                                  "Having high blood pressure (140/90 mmHg or higher) increases the risk.\n",
+                              style: TextStyle(
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: "High Cholesterol Levels: ",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            TextSpan(
+                              text:
+                                  "Having low levels of high-density lipoprotein (HDL) cholesterol and/or high levels of triglycerides increases the risk.\n",
+                              style: TextStyle(
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: "History of Cardiovascular Disease: ",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            TextSpan(
+                              text:
+                                  "Having a history of heart disease or stroke increases the risk of type 2 diabetes.\n",
+                              style: TextStyle(
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                        TextSpan(
+                          text:
+                              "\n\nReference: American Diabetes Association. (2021). Introduction: Standards of Medical Care in Diabetes—2021. Diabetes Care, 44(Supplement 1), S1-S2. [DOI: 10.2337/dc21-S001]",
+                          style: TextStyle(fontSize: 10),
+                        ),
+                      ],
+                    );
+                  } else {
+                    text = const TextSpan(
+                      children: [
+                        TextSpan(text: "Not Available for Hiligaynon"),
+                      ],
+                    );
+                  }
+
+                  return text;
+                }(),
+                textAlign: TextAlign.justify,
+              ),
+            ),
+          ),
+          Container(
+            margin: const EdgeInsets.only(
+              left: 10,
+              right: 10,
+              bottom: 10,
+            ),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              color: Colors.white,
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0xFF7F7A7A),
+                  offset: Offset(2, 2),
+                  spreadRadius: 1,
+                )
+              ],
+            ),
+            child: ListTile(
+              title: Text(
                 "Diagnosis",
                 style: GoogleFonts.istokWeb(
                   fontWeight: FontWeight.bold,
@@ -273,87 +654,76 @@ class _DiabetesListState extends State<DiabetesList> {
                   TextSpan text;
 
                   if (_lang == Language.english) {
-                    text = TextSpan(
+                    text = const TextSpan(
                       children: [
-                        const TextSpan(
-                          text: "\nA. Blood Test for Diabetes Mellitus \n",
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                        TextSpan(
+                          text:
+                              "\nDiabetes can be identified through A1C standards or plasma glucose criteria, which include the fasting plasma glucose (FPG) level, the 2-hour glucose (2-h PG) level during a 75-gram oral glucose tolerance test (OGTT), or a random glucose level alongside typical hyperglycemic symptoms like increased urination, excessive thirst, unexplained weight loss, or hyperglycemic emergencies.\n\n",
                         ),
-                        const WidgetSpan(child: SizedBox(width: 30)),
-                        const TextSpan(
-                          text: "Fast Glucose Test ",
+                        WidgetSpan(child: SizedBox(width: 30)),
+                        TextSpan(
+                          text: "● A1C (Glycated Hemoglobin): ",
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontStyle: FontStyle.italic,
                           ),
                         ),
-                        const TextSpan(
+                        TextSpan(
                             text:
-                                "measures your blood sugar through fasting or not eating or drinking (except water) for a certain period before the actual monitoring. To screen for diabetes in patients recently admitted to hospitals care centers. It is part of annual screening in primary care.\n\n"),
-                        const WidgetSpan(child: SizedBox(width: 30)),
-                        const TextSpan(
-                          text: "Random Glucose Test ",
+                                "A measurement of the average blood glucose levels over the past two to three months. An A1C level of 6.5% or higher is indicative of diabetes.\n\n"),
+                        WidgetSpan(child: SizedBox(width: 30)),
+                        TextSpan(
+                          text: "● Fasting Plasma Glucose: ",
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontStyle: FontStyle.italic,
                           ),
                         ),
-                        const TextSpan(
+                        TextSpan(
                             text:
-                                "measures your blood sugar through fasting or not eating or drinking (except water) for a certain period before the actual monitoring. To screen for diabetes in patients recently admitted to hospitals care centers. It is part of annual screening in primary care.\n\n"),
-                        const WidgetSpan(child: SizedBox(width: 30)),
-                        const TextSpan(
-                          text: "Hemoglobin A1C Test ",
+                                "The level of glucose in the blood after an overnight fast of at least 8 - 10 hours. A fasting plasma glucose level of 126 milligrams per deciliter (mg/dL) or higher indicates diabetes.\n\n"),
+                        WidgetSpan(child: SizedBox(width: 30)),
+                        TextSpan(
+                          text:
+                              "● 2-hour Glucose (2-h PG) during Oral Glucose Tolerance Test (OGTT): ",
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontStyle: FontStyle.italic,
                           ),
                         ),
-                        const TextSpan(
+                        TextSpan(
                             text:
                                 "measures the amount of glycosylation of normal hemoglobin A, and it correlates with the average blood glucose levels over the past 2 to 3 months.\n\n"),
-                        const WidgetSpan(child: SizedBox(width: 30)),
-                        const TextSpan(
-                          text: "Glucose Tolerance Test ",
+                        WidgetSpan(child: SizedBox(width: 30)),
+                        TextSpan(
+                          text: "● Random Plasma Glucose: ",
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontStyle: FontStyle.italic,
                           ),
                         ),
-                        const TextSpan(
+                        TextSpan(
                             text:
-                                "measures your blood sugar before and after drinking a sweetened liquid called Glucola.\n"),
-                        const WidgetSpan(
-                            child: SizedBox(
-                          height: 15,
-                          width: double.infinity,
-                        )),
-                        const TextSpan(
-                          text: "\nB. Methods/Gadgets used for testing\n",
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        const WidgetSpan(
-                            child: SizedBox(
-                          height: 15,
-                          width: double.infinity,
-                        )),
-                        WidgetSpan(
-                          child: Image.asset(
-                            "assets/control_dm2.png",
+                                "A glucose test done at any time, regardless of the time since the last meal. A random plasma glucose level of 200 mg/dL (11.1 mmol/L) or higher, along with symptoms like increased urination (polyuria), excessive thirst (polydipsia), unexplained \n\n"),
+                        WidgetSpan(child: SizedBox(width: 30)),
+                        TextSpan(
+                          text: "● Continuous Glucose Monitoring (CGM): ",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontStyle: FontStyle.italic,
                           ),
                         ),
-                        const WidgetSpan(
-                            child: SizedBox(
-                          height: 15,
-                          width: double.infinity,
-                        )),
-                        const TextSpan(
+                        TextSpan(
                             text:
-                                "● Self-Monitoring of Blood Glucose (SMBG)\n"),
-                        const TextSpan(
-                            text: "● One Touch II Blood Glucose Monitor\n"),
-                        const TextSpan(
-                            text: "● Glucometer M+ Blood Glucose Monitor"),
+                                "is a valuable tool for diabetes management, providing real-time data on glucose levels throughout the day and night. It continuously measures glucose levels in the interstitial fluid, providing real-time data to users. These systems consist of a sensor inserted under the skin, which measures glucose levels and transmits data to a receiver or smartphone app."),
+                        TextSpan(
+                          text:
+                              """\n\nReference: American Diabetes Association. (2022). Diagnosis and classification of diabetes mellitus. Diabetes Care, 45(Supplement_1), S17-S38. https://doi.org/10.2337/dc22-S002
+
+American Diabetes Association. (2021). Continuous Glucose Monitoring: Standards of Medical Care in Diabetes—2021. Diabetes Care, 44(Supplement 1), S66. [DOI: 10.2337/dc21-S005]
+""",
+                          style: TextStyle(fontSize: 10),
+                        ),
                       ],
                     );
                   } else {
@@ -489,33 +859,52 @@ class _DiabetesListState extends State<DiabetesList> {
                     text = const TextSpan(
                       children: [
                         TextSpan(
-                          text: "\n1. Exercise regularly - ",
+                          text: "\n1. Healthy Eating - ",
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                         TextSpan(
                             text:
-                                "Exercise increases the insulin sensitivity of your cells, meaning that you need less insulin to manage your blood sugar levels.\n\n"),
+                                "Consuming a balanced diet rich in fruits, vegetables, whole grains, lean proteins, and healthy fats while limiting intake of processed foods, sugary beverages, and high-fat foods.\n\n"),
                         TextSpan(
-                          text: "2. Drink water as your primary beverage - ",
+                          text: "2. Regular Physical Activity - ",
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                         TextSpan(
                             text:
-                                "Sugary beverages like soda and sweetened fruit juice have been linked to an increased risk of both type 2 diabetes and latent autoimmune diabetes of adults.\n\n"),
+                                "Engaging in regular physical activity such as brisk walking, jogging, swimming, cycling, or aerobic exercises for at least 150 minutes per week, aiming for a combination of cardio and strength training exercises.\n\n"),
                         TextSpan(
-                          text: "3. Eat healty plant foods - ",
+                          text: "3. Weight Management - ",
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                         TextSpan(
                             text:
-                                "Plants provide vitamins, minerals and carbohydrates in your diet.\n\n"),
+                                "Maintaining a healthy body weight through a combination of healthy eating and regular physical activity to achieve and sustain a body mass index (BMI) within the normal range (18.5–24.9 kg/m²).\n\n"),
                         TextSpan(
-                          text: "4. Quit smoking - ",
+                          text: "4. Blood Pressure Control - ",
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                         TextSpan(
                             text:
-                                "Smoking is just one risk factor for increased risk of diabetes. The more often someone smokes, the higher their risk."),
+                                "Monitoring blood pressure regularly and taking steps to control high blood pressure (hypertension) through lifestyle modifications (healthy diet, regular exercise, weight management) and, if necessary, medication prescribed by a healthcare provider.\n\n"),
+                        TextSpan(
+                          text: "5. Cholesterol Management - ",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        TextSpan(
+                            text:
+                                "Managing cholesterol levels by adopting a heart-healthy diet low in saturated and trans fats, maintaining a healthy weight, engaging in regular physical activity, and, if necessary, taking cholesterol-lowering medications as prescribed by a healthcare provider.\n\n"),
+                        TextSpan(
+                          text: "6. Smoking Cessation - ",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        TextSpan(
+                            text:
+                                "Quitting smoking or using tobacco products, as smoking is a significant risk factor for the development of type 2 diabetes and other serious health conditions."),
+                        TextSpan(
+                          text:
+                              "\n\nReference: American Diabetes Association. (2021). Introduction: Standards of Medical Care in Diabetes—2021. Diabetes Care, 44(Supplement 1), S1-S2. [DOI: 10.2337/dc21-S001]",
+                          style: TextStyle(fontSize: 10),
+                        ),
                       ],
                     );
                   } else {
@@ -603,70 +992,160 @@ class _DiabetesListState extends State<DiabetesList> {
                         const WidgetSpan(child: SizedBox(width: 30)),
                         const TextSpan(
                             text:
-                                "These are long-term problems that can develop gradually, and can lead to serious damage if they go unchecked and untreated.\n"),
+                                "These are long-term problems that can develop gradually, and can lead to serious damage if they go unchecked and untreated.\n\n"),
+                        const TextSpan(
+                          text: "I. Macrovascular Complications: \n\n",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
                         WidgetSpan(
                           child: Image.asset(
-                            "assets/eye_problems.png",
+                            "assets/cvd.png",
                           ),
                         ),
                         const TextSpan(
                           children: [
                             TextSpan(
-                              text: "● Eye Problems - ",
+                              text: "● Cardiovascular Disease (CVD) - ",
                               style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                             TextSpan(
                                 text:
-                                    "Some people with diabetes develop an eye disease called diabetic retinopathy which can affect their eyesight. If retinopathy is picked up, usually from an eye screening test, it can be treated and sight loss prevented.\n"),
+                                    "Diabetes increases the risk of various cardiovascular conditions such as coronary artery disease, heart attack, stroke, and peripheral arterial disease. "),
+                            TextSpan(
+                              text:
+                                  "\n\nReference: American Diabetes Association. (2021). Introduction: Standards of Medical Care in Diabetes—2021. Diabetes Care, 44(Supplement 1), S1-S2. [DOI: 10.2337/dc21-S001] \n\n",
+                              style: TextStyle(fontSize: 10),
+                            ),
                           ],
                         ),
                         TextSpan(
                           children: [
                             WidgetSpan(
                               child: Image.asset(
-                                "assets/foot_problems.png",
+                                "assets/pad.png",
                               ),
                             ),
                             const TextSpan(
-                              text: "● Foot Problems - ",
+                              text: "● Peripheral Arterial Disease (PAD) - ",
                               style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                             const TextSpan(
                                 text:
-                                    "Diabetes foot problems are serious and can lead to amputation if untreated. Nerve damage can affect the feeling in your feet and raised blood sugar can damage the circulation, making it slower for sores and cuts to heal.\n\n"),
+                                    "Diabetes can lead to reduced blood flow to the extremities, particularly the legs, due to narrowing or blockage of arteries, resulting in PAD."),
+                            const TextSpan(
+                              text:
+                                  "\n\nReference: American Diabetes Association. (2021). Cardiovascular Disease and Risk Management: Standards of Medical Care in Diabetes—2021. Diabetes Care, 44(Supplement 1), S125-S150. [DOI: 10.2337/dc21-S008] \n\n",
+                              style: TextStyle(fontSize: 10),
+                            ),
                           ],
                         ),
-                        const TextSpan(
+                        TextSpan(
                           children: [
-                            TextSpan(
-                              text: "● Heart attack and Stroke - ",
+                            WidgetSpan(
+                              child: Image.asset(
+                                "assets/stroke.png",
+                              ),
+                            ),
+                            const TextSpan(
+                              text: "● Stroke - ",
                               style: TextStyle(fontWeight: FontWeight.bold),
                             ),
-                            TextSpan(
+                            const TextSpan(
                                 text:
-                                    "When you have diabetes, high blood sugar for a period of time can damage your blood vessels. This can sometimes lead to heart attacks and strokes.\n\n"),
+                                    "Diabetes increases the risk of stroke, which occurs when blood flow to the brain is interrupted, leading to brain damage and neurological impairment."),
+                            const TextSpan(
+                              text:
+                                  "\n\nReference: American Diabetes Association. (2021). Cardiovascular Disease and Risk Management: Standards of Medical Care in Diabetes—2021. Diabetes Care, 44(Supplement 1), S125-S150. [DOI: 10.2337/dc21-S008]\n\n",
+                              style: TextStyle(fontSize: 10),
+                            ),
+                            const TextSpan(
+                              text: "\nII. Microvascular Complications: \n\n",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
                           ],
                         ),
-                        const TextSpan(
+                        TextSpan(
                           children: [
-                            TextSpan(
-                              text: "● Kidney Problems (nephropathy) - ",
+                            WidgetSpan(
+                              child: Image.asset(
+                                "assets/dr.png",
+                              ),
+                            ),
+                            const TextSpan(
+                              text: "● Diabetic Retinopathy - ",
                               style: TextStyle(fontWeight: FontWeight.bold),
                             ),
-                            TextSpan(
+                            const TextSpan(
                                 text:
-                                    "Diabetes can cause damage to your kidneys over a long period of time making it harder to clear extra fluid and waste from your body. This is caused by high blood sugar levels and high blood pressure. It is known as diabetic nephropathy or kidney disease.\n\n"),
+                                    "Diabetes can damage the blood vessels in the retina, leading to diabetic retinopathy, a leading cause of blindness in adults."),
+                            const TextSpan(
+                              text:
+                                  "\n\nReference: American Diabetes Association. (2021). Microvascular Complications and Foot Care: Standards of Medical Care in Diabetes—2021. Diabetes Care, 44(Supplement 1), S151-S167. [DOI: 10.2337/dc21-S009]\n\n",
+                              style: TextStyle(fontSize: 10),
+                            ),
                           ],
                         ),
-                        const TextSpan(
+                        TextSpan(
                           children: [
-                            TextSpan(
-                              text: "● Nerve Damange (neuropathy) - ",
+                            WidgetSpan(
+                              child: Image.asset(
+                                "assets/cataract.png",
+                              ),
+                            ),
+                            const TextSpan(
+                              text: "● Cataracts - ",
                               style: TextStyle(fontWeight: FontWeight.bold),
                             ),
-                            TextSpan(
+                            const TextSpan(
                                 text:
-                                    "Some people with diabetes may develop nerve damage caused by complications of high blood sugar levels. This can make it harder for the nerves to carry messages between the brain and every part of our body so it can affect how we see, hear, feel and move.\n\n"),
+                                    "occur when the lens becomes cloudy, leading to blurred or impaired vision. The presence of diabetes can exacerbate the formation of cataracts due to the impact of elevated blood sugar levels on the lens structure."),
+                            const TextSpan(
+                              text:
+                                  "\n\nReference: American Diabetes Association. (2021). Microvascular Complications and Foot Care: Standards of Medical Care in Diabetes—2021. Diabetes Care, 44(Supplement 1), S151-S167. [DOI: 10.2337/dc21-S009]\n\n",
+                              style: TextStyle(fontSize: 10),
+                            ),
+                          ],
+                        ),
+                        TextSpan(
+                          children: [
+                            WidgetSpan(
+                              child: Image.asset(
+                                "assets/dn.png",
+                              ),
+                            ),
+                            const TextSpan(
+                              text: "● Diabetic Nephropathy - ",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            const TextSpan(
+                                text:
+                                    "Diabetes can cause damage to the kidneys, leading to diabetic nephropathy, characterized by proteinuria, decreased kidney function, and ultimately end-stage renal disease."),
+                            const TextSpan(
+                              text:
+                                  "\n\nReference: American Diabetes Association. (2021). Microvascular Complications and Foot Care: Standards of Medical Care in Diabetes—2021. Diabetes Care, 44(Supplement 1), S151-S167. [DOI: 10.2337/dc21-S009]\n\n",
+                              style: TextStyle(fontSize: 10),
+                            ),
+                          ],
+                        ),
+                        TextSpan(
+                          children: [
+                            WidgetSpan(
+                              child: Image.asset(
+                                "assets/dnu.png",
+                              ),
+                            ),
+                            const TextSpan(
+                              text: "● Diabetic Neuropathy - ",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            const TextSpan(
+                                text:
+                                    "Diabetes can damage nerves throughout the body, leading to various types of diabetic neuropathy, including peripheral neuropathy (affecting the extremities), autonomic neuropathy (affecting the internal organs), and focal neuropathy (affecting specific nerves). "),
+                            const TextSpan(
+                              text:
+                                  "\n\nReference: American Diabetes Association. (2021). Microvascular Complications and Foot Care: Standards of Medical Care in Diabetes—2021. Diabetes Care, 44(Supplement 1), S151-S167. [DOI: 10.2337/dc21-S009]",
+                              style: TextStyle(fontSize: 10),
+                            ),
                           ],
                         ),
                       ],
@@ -791,43 +1270,14 @@ class _DiabetesListState extends State<DiabetesList> {
                   TextSpan text;
 
                   if (_lang == Language.english) {
-                    text = const TextSpan(
+                    text = TextSpan(
                       children: [
-                        TextSpan(
-                          children: [
-                            TextSpan(
-                              text: "● Hypoglycemia - ",
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            TextSpan(
-                                text:
-                                    "When your blood sugars are too low.\n\n"),
-                          ],
+                        WidgetSpan(
+                          child: Image.asset(
+                            "assets/dka.png",
+                          ),
                         ),
-                        TextSpan(
-                          children: [
-                            TextSpan(
-                              text: "● Hyperglycemia - ",
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            TextSpan(
-                                text:
-                                    "When your blood sugars are too high.\n\n"),
-                          ],
-                        ),
-                        TextSpan(
-                          children: [
-                            TextSpan(
-                              text:
-                                  "● Hyperosmolar Hyperglycaemic State (HHS) - ",
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            TextSpan(
-                                text:
-                                    "A life-threatening emergency that only happens in people with type 2 diabetes. It’s brought on by severe dehydration and very high blood sugars.\n\n"),
-                          ],
-                        ),
-                        TextSpan(
+                        const TextSpan(
                           children: [
                             TextSpan(
                               text: "● Diabetic Ketoacidosis (DKA) - ",
@@ -835,7 +1285,87 @@ class _DiabetesListState extends State<DiabetesList> {
                             ),
                             TextSpan(
                                 text:
-                                    "A life-threatening emergency where the lack of insulin and high blood sugars leads to a build-up of ketones."),
+                                    "It is a serious complication of diabetes characterized by high blood sugar levels, ketosis (elevated ketones in the blood), and metabolic acidosis. It typically occurs in individuals with type 1 diabetes but can also occur in those with type 2 diabetes under certain circumstances."),
+                            TextSpan(
+                              text:
+                                  "\n\nReference: American Diabetes Association. (2021). Diabetic Ketoacidosis (DKA) and Hyperglycemic Hyperosmolar State (HHS) in Adults. Diabetes Care, 44(Supplement 1), S193-S194. [DOI: 10.2337/dc21-S014]\n\n",
+                              style: TextStyle(fontSize: 10),
+                            ),
+                          ],
+                        ),
+                        WidgetSpan(
+                          child: Image.asset(
+                            "assets/hhs.png",
+                          ),
+                        ),
+                        const TextSpan(
+                          children: [
+                            TextSpan(
+                              text:
+                                  "● Hyperglycemic Hyperosmolar State (HHS) - ",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            TextSpan(
+                                text:
+                                    "It is a severe complication of diabetes characterized by extremely high blood sugar levels, dehydration, and high blood osmolality without significant ketoacidosis. It typically occurs in individuals with type 2 diabetes and is more common in older adults."),
+                            TextSpan(
+                              text:
+                                  "\n\nReference: American Diabetes Association. (2021). Diabetic Ketoacidosis (DKA) and Hyperglycemic Hyperosmolar State (HHS) in Adults. Diabetes Care, 44(Supplement 1), S193-S194. [DOI: 10.2337/dc21-S014]\n\n",
+                              style: TextStyle(fontSize: 10),
+                            ),
+                          ],
+                        ),
+                        const TextSpan(
+                          children: [
+                            TextSpan(
+                              text: "● Smogyi Effect - ",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            TextSpan(
+                                text:
+                                    "It is also known as rebound hyperglycemia, occurs when blood sugar levels drop overnight, usually as a result of too much insulin or oral medications taken before bedtime. In response to low blood sugar levels, the body releases hormones (such as cortisol and adrenaline) to raise blood sugar levels, leading to high blood sugar levels in the morning."),
+                            TextSpan(
+                              text:
+                                  "\n\nReference: American Diabetes Association. (2021). Hypoglycemia. Diabetes Care, 44(Supplement 1), S178-S179. [DOI: 10.2337/dc21-S012]\n\n",
+                              style: TextStyle(fontSize: 10),
+                            ),
+                          ],
+                        ),
+                        const TextSpan(
+                          children: [
+                            TextSpan(
+                              text: "● Dawn Phenomenon - ",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            TextSpan(
+                                text:
+                                    "It refers to the natural rise in blood sugar levels that occurs in the early morning hours, usually between 4:00 a.m. and 8:00 a.m., in individuals with diabetes. This rise in blood sugar levels is believed to be related to the body's release of hormones (such as growth hormone and cortisol) in the hours before waking."),
+                            TextSpan(
+                              text:
+                                  "\n\nReference: American Diabetes Association. (2021). Glycemic Targets: Standards of Medical Care in Diabetes—2021. Diabetes Care, 44(Supplement 1), S73-S84. [DOI: 10.2337/dc21-S005]\n\n",
+                              style: TextStyle(fontSize: 10),
+                            ),
+                          ],
+                        ),
+                        WidgetSpan(
+                          child: Image.asset(
+                            "assets/hypoglycemia.png",
+                          ),
+                        ),
+                        const TextSpan(
+                          children: [
+                            TextSpan(
+                              text: "● Hypoglycemia - ",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            TextSpan(
+                                text:
+                                    "It occurs when blood sugar levels drop too low, leading to symptoms such as shakiness, sweating, confusion, and, if severe, loss of consciousness or seizures. It can result from excessive insulin or other glucose-lowering medications, delayed or missed meals, or increased physical activity."),
+                            TextSpan(
+                              text:
+                                  "\n\nReference: American Diabetes Association. (2021). Hypoglycemia. Diabetes Care, 44(Supplement 1), S178-S179. [DOI: 10.2337/dc21-S012]\n\n",
+                              style: TextStyle(fontSize: 10),
+                            ),
                           ],
                         ),
                       ],
@@ -937,93 +1467,67 @@ class _DiabetesListState extends State<DiabetesList> {
                         TextSpan(
                           children: [
                             TextSpan(
-                              text: "\n1. Educate the patient - ",
+                              text: "\n1. Self-Monitoring of Blood Glucose - ",
                               style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                             TextSpan(
                                 text:
-                                    "Education on diabetes is critical. Inform the patients about their treatment options. Patients who understand how diet, stress, medications, and exercise affect their glucose levels can make informed choices.\n\n"),
-                          ],
-                        ),
-                        TextSpan(
-                          children: [
+                                    "Monitor your blood glucose levels regularly to track how your body responds to food, exercise, and medication. This helps you make informed decisions about managing your diabetes effectively."),
                             TextSpan(
-                              text: "2. Maintain ideal glucose level - ",
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                              text:
+                                  "\n\nReference: American Diabetes Association. (2021). Hypoglycemia. Diabetes Care, 44(Supplement 1), S178-S179. [DOI: 10.2337/dc21-S012]\n",
+                              style: TextStyle(fontSize: 10),
                             ),
-                            TextSpan(
-                                text:
-                                    "Maintain HbA1c under 7% and blood sugar levels between 90 and 130 mg/dL. Long-term glucose control is the best way to prevent complications.\n\n"),
                           ],
                         ),
                         TextSpan(
                           children: [
                             TextSpan(
                               text:
-                                  "3. Educate on oral diabetes medications - ",
+                                  "\n2. Healthy Eating and Physical Activity - ",
                               style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                             TextSpan(
                                 text:
-                                    "Patients with type 2 diabetes, prediabetes, and gestational diabetes benefit the most from oral diabetic medications.\n\n"),
+                                    "Adopt a healthy eating plan that includes a variety of nutrient-rich foods, such as fruits, vegetables, whole grains, lean proteins, and healthy fats. Combine this with regular physical activity, aiming for at least 150 minutes per week, to help manage your blood sugar levels and improve overall health."),
+                            TextSpan(
+                              text:
+                                  "\n\nReference: American Diabetes Association. (2021). Lifestyle Management: Standards of Medical Care in Diabetes—2021. Diabetes Care, 44(Supplement 1), S67-S76. [DOI: 10.2337/dc21-S005]\n",
+                              style: TextStyle(fontSize: 10),
+                            ),
+                          ],
+                        ),
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: "\n3. Medication Adherence - ",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            TextSpan(
+                                text:
+                                    "Adopt a healthy eating plan that includes a variety of nutrient-rich foods, such as fruits, vegetables, whole grains, lean proteins, and healthy fats. Combine this with regular physical activity, aiming for at least 150 minutes per week, to help manage your blood sugar levels and improve overall health."),
+                            TextSpan(
+                              text:
+                                  "\n\nReference: American Diabetes Association. (2021). Medication Management: Standards of Medical Care in Diabetes—2021. Diabetes Care, 44(Supplement 1), S98-S110. [DOI: 10.2337/dc21-S006]\n",
+                              style: TextStyle(fontSize: 10),
+                            ),
                           ],
                         ),
                         TextSpan(
                           children: [
                             TextSpan(
                               text:
-                                  "4. Expect some differences in treatment for type 1 and 2 DM - ",
+                                  "\n4. Stress Management and Coping Strategies - ",
                               style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                             TextSpan(
                                 text:
-                                    "Depending on the kind of diabetes patients have, the treatment plan may include oral medications, insulin, and blood sugar monitoring.\n\n"),
-                          ],
-                        ),
-                        TextSpan(
-                          children: [
-                            TextSpan(
-                              text: "5. Assist the patient in meal planning - ",
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            TextSpan(
-                                text:
-                                    "Diabetes requires adhering to a diabetic diet; reducing carbohydrates, processed foods, and sugar. The patient may need education on how carbohydrates (pasta, bread, rice) become glucose once digested. Instruct on increasing fruits, vegetables, lean proteins, and whole grains.\n\n"),
-                          ],
-                        ),
-                        TextSpan(
-                          children: [
-                            TextSpan(
-                              text: "6. Promote physical activities - ",
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            TextSpan(
-                                text:
-                                    "Diabetes requires adhering to a diabetic diet; reducing carbohydrates, processed foods, and sugar. The patient may need education on how carbohydrates (pasta, bread, rice) become glucose once digested. Instruct on increasing fruits, vegetables, lean proteins, and whole grains.\n\n"),
-                          ],
-                        ),
-                        TextSpan(
-                          children: [
+                                    "Practice stress management techniques, such as deep breathing, meditation, or engaging in activities you enjoy, to help reduce stress and improve your emotional well-being. Seek support from friends, family, or mental health professionals if needed."),
                             TextSpan(
                               text:
-                                  "7. Coordinate with a diabetes nurse educator - ",
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                                  "\n\nReference: American Diabetes Association. (2021). Psychosocial Care: Standards of Medical Care in Diabetes—2021. Diabetes Care, 44(Supplement 1), S165-S174. [DOI: 10.2337/dc21-S011]n",
+                              style: TextStyle(fontSize: 10),
                             ),
-                            TextSpan(
-                                text:
-                                    "Diabetes educators specialize in teaching people with diabetes how to manage their condition. The diabetes educator can educate those with diabetes and their family and caregivers on effectively managing DM.\n\n"),
-                          ],
-                        ),
-                        TextSpan(
-                          children: [
-                            TextSpan(
-                              text:
-                                  "8. Enlighten the patient about mouth care - ",
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            TextSpan(
-                                text:
-                                    "The chance of severe gum infections may increase in diabetes. Advise the patient to floss and brush their teeth at least twice daily and plan routine dental exams.\n\n"),
                           ],
                         ),
                       ],
@@ -1153,20 +1657,16 @@ class _DiabetesListState extends State<DiabetesList> {
                   color: Color(0xFF7F7A7A),
                   offset: Offset(2, 2),
                   spreadRadius: 1,
-                )
+                ),
               ],
             ),
             child: ListTile(
               title: Text(
-                "Type 1 DM Treatments",
+                "Recommended Diet for Type 2 Diabetes",
                 style: GoogleFonts.istokWeb(
                   fontWeight: FontWeight.bold,
                   fontSize: 24,
                 ),
-              ),
-              tileColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
               ),
               subtitle: Text.rich(
                 () {
@@ -1175,22 +1675,81 @@ class _DiabetesListState extends State<DiabetesList> {
                   if (_lang == Language.english) {
                     text = const TextSpan(
                       children: [
-                        WidgetSpan(child: SizedBox(height: 20)),
-                        TextSpan(text: "● Insulin Injections\n"),
-                        TextSpan(text: "● Use of an insulin pump\n"),
-                        TextSpan(text: "● Routine blood sugar monitoring\n"),
-                        TextSpan(text: "● Carbohydrate counting\n"),
-                        TextSpan(text: "● Islet cell or pancreas transplant"),
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: "\nEmphasize Nutriet-Rich Foods - ",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            TextSpan(
+                                text:
+                                    "Focus on consuming a variety of nutrient-rich foods, including fruits, vegetables, whole grains, lean proteins (such as poultry, fish, beans, and tofu), and healthy fats (such as nuts, seeds, avocados, and olive oil).\n"),
+                          ],
+                        ),
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: "\nControl Carbohydrate Intake - ",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            TextSpan(
+                                text:
+                                    "Adopt a healthy eating plan that includes a variety of nutrient-rich foods, such as fruits, vegetables, whole grains, lean proteins, and healthy fats. Combine this with regular physical activity, aiming for at least 150 minutes per week, to help manage your blood sugar levegetables.\n"),
+                          ],
+                        ),
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: "\nMonitor Portion Sizes - ",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            TextSpan(
+                                text:
+                                    "Be mindful of portion sizes to avoid overeating and maintain a healthy weight. Use measuring cups, spoons, or food scales to accurately measure serving sizes, especially for carbohydrate-containing foods.\n"),
+                          ],
+                        ),
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: "\nLimit Added Sugars and Sweets - ",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            TextSpan(
+                                text:
+                                    "Limit intake of foods and beverages high in added sugars, such as sugary drinks, desserts, candies, and processed snacks. Opt for naturally sweet options like fruits to satisfy your sweet cravings.\n"),
+                          ],
+                        ),
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: "\nInclude Healthy Fats - ",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            TextSpan(
+                                text:
+                                    "Incorporate sources of healthy fats, such as nuts, seeds, avocados, fatty fish (like salmon and mackerel), and olive oil, into your diet. These fats can help improve heart health and promote satiety.\n"),
+                          ],
+                        ),
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: "\nStay Hydrated - ",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            TextSpan(
+                                text:
+                                    "Drink plenty of water throughout the day to stay hydrated. Limit intake of sugary beverages and opt for water, herbal tea, or sparkling water instead."),
+                            TextSpan(
+                              text:
+                                  "\n\nReference: American Diabetes Association. (2021). Lifestyle Management: Standards of Medical Care in Diabetes—2021. Diabetes Care, 44(Supplement 1), S67-S76. [DOI: 10.2337/dc21-S005]",
+                              style: TextStyle(fontSize: 10),
+                            ),
+                          ],
+                        ),
                       ],
                     );
                   } else {
-                    text = const TextSpan(
-                      children: [
-                        TextSpan(
-                            text:
-                                "Ini isa ka pangmatag-ang kahimtangan sa panglawas nga nagakilala sa pagtaas sang level sang glucose (asukar) sa dugo. Ini nangin realidad ukon bangud ang lawas indi nagahimo sang bastante nga insulin, isa ka hormon nga nagaregulate sang asukar sa dugo, ukon bangud ang mga selula sang lawas indi maayo nga nagaresponde sa insulin."),
-                      ],
-                    );
+                    text = const TextSpan(text: "Not available for Hiligaynon");
                   }
 
                   return text;
@@ -1217,44 +1776,92 @@ class _DiabetesListState extends State<DiabetesList> {
                   color: Color(0xFF7F7A7A),
                   offset: Offset(2, 2),
                   spreadRadius: 1,
-                )
+                ),
               ],
             ),
             child: ListTile(
               title: Text(
-                "Type 2 DM Treatments",
+                "Wound Care Recommendations",
                 style: GoogleFonts.istokWeb(
                   fontWeight: FontWeight.bold,
                   fontSize: 24,
                 ),
-              ),
-              tileColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
               ),
               subtitle: Text.rich(
                 () {
                   TextSpan text;
 
                   if (_lang == Language.english) {
-                    text = const TextSpan(
+                    text = TextSpan(
                       children: [
-                        WidgetSpan(child: SizedBox(height: 20)),
-                        TextSpan(
-                            text: "● Dietary and lifestyle modifications\n"),
-                        TextSpan(text: "● Blood sugar monitoring\n"),
-                        TextSpan(text: "● Oral diabetic medications\n"),
-                        TextSpan(text: "● Insulin"),
+                        WidgetSpan(child: Image.asset("assets/wound_care.png")),
+                        const TextSpan(
+                            text:
+                                "The American Diabetes Association (ADA) provides guidelines for wound care in individuals with diabetes, particularly focusing on foot care due to the increased risk of foot ulcers and complications. \n"),
+                        const TextSpan(
+                          children: [
+                            TextSpan(
+                              text: "\n1. Daily Foot Inspection - ",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            TextSpan(
+                                text:
+                                    "Individuals with diabetes should inspect their feet daily for any signs of injury, such as cuts, blisters, redness, or swelling. Any abnormalities should be reported to a healthcare professional promptly.\n"),
+                          ],
+                        ),
+                        const TextSpan(
+                          children: [
+                            TextSpan(
+                              text: "\n2. Proper Wound Clearning - ",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            TextSpan(
+                                text:
+                                    "Clean wounds with mild soap and warm water, and pat dry gently. Avoid soaking feet, as it can soften the skin and increase the risk of injury.\n"),
+                          ],
+                        ),
+                        const TextSpan(
+                          children: [
+                            TextSpan(
+                              text: "\n3. Protection and Moisturization - ",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            TextSpan(
+                                text:
+                                    "Apply a moisturizer to the feet, avoiding the areas between the toes, to prevent dryness and cracking. Wear clean, dry socks and well-fitting shoes to protect the feet from injury.\n"),
+                          ],
+                        ),
+                        const TextSpan(
+                          children: [
+                            TextSpan(
+                              text: "\n4. Prompt Treatment of Wounds - ",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            TextSpan(
+                                text:
+                                    "Apply a moisturizer to the feet, avoiding the areas between the toes, to prevent dryness and cracking. Wear clean, dry socks and well-fitting shoes to protect the feet from injury.\n"),
+                          ],
+                        ),
+                        const TextSpan(
+                          children: [
+                            TextSpan(
+                              text: "\n5. Avoidance of Self-Treatment - ",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            TextSpan(
+                                text:
+                                    "Drink plenty of water throughout the day to stay hydrated. Limit intake of sugary beverages and opt for water, herbal tea, or sparkling water instead."),
+                            TextSpan(
+                              text:
+                                  "\n\nAmerican Diabetes Association. (2021). Microvascular Complications and Foot Care: Standards of Medical Care in Diabetes—2021. Diabetes Care, 44(Supplement 1), S151-S167. [DOI: 10.2337/dc21-S009]",
+                              style: TextStyle(fontSize: 10),
+                            ),
+                          ],
+                        ),
                       ],
                     );
                   } else {
-                    text = const TextSpan(
-                      children: [
-                        TextSpan(
-                            text:
-                                "Ini isa ka pangmatag-ang kahimtangan sa panglawas nga nagakilala sa pagtaas sang level sang glucose (asukar) sa dugo. Ini nangin realidad ukon bangud ang lawas indi nagahimo sang bastante nga insulin, isa ka hormon nga nagaregulate sang asukar sa dugo, ukon bangud ang mga selula sang lawas indi maayo nga nagaresponde sa insulin."),
-                      ],
-                    );
+                    text = const TextSpan(text: "Not available for Hiligaynon");
                   }
 
                   return text;
@@ -1267,6 +1874,234 @@ class _DiabetesListState extends State<DiabetesList> {
               ),
             ),
           ),
+          Container(
+            margin: const EdgeInsets.only(
+              left: 10,
+              right: 10,
+              bottom: 10,
+            ),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              color: Colors.white,
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0xFF7F7A7A),
+                  offset: Offset(2, 2),
+                  spreadRadius: 1,
+                ),
+              ],
+            ),
+            child: ListTile(
+              title: Text(
+                "Exercise Recommendations for Diabetic Patients",
+                style: GoogleFonts.istokWeb(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 24,
+                ),
+              ),
+              subtitle: Text.rich(
+                () {
+                  TextSpan text;
+
+                  if (_lang == Language.english) {
+                    text = const TextSpan(
+                      children: [
+                        TextSpan(
+                            text:
+                                "Exercise is an important component of diabetes management, and the American Diabetes Association (ADA) provides guidelines for individuals with diabetes regarding physical activity. \n"),
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: "\n1. Aerobic Exercise - ",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            TextSpan(
+                                text:
+                                    "Engage in at least 150 minutes of moderate-intensity aerobic exercise per week, spread over at least three days, with no more than two consecutive days without exercise. Examples include brisk walking, cycling, swimming, or dancing.\n"),
+                          ],
+                        ),
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: "\n2. Strength Training - ",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            TextSpan(
+                                text:
+                                    "Incorporate strength training exercises at least two days per week, targeting major muscle groups. Use resistance bands, free weights, or weight machines for activities such as lifting weights or performing bodyweight exercises.\n"),
+                          ],
+                        ),
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: "\n3. Flexibility and Balance Exercises - ",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            TextSpan(
+                                text:
+                                    "Include flexibility and balance exercises in your routine to improve range of motion, flexibility, and stability. These exercises can help reduce the risk of falls and injuries. Examples include yoga, tai chi, or stretching exercises.\n"),
+                          ],
+                        ),
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: "\n4. Individualized Approach - ",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            TextSpan(
+                                text:
+                                    "Apply a moisturizer to the feet, avoiding the areas between the toes, to prevent dryness and cracking. Wear clean, dry socks and well-fitting shoes to protect the feet from injury.\n"),
+                          ],
+                        ),
+                        TextSpan(
+                          text:
+                              "\nAmerican Diabetes Association. (2021). Lifestyle Management: Standards of Medical Care in Diabetes—2021. Diabetes Care, 44(Supplement 1), S67-S76. [DOI: 10.2337/dc21-S005]",
+                          style: TextStyle(fontSize: 10),
+                        ),
+                      ],
+                    );
+                  } else {
+                    text = const TextSpan(text: "Not available for Hiligaynon");
+                  }
+
+                  return text;
+                }(),
+                textAlign: TextAlign.justify,
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+          ),
+          // Container(
+          //   margin: const EdgeInsets.only(
+          //     left: 10,
+          //     right: 10,
+          //     bottom: 10,
+          //   ),
+          //   decoration: BoxDecoration(
+          //     borderRadius: BorderRadius.circular(10),
+          //     color: Colors.white,
+          //     boxShadow: const [
+          //       BoxShadow(
+          //         color: Color(0xFF7F7A7A),
+          //         offset: Offset(2, 2),
+          //         spreadRadius: 1,
+          //       )
+          //     ],
+          //   ),
+          //   child: ListTile(
+          //     title: Text(
+          //       "Type 1 DM Treatments",
+          //       style: GoogleFonts.istokWeb(
+          //         fontWeight: FontWeight.bold,
+          //         fontSize: 24,
+          //       ),
+          //     ),
+          //     tileColor: Colors.white,
+          //     shape: RoundedRectangleBorder(
+          //       borderRadius: BorderRadius.circular(10),
+          //     ),
+          //     subtitle: Text.rich(
+          //       () {
+          //         TextSpan text;
+
+          //         if (_lang == Language.english) {
+          //           text = const TextSpan(
+          //             children: [
+          //               WidgetSpan(child: SizedBox(height: 20)),
+          //               TextSpan(text: "● Insulin Injections\n"),
+          //               TextSpan(text: "● Use of an insulin pump\n"),
+          //               TextSpan(text: "● Routine blood sugar monitoring\n"),
+          //               TextSpan(text: "● Carbohydrate counting\n"),
+          //               TextSpan(text: "● Islet cell or pancreas transplant"),
+          //             ],
+          //           );
+          //         } else {
+          //           text = const TextSpan(
+          //             children: [
+          //               TextSpan(
+          //                   text:
+          //                       "Ini isa ka pangmatag-ang kahimtangan sa panglawas nga nagakilala sa pagtaas sang level sang glucose (asukar) sa dugo. Ini nangin realidad ukon bangud ang lawas indi nagahimo sang bastante nga insulin, isa ka hormon nga nagaregulate sang asukar sa dugo, ukon bangud ang mga selula sang lawas indi maayo nga nagaresponde sa insulin."),
+          //             ],
+          //           );
+          //         }
+
+          //         return text;
+          //       }(),
+          //       textAlign: TextAlign.justify,
+          //       style: const TextStyle(
+          //         fontSize: 16,
+          //         color: Colors.black,
+          //       ),
+          //     ),
+          //   ),
+          // ),
+          // Container(
+          //   margin: const EdgeInsets.only(
+          //     left: 10,
+          //     right: 10,
+          //     bottom: 10,
+          //   ),
+          //   decoration: BoxDecoration(
+          //     borderRadius: BorderRadius.circular(10),
+          //     color: Colors.white,
+          //     boxShadow: const [
+          //       BoxShadow(
+          //         color: Color(0xFF7F7A7A),
+          //         offset: Offset(2, 2),
+          //         spreadRadius: 1,
+          //       )
+          //     ],
+          //   ),
+          //   child: ListTile(
+          //     title: Text(
+          //       "Type 2 DM Treatments",
+          //       style: GoogleFonts.istokWeb(
+          //         fontWeight: FontWeight.bold,
+          //         fontSize: 24,
+          //       ),
+          //     ),
+          //     tileColor: Colors.white,
+          //     shape: RoundedRectangleBorder(
+          //       borderRadius: BorderRadius.circular(10),
+          //     ),
+          //     subtitle: Text.rich(
+          //       () {
+          //         TextSpan text;
+
+          //         if (_lang == Language.english) {
+          //           text = const TextSpan(
+          //             children: [
+          //               WidgetSpan(child: SizedBox(height: 20)),
+          //               TextSpan(
+          //                   text: "● Dietary and lifestyle modifications\n"),
+          //               TextSpan(text: "● Blood sugar monitoring\n"),
+          //               TextSpan(text: "● Oral diabetic medications\n"),
+          //               TextSpan(text: "● Insulin"),
+          //             ],
+          //           );
+          //         } else {
+          //           text = const TextSpan(
+          //             children: [
+          //               TextSpan(
+          //                   text:
+          //                       "Ini isa ka pangmatag-ang kahimtangan sa panglawas nga nagakilala sa pagtaas sang level sang glucose (asukar) sa dugo. Ini nangin realidad ukon bangud ang lawas indi nagahimo sang bastante nga insulin, isa ka hormon nga nagaregulate sang asukar sa dugo, ukon bangud ang mga selula sang lawas indi maayo nga nagaresponde sa insulin."),
+          //             ],
+          //           );
+          //         }
+
+          //         return text;
+          //       }(),
+          //       textAlign: TextAlign.justify,
+          //       style: const TextStyle(
+          //         fontSize: 16,
+          //         color: Colors.black,
+          //       ),
+          //     ),
+          //   ),
+          // ),
           Container(
             margin: const EdgeInsets.only(
               left: 10,
@@ -1312,6 +2147,11 @@ class _DiabetesListState extends State<DiabetesList> {
                         TextSpan(
                             text:
                                 "Missing insulin doses can lead to high blood sugar levels, increasing the risk of complications. It's crucial to adhere to the prescribed insulin regimen. If you've forgotten your insulin shot, it's important to take it as soon as you remember. However, consult your healthcare provider for specific advice, as individual circumstances can vary. Regularly monitoring blood sugar levels is crucial, and if in doubt, seek professional medical guidance.\n"),
+                        TextSpan(
+                          text:
+                              "\nReference: American Diabetes Association. (2021). Glycemic Targets: Standards of Medical Care in Diabetes—2021. Diabetes Care, 44(Supplement 1), S73-S84. [DOI: 10.2337/dc21-S005]\n",
+                          style: TextStyle(fontSize: 10),
+                        ),
                         WidgetSpan(child: SizedBox(height: 30)),
                         TextSpan(
                           text:
@@ -1322,6 +2162,11 @@ class _DiabetesListState extends State<DiabetesList> {
                         TextSpan(
                             text:
                                 "Monitor your blood sugar levels to assess the impact of the sugary food on your glucose levels and drink water to help flush out excess sugar from your system.\n"),
+                        TextSpan(
+                          text:
+                              "\nReference: American Diabetes Association. (2021). Nutrition Therapy: Standards of Medical Care in Diabetes—2021. Diabetes Care, 44(Supplement 1), S98-S110. [DOI: 10.2337/dc21-S005]\n",
+                          style: TextStyle(fontSize: 10),
+                        ),
                         WidgetSpan(child: SizedBox(height: 30)),
                         TextSpan(
                           text:
@@ -1332,6 +2177,11 @@ class _DiabetesListState extends State<DiabetesList> {
                         TextSpan(
                             text:
                                 "Exercise can lower blood sugar levels, and failure to adjust insulin may result in hypoglycemia. Monitoring and adjusting insulin accordingly are essential.\n"),
+                        TextSpan(
+                          text:
+                              "\nReference: American Diabetes Association. (2021). Physical Activity/Exercise: Standards of Medical Care in Diabetes—2021. Diabetes Care, 44(Supplement 1), S102-S111. [DOI: 10.2337/dc21-S005]\n",
+                          style: TextStyle(fontSize: 10),
+                        ),
                         WidgetSpan(child: SizedBox(height: 30)),
                         TextSpan(
                           text:
@@ -1342,6 +2192,11 @@ class _DiabetesListState extends State<DiabetesList> {
                         TextSpan(
                             text:
                                 "Consultation with a healthcare professional is crucial to adjust the treatment plan and identify potential reasons for uncontrolled blood sugar.\n"),
+                        TextSpan(
+                          text:
+                              "\nReference: American Diabetes Association. (2021). Medication Management: Standards of Medical Care in Diabetes—2021. Diabetes Care, 44(Supplement 1), S98-S110. [DOI: 10.2337/dc21-S005]\n",
+                          style: TextStyle(fontSize: 10),
+                        ),
                         WidgetSpan(child: SizedBox(height: 30)),
                         TextSpan(
                           text:
@@ -1352,6 +2207,11 @@ class _DiabetesListState extends State<DiabetesList> {
                         TextSpan(
                             text:
                                 "Regular monitoring is vital for understanding how lifestyle choices affect blood sugar levels. Skipping monitoring can lead to difficulties in managing diabetes effectively.\n"),
+                        TextSpan(
+                          text:
+                              "\nReference: American Diabetes Association. (2021). Self-Monitoring of Blood Glucose in Non-Insulin-Treated Type 2 Diabetes: It Is Time to Reassess. Diabetes Care, 44(Supplement 1), S111-S118. [DOI: 10.2337/dc21-S007]\n",
+                          style: TextStyle(fontSize: 10),
+                        ),
                         WidgetSpan(child: SizedBox(height: 30)),
                         TextSpan(
                           text:
@@ -1362,6 +2222,11 @@ class _DiabetesListState extends State<DiabetesList> {
                         TextSpan(
                             text:
                                 "It's crucial to communicate any side effects to the healthcare provider to explore alternative medications or adjust the treatment plan. Inform your doctor about the specific side effects you are experiencing. This allows them to assess the severity and determine the appropriate course of action.\n"),
+                        TextSpan(
+                          text:
+                              "\nReference: American Diabetes Association. (2021). Medication Management: Standards of Medical Care in Diabetes—2021. Diabetes Care, 44(Supplement 1), S98-S110. [DOI: 10.2337/dc21-S005]\n",
+                          style: TextStyle(fontSize: 10),
+                        ),
                         WidgetSpan(child: SizedBox(height: 30)),
                         TextSpan(
                           text: "7. What is I acquire a foot injury?\n",
@@ -1371,6 +2236,11 @@ class _DiabetesListState extends State<DiabetesList> {
                         TextSpan(
                             text:
                                 "Immediate attention to foot injuries is crucial due to the increased risk of complications in people with diabetes. If you have a minor cut or abrasion, clean it gently with mild soap and water. Avoid using hot water. Pat the area dry and apply an antiseptic ointment. Cover the wound with a clean, sterile dressing. Avoid tight bandages that might restrict blood flow. Consultation with a healthcare professional is necessary.\n"),
+                        TextSpan(
+                          text:
+                              "\nReference: American Diabetes Association. (2021). Microvascular Complications and Foot Care: Standards of Medical Care in Diabetes—2021. Diabetes Care, 44(Supplement 1), S151-S167. [DOI: 10.2337/dc21-S009]\n",
+                          style: TextStyle(fontSize: 10),
+                        ),
                         WidgetSpan(child: SizedBox(height: 30)),
                         TextSpan(
                           text:
@@ -1381,6 +2251,11 @@ class _DiabetesListState extends State<DiabetesList> {
                         TextSpan(
                             text:
                                 "Set reminders, establish a routine, and use technology or apps to help track and manage blood sugar levels.\n"),
+                        TextSpan(
+                          text:
+                              "\nReference: American Diabetes Association. (2021). Self-Monitoring of Blood Glucose in Non-Insulin-Treated Type 2 Diabetes: It Is Time to Reassess. Diabetes Care, 44(Supplement 1), S111-S118. [DOI: 10.2337/dc21-S007]\n",
+                          style: TextStyle(fontSize: 10),
+                        ),
                         WidgetSpan(child: SizedBox(height: 30)),
                         TextSpan(
                           text:
@@ -1391,6 +2266,11 @@ class _DiabetesListState extends State<DiabetesList> {
                         TextSpan(
                             text:
                                 "Take it as soon as you remember, but if it's close to the next dose, consult your healthcare provider.\n"),
+                        TextSpan(
+                          text:
+                              "\nReference: American Diabetes Association. (2021). Medication Management: Standards of Medical Care in Diabetes—2021. Diabetes Care, 44(Supplement 1), S98-S110. [DOI: 10.2337/dc21-S005]\n",
+                          style: TextStyle(fontSize: 10),
+                        ),
                         WidgetSpan(child: SizedBox(height: 30)),
                         TextSpan(
                           text:
@@ -1401,6 +2281,11 @@ class _DiabetesListState extends State<DiabetesList> {
                         TextSpan(
                             text:
                                 "Limit alcohol intake, monitor blood sugar levels, and consult with your healthcare provider for personalized advice.\n"),
+                        TextSpan(
+                          text:
+                              "\nReference: American Diabetes Association. (2021). Lifestyle Management: Standards of Medical Care in Diabetes—2021. Diabetes Care, 44(Supplement 1), S67-S76. [DOI: 10.2337/dc21-S005]\n",
+                          style: TextStyle(fontSize: 10),
+                        ),
                         WidgetSpan(child: SizedBox(height: 30)),
                         TextSpan(
                           text:
@@ -1411,6 +2296,11 @@ class _DiabetesListState extends State<DiabetesList> {
                         TextSpan(
                             text:
                                 "Balancing food, medication, and daily life can be tricky. Factors like stress, unexpected events, or even hormonal changes can affect blood sugar. It's important to communicate these challenges with my healthcare team for adjustments and support."),
+                        TextSpan(
+                          text:
+                              "\nReference: American Diabetes Association. (2021). Psychosocial Care: Standards of Medical Care in Diabetes—2021. Diabetes Care, 44(Supplement 1), S165-S174. [DOI: 10.2337/dc21-S011]\n",
+                          style: TextStyle(fontSize: 10),
+                        ),
                       ],
                     );
                   } else {
