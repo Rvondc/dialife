@@ -149,6 +149,10 @@ class _ContanctListInternal extends StatelessWidget {
                   ),
                   child: GestureDetector(
                     onTap: () async {
+                      if (contact.facebookId == null) {
+                        return;
+                      }
+
                       await launchUrlString(
                           "https://www.messenger.com/t/${contact.facebookId}");
                     },
@@ -172,10 +176,39 @@ class _ContanctListInternal extends StatelessWidget {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        subtitle: AutoSizeText(
-                          "Description: ${contact.description}",
-                          maxLines: 3,
-                          overflow: TextOverflow.fade,
+                        trailing: contact.phoneNumber == null ||
+                                contact.phoneNumber!.isEmpty
+                            ? null
+                            : Material(
+                                elevation: 4,
+                                borderRadius: BorderRadius.circular(50),
+                                child: IconButton(
+                                  onPressed: () async {
+                                    await launchUrlString(
+                                        "tel:${contact.phoneNumber}");
+                                  },
+                                  icon: const Icon(
+                                    Icons.phone_outlined,
+                                    color: Colors.blue,
+                                    size: 24,
+                                  ),
+                                ),
+                              ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(width: 5),
+                            AutoSizeText(
+                              "Phone Number: ${contact.phoneNumber}",
+                              maxLines: 3,
+                              overflow: TextOverflow.fade,
+                            ),
+                            AutoSizeText(
+                              "Description: ${contact.description}",
+                              maxLines: 3,
+                              overflow: TextOverflow.fade,
+                            ),
+                          ],
                         ),
                       ),
                     ),
