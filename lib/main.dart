@@ -2676,12 +2676,22 @@ Future<Database> initAppDatabase(String path) async {
       await db.execute("""
         CREATE TABLE NutritionRecord (
           id INTEGER PRIMARY KEY NOT NULL,
-          protein DECIMAL(5, 2) NOT NULL,
-          fat DECIMAL(5, 2) NOT NULL,
-          carbohydrates DECIMAL(5, 2) NOT NULL,
-          water INTEGER NOT NULL,
+          -- protein DECIMAL(5, 2) NOT NULL,
+          -- fat DECIMAL(5, 2) NOT NULL,
+          -- carbohydrates DECIMAL(5, 2) NOT NULL,
+          -- water INTEGER NOT NULL,
           notes VARCHAR(255) NOT NULL,
+          day_description VARCHAR(20) NOT NULL,
+          foods_csv TEXT NOT NULL,
           created_at DATETIME NOT NULL
+        )
+      """);
+
+      await db.execute("""
+        CREATE TABLE WaterRecord (
+          id INTEGER PRIMARY KEY NOT NULL,
+          glasses INTEGER NOT NULL,
+          time DATETIME NOT NULL
         )
       """);
 
