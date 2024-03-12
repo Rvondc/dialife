@@ -32,42 +32,42 @@ class _DiabetesListState extends State<DiabetesList> {
         title: Text(
           _lang == Language.english ? "Diabetes" : "Diyabetes",
         ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: GestureDetector(
-              onTap: () {
-                setState(() {
-                  _lang = _lang == Language.english
-                      ? Language.ilonggo
-                      : Language.english;
-                });
-              },
-              child: Text.rich(
-                TextSpan(
-                  children: [
-                    TextSpan(
-                      text: "English",
-                      style: TextStyle(
-                        fontWeight: _lang == Language.english
-                            ? FontWeight.bold
-                            : FontWeight.normal,
-                      ),
-                    ),
-                    const TextSpan(text: " / "),
-                    TextSpan(
-                      text: "Hiligaynon",
-                      style: TextStyle(
-                        fontWeight: _lang != Language.english
-                            ? FontWeight.bold
-                            : FontWeight.normal,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          )
+        actions: const [
+          // Padding(
+          //   padding: const EdgeInsets.only(right: 16),
+          //   child: GestureDetector(
+          //     onTap: () {
+          //       setState(() {
+          //         _lang = _lang == Language.english
+          //             ? Language.ilonggo
+          //             : Language.english;
+          //       });
+          //     },
+          //     child: Text.rich(
+          //       TextSpan(
+          //         children: [
+          //           TextSpan(
+          //             text: "English",
+          //             style: TextStyle(
+          //               fontWeight: _lang == Language.english
+          //                   ? FontWeight.bold
+          //                   : FontWeight.normal,
+          //             ),
+          //           ),
+          //           const TextSpan(text: " / "),
+          //           TextSpan(
+          //             text: "Hiligaynon",
+          //             style: TextStyle(
+          //               fontWeight: _lang != Language.english
+          //                   ? FontWeight.bold
+          //                   : FontWeight.normal,
+          //             ),
+          //           ),
+          //         ],
+          //       ),
+          //     ),
+          //   ),
+          // )
         ],
       ),
       body: ListView(

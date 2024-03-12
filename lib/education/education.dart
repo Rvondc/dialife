@@ -66,38 +66,38 @@ class _EducationState extends State<Education> {
                           height: 200,
                         ),
                       ),
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _lang = _lang == Language.english
-                                ? Language.ilonggo
-                                : Language.english;
-                          });
-                        },
-                        child: Text.rich(
-                          TextSpan(
-                            children: [
-                              TextSpan(
-                                text: "English",
-                                style: TextStyle(
-                                  fontWeight: _lang == Language.english
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
-                                ),
-                              ),
-                              const TextSpan(text: " / "),
-                              TextSpan(
-                                text: "Hiligaynon",
-                                style: TextStyle(
-                                  fontWeight: _lang != Language.english
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
+                      // GestureDetector(
+                      //   onTap: () {
+                      //     setState(() {
+                      //       _lang = _lang == Language.english
+                      //           ? Language.ilonggo
+                      //           : Language.english;
+                      //     });
+                      //   },
+                      //   child: Text.rich(
+                      //     TextSpan(
+                      //       children: [
+                      //         TextSpan(
+                      //           text: "English",
+                      //           style: TextStyle(
+                      //             fontWeight: _lang == Language.english
+                      //                 ? FontWeight.bold
+                      //                 : FontWeight.normal,
+                      //           ),
+                      //         ),
+                      //         const TextSpan(text: " / "),
+                      //         TextSpan(
+                      //           text: "Hiligaynon",
+                      //           style: TextStyle(
+                      //             fontWeight: _lang != Language.english
+                      //                 ? FontWeight.bold
+                      //                 : FontWeight.normal,
+                      //           ),
+                      //         ),
+                      //       ],
+                      //     ),
+                      //   ),
+                      // ),
                     ],
                   ),
                 ),
