@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:dialife/blood_glucose_tracking/glucose_tracking.dart';
 import 'package:dialife/blood_glucose_tracking/utils.dart';
 import 'package:dialife/nutrition_log/entities.dart';
@@ -7,11 +8,11 @@ import 'package:dialife/nutrition_log/no_data.dart';
 import 'package:dialife/nutrition_log/utils.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:multi_circular_slider/multi_circular_slider.dart';
 import 'package:path/path.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:sqflite/sqflite.dart';
@@ -35,24 +36,28 @@ class _NutritionLogState extends State<NutritionLog> {
     }
 
     return waitForFuture(
-      loading: const SpinKitCircle(color: fgColor),
+      loading: const Scaffold(
+        body: SpinKitCircle(color: fgColor),
+      ),
       future: Future.wait(
-        [widget.db.query("NutritionRecord")],
+        [
+          widget.db.query("NutritionRecord"),
+          widget.db.query("WaterRecord"),
+        ],
       ),
       builder: (context, data) {
         final parsedNutritionRecordData =
             NutritionRecord.fromListOfMaps(data[0]);
-        // final parsedNutritionRecordData = NutritionRecord.mock(
-        //   count: 20,
-        //   daySpan: 30,
-        // );
+
+        final waterRecords = WaterRecord.fromListOfMaps(data[1]);
 
         parsedNutritionRecordData
             .sort((a, b) => a.createdAt.compareTo(b.createdAt));
 
         return _NutritionLogInternalScaffold(
           reset: reset,
-          records: parsedNutritionRecordData,
+          nutritionRecords: parsedNutritionRecordData,
+          waterRecords: waterRecords,
           db: widget.db,
         );
       },
@@ -61,19 +66,21 @@ class _NutritionLogState extends State<NutritionLog> {
 }
 
 class _NutritionLogInternalScaffold extends StatelessWidget {
-  final List<NutritionRecord> records;
+  final List<NutritionRecord> nutritionRecords;
+  final List<WaterRecord> waterRecords;
   final Database db;
   final void Function() reset;
 
   const _NutritionLogInternalScaffold({
     required this.db,
     required this.reset,
-    required this.records,
+    required this.nutritionRecords,
+    required this.waterRecords,
   });
 
   @override
   Widget build(BuildContext context) {
-    if (records.isEmpty) {
+    if (nutritionRecords.isEmpty) {
       return Scaffold(
         backgroundColor: Colors.grey.shade200,
         appBar: AppBar(title: const Text("Glucose")),
@@ -113,7 +120,7 @@ class _NutritionLogInternalScaffold extends StatelessWidget {
               }
 
               try {
-                for (var record in records) {
+                for (var record in nutritionRecords) {
                   await file.writeAsString("${record.toCSVRow()}\n",
                       mode: FileMode.writeOnlyAppend);
                 }
@@ -154,7 +161,8 @@ class _NutritionLogInternalScaffold extends StatelessWidget {
           child: _NutritionLogInternal(
             reset: reset,
             db: db,
-            records: records,
+            nutritionRecords: nutritionRecords,
+            waterRecords: waterRecords,
           ),
         ),
       ),
@@ -167,44 +175,68 @@ const carbsColor = Color(0xFFE6E959);
 const fatsColor = Color(0xFFE89D67);
 const glassesColor = Color(0xFF67BAE8);
 
-class _NutritionLogInternal extends StatelessWidget {
-  final List<NutritionRecord> records;
+class _NutritionLogInternal extends StatefulWidget {
+  final List<NutritionRecord> nutritionRecords;
+  final List<WaterRecord> waterRecords;
   final Database db;
   final void Function() reset;
 
   const _NutritionLogInternal({
     required this.reset,
     required this.db,
-    required this.records,
+    required this.waterRecords,
+    required this.nutritionRecords,
   });
 
   @override
+  State<_NutritionLogInternal> createState() => _NutritionLogInternalState();
+}
+
+class _NutritionLogInternalState extends State<_NutritionLogInternal> {
+  final _waterController = TextEditingController();
+
+  DateTime _waterTaken = DateTime.now();
+
+  @override
   Widget build(BuildContext context) {
-    final recordByDays = dayConsolidateNutritionRecord(records);
-    final recordDays = validDaysNutritionRecord(records);
+    final nutritionRecordByDays =
+        dayConsolidateNutritionRecord(widget.nutritionRecords);
+    final nutritionRecordDays =
+        validDaysNutritionRecord(widget.nutritionRecords);
+    final waterRecordByDays = dayConsolidateWaterRecord(widget.waterRecords);
+    final waterRecordDays = validDaysWaterRecord(widget.waterRecords);
 
-    final latestRecordProtein = recordByDays[recordDays.last]!.fold(
-      0.0,
-      (previousValue, element) => previousValue + element.proteinInGrams,
-    );
+    int glassesDrank;
 
-    final latestRecordFats = recordByDays[recordDays.last]!.fold(
-      0.0,
-      (previousValue, element) => previousValue + element.fatsInGrams,
-    );
+    if (waterRecordDays.isEmpty) {
+      glassesDrank = 0;
+    } else {
+      glassesDrank =
+          waterRecordByDays[waterRecordDays.last]!.map((e) => e.glasses).sum;
+    }
 
-    final latestRecordCarbs = recordByDays[recordDays.last]!.fold(
-      0.0,
-      (previousValue, element) => previousValue + element.carbohydratesInGrams,
-    );
+    // final latestRecordProtein = recordByDays[recordDays.last]!.fold(
+    //   0.0,
+    //   (previousValue, element) => previousValue + 0,
+    // );
 
-    final latestRecordGlasses = recordByDays[recordDays.last]!.fold(
-      0,
-      (previousValue, element) => previousValue + element.glassesOfWater,
-    );
+    // final latestRecordFats = recordByDays[recordDays.last]!.fold(
+    //   0.0,
+    //   (previousValue, element) => previousValue + 0,
+    // );
 
-    final recordSum =
-        latestRecordProtein + latestRecordCarbs + latestRecordFats;
+    // final latestRecordCarbs = recordByDays[recordDays.last]!.fold(
+    //   0.0,
+    //   (previousValue, element) => previousValue + 0,
+    // );
+
+    // final latestRecordGlasses = recordByDays[recordDays.last]!.fold(
+    //   0,
+    //   (previousValue, element) => 0,
+    // );
+
+    // final recordSum =
+    //     latestRecordProtein + latestRecordCarbs + latestRecordFats;
 
     return Column(
       children: [
@@ -212,7 +244,6 @@ class _NutritionLogInternal extends StatelessWidget {
           margin: const EdgeInsets.only(
             left: 10,
             right: 10,
-            top: 30,
             bottom: 15,
           ),
           decoration: BoxDecoration(
@@ -223,83 +254,6 @@ class _NutritionLogInternal extends StatelessWidget {
           child: Material(
             elevation: 4,
             borderRadius: BorderRadius.circular(10),
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            decoration: BoxDecoration(
-                              color: proteinColor,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            width: 15,
-                            height: 15,
-                          ),
-                          const SizedBox(width: 5),
-                          const Text("Protein"),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          Container(
-                            decoration: BoxDecoration(
-                              color: carbsColor,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            width: 15,
-                            height: 15,
-                          ),
-                          const SizedBox(width: 5),
-                          const Text("Carbohydrates"),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          Container(
-                            decoration: BoxDecoration(
-                              color: fatsColor,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            width: 15,
-                            height: 15,
-                          ),
-                          const SizedBox(width: 5),
-                          const Text("Fats"),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 60),
-                MultiCircularSlider(
-                  values: [
-                    latestRecordProtein / recordSum,
-                    latestRecordCarbs / recordSum,
-                    latestRecordFats / recordSum,
-                  ],
-                  colors: const [proteinColor, carbsColor, fatsColor],
-                  size: 250,
-                  innerWidget: Material(
-                    borderRadius: BorderRadius.circular(100),
-                    elevation: 20,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(100),
-                        // color: Colors.grey.shade200,
-                      ),
-                      child: Image.asset("assets/nutrition_log.png"),
-                    ),
-                  ),
-                  showTotalPercentage: false,
-                  progressBarType: MultiCircularSliderType.circular,
-                ),
-              ],
-            ),
           ),
         ),
         Padding(
@@ -315,6 +269,7 @@ class _NutritionLogInternal extends StatelessWidget {
               ),
               width: double.infinity,
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Row(
                     children: [
@@ -328,7 +283,7 @@ class _NutritionLogInternal extends StatelessWidget {
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
-                          "SUMMARY",
+                          "Water Intake",
                           style: GoogleFonts.montserrat(
                             letterSpacing: 2,
                             fontWeight: FontWeight.bold,
@@ -349,7 +304,11 @@ class _NutritionLogInternal extends StatelessWidget {
                           () {
                             final formatter = DateFormat("dd / MM / yyyy");
 
-                            return formatter.format(recordDays.last);
+                            if (waterRecordDays.isEmpty) {
+                              return "No Records";
+                            }
+
+                            return formatter.format(waterRecordDays.last);
                           }(),
                           style: GoogleFonts.montserrat(
                             letterSpacing: 2,
@@ -359,123 +318,414 @@ class _NutritionLogInternal extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 32),
                   Row(
                     children: [
-                      Container(
-                        width: 30,
-                        height: 30,
-                        decoration: BoxDecoration(
-                          color: proteinColor,
-                          borderRadius: BorderRadius.circular(20),
+                      Expanded(
+                        flex: 1,
+                        child: Image.asset(
+                          "assets/water.png",
+                          // width: 150,
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      Text(
-                        "Protein",
-                        style: GoogleFonts.montserrat(
-                          letterSpacing: 2,
-                          fontSize: 20,
-                        ),
-                      ),
-                      const Expanded(child: SizedBox()),
-                      Text(
-                        "${latestRecordProtein.toStringAsFixed(2)}g",
-                        style: GoogleFonts.montserrat(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
+                      Expanded(
+                        flex: 1,
+                        child: Column(
+                          children: [
+                            Text.rich(
+                              TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text: glassesDrank.toString(),
+                                    style: GoogleFonts.istokWeb(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 20,
+                                    ),
+                                  ),
+                                  TextSpan(
+                                    text: glassesDrank > 1
+                                        ? " glasses"
+                                        : " glass",
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 30),
+                            IconButton(
+                              onPressed: () async {
+                                _waterController.text = "";
+
+                                await showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    return Dialog(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(32.0),
+                                        child: IntrinsicHeight(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                "Glasses of Water",
+                                                style: GoogleFonts.istokWeb(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 24,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 5),
+                                              TextField(
+                                                inputFormatters: [
+                                                  FilteringTextInputFormatter
+                                                      .digitsOnly
+                                                ],
+                                                style: GoogleFonts.istokWeb(),
+                                                decoration: InputDecoration(
+                                                  hintText: "(E.g. 1)",
+                                                  isDense: true,
+                                                  border: OutlineInputBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            12),
+                                                  ),
+                                                ),
+                                                controller: _waterController,
+                                              ),
+                                              const SizedBox(height: 32),
+                                              Row(
+                                                children: [
+                                                  Text(
+                                                    DateFormat("hh:mm a")
+                                                        .format(_waterTaken),
+                                                    style:
+                                                        GoogleFonts.montserrat(
+                                                      letterSpacing: 2.0,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                  const Expanded(
+                                                      child: SizedBox()),
+                                                  TextButton(
+                                                    onPressed: () async {
+                                                      if (_waterController
+                                                          .text.isEmpty) {
+                                                        return;
+                                                      }
+
+                                                      widget.db.rawInsert(
+                                                        "INSERT INTO WaterRecord (glasses, time) VALUES (?, ?)",
+                                                        [
+                                                          _waterController.text,
+                                                          _waterTaken
+                                                              .toIso8601String(),
+                                                        ],
+                                                      );
+
+                                                      Navigator.of(context)
+                                                          .pop();
+
+                                                      widget.reset();
+                                                    },
+                                                    style: ButtonStyle(
+                                                      backgroundColor:
+                                                          MaterialStateProperty
+                                                              .all(fgColor),
+                                                    ),
+                                                    child: Text(
+                                                      "Save",
+                                                      style:
+                                                          GoogleFonts.istokWeb(
+                                                              color:
+                                                                  Colors.white),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
+                              icon: IntrinsicWidth(
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 8,
+                                    horizontal: 12,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: fgColor,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: const Row(
+                                    children: [
+                                      Icon(
+                                        Icons.add,
+                                        size: 16,
+                                        color: Colors.white,
+                                      ),
+                                      Icon(
+                                        Symbols.glass_cup_rounded,
+                                        color: Colors.white,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: () async {
+                                final time = await showTimePicker(
+                                    context: context,
+                                    initialTime: TimeOfDay.now());
+
+                                if (time == null) return;
+
+                                setState(() {
+                                  _waterTaken = DateTime(
+                                    DateTime.now().year,
+                                    DateTime.now().month,
+                                    DateTime.now().day,
+                                    time.hour,
+                                    time.minute,
+                                  );
+                                });
+                              },
+                              icon: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 4,
+                                  horizontal: 8,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: fgColor,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(
+                                      Symbols.nest_clock_farsight_analog,
+                                      size: 32,
+                                      color: Colors.white,
+                                    ),
+                                    const Expanded(child: SizedBox()),
+                                    Text(
+                                      DateFormat("hh:mm a").format(_waterTaken),
+                                      style: GoogleFonts.montserrat(
+                                        letterSpacing: 2.0,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
-                  Divider(color: Colors.grey.shade200),
-                  Row(
-                    children: [
-                      Container(
-                        width: 30,
-                        height: 30,
-                        decoration: BoxDecoration(
-                          color: carbsColor,
-                          borderRadius: BorderRadius.circular(20),
+                  const SizedBox(height: 32),
+                  ...nutritionRecordByDays[nutritionRecordDays.last]!
+                      .map((record) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Divider(),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              "Meal Records",
+                              style: GoogleFonts.istokWeb(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const Expanded(child: SizedBox()),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 4,
+                                horizontal: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade200,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                () {
+                                  final formatter =
+                                      DateFormat("dd / MM / yyyy");
+
+                                  if (nutritionRecordDays.isEmpty) {
+                                    return "No Records";
+                                  }
+
+                                  return formatter
+                                      .format(nutritionRecordDays.last);
+                                }(),
+                                style: GoogleFonts.montserrat(
+                                  letterSpacing: 2,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        "Carbohydrates",
-                        style: GoogleFonts.montserrat(
-                          letterSpacing: 2,
-                          fontSize: 20,
+                        const Divider(),
+                        Text(
+                          "${record.dayDescription} at ${DateFormat("h:mm a").format(record.createdAt)}",
+                          style:
+                              GoogleFonts.istokWeb(fontWeight: FontWeight.bold),
                         ),
-                      ),
-                      const Expanded(child: SizedBox()),
-                      Text(
-                        "${latestRecordCarbs.toStringAsFixed(2)}g",
-                        style: GoogleFonts.montserrat(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
+                        const SizedBox(height: 10),
+                        Wrap(
+                          children: record.foods.map((food) {
+                            return IntrinsicWidth(
+                              child: Container(
+                                margin:
+                                    const EdgeInsets.only(right: 8, bottom: 8),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10),
+                                  color: fgColor,
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 4,
+                                  horizontal: 8,
+                                ),
+                                child: Text(
+                                  food,
+                                  style: GoogleFonts.montserrat(
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }).toList(),
                         ),
-                      ),
-                    ],
-                  ),
-                  Divider(color: Colors.grey.shade200),
-                  Row(
-                    children: [
-                      Container(
-                        width: 30,
-                        height: 30,
-                        decoration: BoxDecoration(
-                          color: fatsColor,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        "Fats",
-                        style: GoogleFonts.montserrat(
-                          letterSpacing: 2,
-                          fontSize: 20,
-                        ),
-                      ),
-                      const Expanded(child: SizedBox()),
-                      Text(
-                        "${latestRecordFats.toStringAsFixed(2)}g",
-                        style: GoogleFonts.montserrat(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Divider(color: Colors.grey.shade200),
-                  Row(
-                    children: [
-                      Container(
-                        width: 30,
-                        height: 30,
-                        decoration: BoxDecoration(
-                          color: glassesColor,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        "Water",
-                        style: GoogleFonts.montserrat(
-                          letterSpacing: 2,
-                          fontSize: 20,
-                        ),
-                      ),
-                      const Expanded(child: SizedBox()),
-                      Text(
-                        "$latestRecordGlasses glasses",
-                        style: GoogleFonts.montserrat(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Divider(color: Colors.grey.shade200),
+                      ],
+                    );
+                  }).toList(),
+                  // Row(
+                  //   children: [
+                  //     Container(
+                  //       width: 30,
+                  //       height: 30,
+                  //       decoration: BoxDecoration(
+                  //         color: proteinColor,
+                  //         borderRadius: BorderRadius.circular(20),
+                  //       ),
+                  //     ),
+                  //     const SizedBox(width: 8),
+                  //     Text(
+                  //       "Protein",
+                  //       style: GoogleFonts.montserrat(
+                  //         letterSpacing: 2,
+                  //         fontSize: 20,
+                  //       ),
+                  //     ),
+                  //     const Expanded(child: SizedBox()),
+                  //     Text(
+                  //       "${latestRecordProtein.toStringAsFixed(2)}g",
+                  //       style: GoogleFonts.montserrat(
+                  //         fontSize: 20,
+                  //         fontWeight: FontWeight.bold,
+                  //       ),
+                  //     ),
+                  //   ],
+                  // ),
+                  // Divider(color: Colors.grey.shade200),
+                  // Row(
+                  //   children: [
+                  //     Container(
+                  //       width: 30,
+                  //       height: 30,
+                  //       decoration: BoxDecoration(
+                  //         color: carbsColor,
+                  //         borderRadius: BorderRadius.circular(20),
+                  //       ),
+                  //     ),
+                  //     const SizedBox(width: 8),
+                  //     Text(
+                  //       "Carbohydrates",
+                  //       style: GoogleFonts.montserrat(
+                  //         letterSpacing: 2,
+                  //         fontSize: 20,
+                  //       ),
+                  //     ),
+                  //     const Expanded(child: SizedBox()),
+                  //     Text(
+                  //       "${latestRecordCarbs.toStringAsFixed(2)}g",
+                  //       style: GoogleFonts.montserrat(
+                  //         fontSize: 20,
+                  //         fontWeight: FontWeight.bold,
+                  //       ),
+                  //     ),
+                  //   ],
+                  // ),
+                  // Divider(color: Colors.grey.shade200),
+                  // Row(
+                  //   children: [
+                  //     Container(
+                  //       width: 30,
+                  //       height: 30,
+                  //       decoration: BoxDecoration(
+                  //         color: fatsColor,
+                  //         borderRadius: BorderRadius.circular(20),
+                  //       ),
+                  //     ),
+                  //     const SizedBox(width: 8),
+                  //     Text(
+                  //       "Fats",
+                  //       style: GoogleFonts.montserrat(
+                  //         letterSpacing: 2,
+                  //         fontSize: 20,
+                  //       ),
+                  //     ),
+                  //     const Expanded(child: SizedBox()),
+                  //     Text(
+                  //       "${latestRecordFats.toStringAsFixed(2)}g",
+                  //       style: GoogleFonts.montserrat(
+                  //         fontSize: 20,
+                  //         fontWeight: FontWeight.bold,
+                  //       ),
+                  //     ),
+                  //   ],
+                  // ),
+                  // Divider(color: Colors.grey.shade200),
+                  // Row(
+                  //   children: [
+                  //     Container(
+                  //       width: 30,
+                  //       height: 30,
+                  //       decoration: BoxDecoration(
+                  //         color: glassesColor,
+                  //         borderRadius: BorderRadius.circular(20),
+                  //       ),
+                  //     ),
+                  //     const SizedBox(width: 8),
+                  //     Text(
+                  //       "Water",
+                  //       style: GoogleFonts.montserrat(
+                  //         letterSpacing: 2,
+                  //         fontSize: 20,
+                  //       ),
+                  //     ),
+                  //     const Expanded(child: SizedBox()),
+                  //     Text(
+                  //       "$latestRecordGlasses glasses",
+                  //       style: GoogleFonts.montserrat(
+                  //         fontSize: 20,
+                  //         fontWeight: FontWeight.bold,
+                  //       ),
+                  //     ),
+                  //   ],
+                  // ),
+                  // Divider(color: Colors.grey.shade200),
                 ],
               ),
             ),
@@ -486,10 +736,10 @@ class _NutritionLogInternal extends StatelessWidget {
           onPressed: () async {
             await Navigator.of(context).pushNamed(
               "/nutrition-log/editor",
-              arguments: {"db": db},
+              arguments: {"db": widget.db},
             );
 
-            reset();
+            widget.reset();
           },
           style: ButtonStyle(
             backgroundColor: MaterialStateProperty.all(fgColor),

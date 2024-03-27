@@ -108,7 +108,7 @@ class NutritionLogNoData extends StatelessWidget {
                         child: IconButton(
                           onPressed: () async {
                             await Navigator.of(context).pushNamed(
-                              "/nutrition-log/input",
+                              "/nutrition-log/editor",
                               arguments: {
                                 "db": db,
                               },
