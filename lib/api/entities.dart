@@ -8,46 +8,35 @@ import 'package:dialife/user.dart';
 import 'package:sqflite/sqflite.dart';
 
 class APIPatientRecordUploadable {
-  final DateTime? glucoseCreatedAt;
-  final double? glucoseLevel;
-  final DateTime? bmiCreatedAt;
-  final double? bmiLevel;
-  final DateTime? activityCreatedAt;
-  final String? activityType;
-  final int? activityDuration;
-  final int? activityFrequency;
-  final DateTime? nutritionCreatedAt;
-  final double? nutritionFat;
-  final double? nutritionProtein;
-  final double? nutritionCarbohydrates;
-  final int? nutritionWater;
-  final DateTime? medicineTakenAt;
-  final String? medicineName;
-  final String? medicineRoute;
-  final String? medicineForm;
-  final double? medicineDosage;
+  final GlucoseRecord? glucoseRecord;
+  final BMIRecord? bmiRecord;
+  final NutritionRecord? nutritionRecord;
+  final MedicationRecordDetails? medicationDetailsRecord;
+  final ActivityRecord? activityRecord;
+  final WaterRecord? waterRecord;
   final int? patientId;
 
   Map toApiInsertable() {
     return {
-      "glucose_created_at": glucoseCreatedAt?.toIso8601String(),
-      "glucose_level": glucoseLevel,
-      "bmi_created_at": bmiCreatedAt?.toIso8601String(),
-      "bmi_level": bmiLevel,
-      "activity_created_at": activityCreatedAt?.toIso8601String(),
-      "activity_type": activityType,
-      "activity_duration": activityDuration,
-      "activity_frequency": activityFrequency,
-      "nutrition_created_at": nutritionCreatedAt?.toIso8601String(),
-      "nutrition_fat": nutritionFat,
-      "nutrition_protein": nutritionProtein,
-      "nutrition_carbohydrates": nutritionCarbohydrates,
-      "nutrition_water": nutritionWater,
-      "medicine_taken_at": medicineTakenAt?.toIso8601String(),
-      "medicine_name": medicineName,
-      "medicine_route": medicineRoute,
-      "medicine_form": medicineForm,
-      "medicine_dosage": medicineDosage,
+      "glucose_created_at": glucoseRecord?.bloodTestDate.toIso8601String(),
+      "glucose_level": glucoseRecord?.glucoseLevel,
+      "bmi_created_at": bmiRecord?.createdAt.toIso8601String(),
+      "bmi_level": bmiRecord?.bmi,
+      "activity_created_at": activityRecord?.createdAt.toIso8601String(),
+      "activity_type": activityRecord?.type,
+      "activity_duration": activityRecord?.duration,
+      "activity_frequency": activityRecord?.frequency,
+      "nutrition_created_at": nutritionRecord?.createdAt.toIso8601String(),
+      "meal_time": nutritionRecord?.dayDescription,
+      "foods": nutritionRecord?.foods,
+      "water_created_at": waterRecord?.time,
+      "water_glasses": waterRecord?.glasses,
+      "medicine_taken_at":
+          medicationDetailsRecord?.medicationDatetime.toIso8601String(),
+      "medicine_name": medicationDetailsRecord?.medicineName,
+      "medicine_route": medicationDetailsRecord?.medicineRoute,
+      "medicine_form": medicationDetailsRecord?.medicineForm,
+      "medicine_dosage": medicationDetailsRecord?.medicineDosage,
       "patient_id": patientId,
     };
   }
@@ -106,52 +95,37 @@ class APIPatientRecordUploadable {
 
     final user = User.fromMap((await db.query("User")).first);
 
+    final latestWater = await db.query(
+      "WaterRecord",
+      orderBy: "time DESC",
+      limit: 1,
+    );
+
+    final water =
+        latestWater.isEmpty ? null : WaterRecord.fromMap(latestWater.first);
+
     if (user.webId == null) {
       throw Exception("Patient does not exist in Monitoring API");
     }
 
     return APIPatientRecordUploadable(
-      bmiCreatedAt: bmi?.createdAt,
-      bmiLevel: bmi?.bmi,
-      glucoseCreatedAt: glucose?.bloodTestDate,
-      glucoseLevel: glucose?.glucoseLevel,
-      nutritionCreatedAt: nutrition?.createdAt,
-      nutritionCarbohydrates: nutrition?.carbohydratesInGrams,
-      nutritionFat: nutrition?.fatsInGrams,
-      nutritionProtein: nutrition?.proteinInGrams,
-      nutritionWater: nutrition?.glassesOfWater,
-      activityCreatedAt: activity?.createdAt,
-      activityDuration: activity?.duration,
-      activityFrequency: activity?.frequency,
-      activityType: activity?.type.asString,
-      medicineTakenAt: medication?.medicationDatetime,
-      medicineDosage: medication?.medicineDosage,
-      medicineForm: medication?.medicineForm,
-      medicineName: medication?.medicineName,
-      medicineRoute: medication?.medicineRoute,
+      activityRecord: activity,
+      glucoseRecord: glucose,
+      bmiRecord: bmi,
+      medicationDetailsRecord: medication,
+      nutritionRecord: nutrition,
+      waterRecord: water,
       patientId: user.webId!,
     );
   }
 
   const APIPatientRecordUploadable({
-    required this.glucoseCreatedAt,
-    required this.glucoseLevel,
-    required this.bmiCreatedAt,
-    required this.bmiLevel,
-    required this.activityCreatedAt,
-    required this.activityType,
-    required this.activityDuration,
-    required this.activityFrequency,
-    required this.nutritionCreatedAt,
-    required this.nutritionFat,
-    required this.nutritionProtein,
-    required this.nutritionCarbohydrates,
-    required this.nutritionWater,
-    required this.medicineTakenAt,
-    required this.medicineDosage,
-    required this.medicineName,
-    required this.medicineRoute,
-    required this.medicineForm,
+    required this.activityRecord,
+    required this.bmiRecord,
+    required this.glucoseRecord,
+    required this.medicationDetailsRecord,
+    required this.nutritionRecord,
+    required this.waterRecord,
     required this.patientId,
   });
 }
