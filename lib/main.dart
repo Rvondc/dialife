@@ -67,10 +67,7 @@ void main() async {
   FlutterNativeSplash.preserve(widgetsBinding: binding);
 
   await LocalNotification.init();
-  MonitoringAPI.init(
-    https: true,
-    baseUrl: "idontknowanymore.site",
-  );
+  MonitoringAPI.init(https: true, baseUrl: 'dialife.info');
 
   runApp(const Main());
 }
@@ -235,6 +232,7 @@ class Main extends StatelessWidget {
             return MaterialPageRoute(
               builder: (context) => NutritionLogInput(
                 db: args["db"],
+                now: args["now"],
                 existing: args["existing"],
               ),
               settings: const RouteSettings(name: "/nutrition-log/input"),
@@ -317,6 +315,8 @@ class _RootState extends State<Root> {
   List<BMIRecord>? _bmiRecords;
   List<NutritionRecord>? _nutritionRecords;
   List<ActivityRecord>? _activityRecords;
+  List<WaterRecord>? _waterRecords;
+
   bool _authenticated = false;
   late User _user;
   List<DoctorsAppointmentRecord>? _doctorsAppointmentRecords;
@@ -443,7 +443,6 @@ class _RootState extends State<Root> {
                       };
 
                       () async {
-                        if (!context.mounted) return;
                         await Future.wait([
                           precacheImage(
                             const AssetImage("assets/glucose_logo.png"),
@@ -467,23 +466,12 @@ class _RootState extends State<Root> {
                           ),
                           precacheImage(
                             const AssetImage(
-                                "assets/educational_material_logo.png"),
+                              "assets/educational_material_logo.png",
+                            ),
                             context,
                           ),
                           precacheImage(
                             const AssetImage("assets/bmi_female.png"),
-                            context,
-                          ),
-                          precacheImage(
-                            const AssetImage("assets/eye_problems.png"),
-                            context,
-                          ),
-                          precacheImage(
-                            const AssetImage("assets/control_dm2.png"),
-                            context,
-                          ),
-                          precacheImage(
-                            const AssetImage("assets/foot_problems.png"),
                             context,
                           ),
                           precacheImage(
@@ -496,6 +484,14 @@ class _RootState extends State<Root> {
                           ),
                           precacheImage(
                             const AssetImage("assets/pills_logo.png"),
+                            context,
+                          ),
+                          precacheImage(
+                            const AssetImage("assets/bg.png"),
+                            context,
+                          ),
+                          precacheImage(
+                            const AssetImage("assets/water.png"),
                             context,
                           ),
                           GoogleFonts.pendingFonts([
@@ -546,7 +542,11 @@ class _RootState extends State<Root> {
                                     style: GoogleFonts.italianno(
                                       fontSize: 60,
                                       color: const Color.fromRGBO(
-                                          76, 102, 240, 1.0),
+                                        76,
+                                        102,
+                                        240,
+                                        1.0,
+                                      ),
                                     ),
                                   ),
                                   // Current health status text label
@@ -627,6 +627,8 @@ class _RootState extends State<Root> {
                                                 "MedicationRecordDetails"),
                                             dbContainer.data!.query(
                                                 "DoctorsAppointmentRecords"),
+                                            dbContainer.data!
+                                                .query("WaterRecord"),
                                           ],
                                         ),
                                         loading:
@@ -639,7 +641,8 @@ class _RootState extends State<Root> {
                                               _medicationRecordDetails ==
                                                   null ||
                                               _doctorsAppointmentRecords ==
-                                                  null) {
+                                                  null ||
+                                              _waterRecords == null) {
                                             final glucoseRecords =
                                                 GlucoseRecord.fromListOfMaps(
                                                     data[0]);
@@ -663,6 +666,10 @@ class _RootState extends State<Root> {
                                             final doctorsAppointmentRecords =
                                                 DoctorsAppointmentRecord
                                                     .fromListOfMaps(data[5]);
+
+                                            final waterRecords =
+                                                WaterRecord.fromListOfMaps(
+                                                    data[6]);
 
                                             glucoseRecords.sort(
                                               (a, b) => a.bloodTestDate
@@ -689,6 +696,9 @@ class _RootState extends State<Root> {
                                                     .compareTo(
                                                         b.appointmentDatetime));
 
+                                            waterRecords.sort((a, b) =>
+                                                a.time.compareTo(b.time));
+
                                             Future.delayed(Duration.zero, () {
                                               setState(() {
                                                 _glucoseRecords =
@@ -702,6 +712,7 @@ class _RootState extends State<Root> {
                                                     medicationRecordDetails;
                                                 _doctorsAppointmentRecords =
                                                     doctorsAppointmentRecords;
+                                                _waterRecords = waterRecords;
                                               });
                                             });
                                           }
@@ -755,11 +766,10 @@ class _RootState extends State<Root> {
                                                   // TODO: Handle no internet
                                                 }
                                               }
-
-                                              await MonitoringAPI
-                                                  .uploadPatientRecord(
-                                                      await APIPatientRecordUploadable
-                                                          .latestCompiled());
+                                              // await MonitoringAPI
+                                              //     .uploadPatientRecord(
+                                              //         await APIPatientRecordUploadable
+                                              //             .latestCompiled());
                                             }();
                                           }
 
@@ -1530,6 +1540,7 @@ class _RootState extends State<Root> {
                                     db: dbContainer.data!,
                                     resetNutritionRecords:
                                         resetNutritionRecords,
+                                    waterRecords: _waterRecords ?? [],
                                     resetActivityRecords: resetActivityRecords,
                                     nutritionRecords: _nutritionRecords ?? [],
                                     activityRecords: _activityRecords ?? [],
@@ -1998,19 +2009,11 @@ class _RootState extends State<Root> {
                                 textAlign: pw.TextAlign.center,
                               ),
                               pw.Text(
-                                "Protein",
+                                "Meal Time",
                                 textAlign: pw.TextAlign.center,
                               ),
                               pw.Text(
-                                "Fats",
-                                textAlign: pw.TextAlign.center,
-                              ),
-                              pw.Text(
-                                "Carbohydrates",
-                                textAlign: pw.TextAlign.center,
-                              ),
-                              pw.Text(
-                                "Glasses of Water",
+                                "Foods",
                                 textAlign: pw.TextAlign.center,
                               ),
                             ],
@@ -2020,16 +2023,6 @@ class _RootState extends State<Root> {
                               if (nutritionRecords.isEmpty) {
                                 return pw.TableRow(
                                   children: [
-                                    pw.Padding(
-                                      padding:
-                                          const pw.EdgeInsets.only(left: 8),
-                                      child: pw.Text("(No Data)"),
-                                    ),
-                                    pw.Padding(
-                                      padding:
-                                          const pw.EdgeInsets.only(left: 8),
-                                      child: pw.Text("(No Data)"),
-                                    ),
                                     pw.Padding(
                                       padding:
                                           const pw.EdgeInsets.only(left: 8),
@@ -2065,25 +2058,13 @@ class _RootState extends State<Root> {
                                 pw.Padding(
                                   padding: const pw.EdgeInsets.only(left: 8),
                                   child: pw.Text(
-                                    "${rec.proteinInGrams.toStringAsFixed(2)} grams",
+                                    rec.dayDescription,
                                   ),
                                 ),
                                 pw.Padding(
                                   padding: const pw.EdgeInsets.only(left: 8),
                                   child: pw.Text(
-                                    "${rec.fatsInGrams.toStringAsFixed(2)} grams",
-                                  ),
-                                ),
-                                pw.Padding(
-                                  padding: const pw.EdgeInsets.only(left: 8),
-                                  child: pw.Text(
-                                    "${rec.carbohydratesInGrams.toStringAsFixed(2)} grams",
-                                  ),
-                                ),
-                                pw.Padding(
-                                  padding: const pw.EdgeInsets.only(left: 8),
-                                  child: pw.Text(
-                                    "${rec.glassesOfWater.toString()} ${rec.glassesOfWater > 1 ? "glasses" : "glass"}",
+                                    rec.foods.join(", "),
                                   ),
                                 ),
                               ],
