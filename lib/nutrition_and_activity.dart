@@ -16,6 +16,7 @@ class NutritionAndActivity extends StatefulWidget {
   final void Function() resetActivityRecords;
   final List<NutritionRecord> nutritionRecords;
   final List<ActivityRecord> activityRecords;
+  final List<WaterRecord> waterRecords;
   final Database db;
 
   const NutritionAndActivity({
@@ -23,6 +24,7 @@ class NutritionAndActivity extends StatefulWidget {
     required this.resetNutritionRecords,
     required this.resetActivityRecords,
     required this.activityRecords,
+    required this.waterRecords,
     required this.nutritionRecords,
     super.key,
   });
@@ -36,6 +38,15 @@ class _NutritionAndActivityState extends State<NutritionAndActivity> {
 
   @override
   Widget build(BuildContext context) {
+    final waterRecords = widget.waterRecords
+        .where((element) => element.time.isAfter(DateTime.now().copyWith(
+              hour: 0,
+              minute: 0,
+              second: 0,
+              millisecond: 0,
+            )))
+        .toList();
+
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(
@@ -147,22 +158,63 @@ class _NutritionAndActivityState extends State<NutritionAndActivity> {
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.only(bottom: 12.0, top: 8),
-                          child: AspectRatio(
-                            aspectRatio: 1.1,
-                            child: PieChart(
-                              PieChartData(
-                                borderData: FlBorderData(
-                                  show: false,
+                          padding: const EdgeInsets.only(top: 8, bottom: 16),
+                          child: Stack(
+                            children: [
+                              Align(
+                                alignment: Alignment.center,
+                                child: Image.asset(
+                                  "assets/water.png",
+                                  height: 150,
                                 ),
-                                sectionsSpace: 0,
-                                centerSpaceRadius: 0,
-                                sections: representNutritionRecord(
-                                    latestNutritionRecords!),
                               ),
-                            ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 36),
+                                child: Align(
+                                  alignment: Alignment.bottomCenter,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.8),
+                                      borderRadius: BorderRadius.circular(8),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.3),
+                                          offset: const Offset(0, 3),
+                                          spreadRadius: 0,
+                                          blurRadius: 2,
+                                        ),
+                                      ],
+                                    ),
+                                    child: Text(
+                                      "${waterRecords.map((e) => e.glasses).sum} ${waterRecords.map((e) => e.glasses).sum > 1 ? "glasses" : "glass"} Drank",
+                                      style: GoogleFonts.montserrat(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
+                        // Padding(
+                        //   padding: const EdgeInsets.only(bottom: 12.0, top: 8),
+                        //   child: AspectRatio(
+                        //     aspectRatio: 1.1,
+                        //     child: PieChart(
+                        //       PieChartData(
+                        //         borderData: FlBorderData(
+                        //           show: false,
+                        //         ),
+                        //         sectionsSpace: 0,
+                        //         centerSpaceRadius: 0,
+                        //         sections: representNutritionRecord(
+                        //             latestNutritionRecords!),
+                        //       ),
+                        //     ),
+                        //   ),
+                        // ),
                       ],
                     );
                   },
@@ -464,9 +516,9 @@ class _NutritionAndActivityState extends State<NutritionAndActivity> {
 
 List<PieChartSectionData> representNutritionRecord(
     List<NutritionRecord> records) {
-  final totalCarbs = records.map((e) => e.carbohydratesInGrams).sum;
-  final totalFats = records.map((e) => e.fatsInGrams).sum;
-  final totalProtein = records.map((e) => e.proteinInGrams).sum;
+  final totalCarbs = records.map((e) => 3.0).sum;
+  final totalFats = records.map((e) => 3.0).sum;
+  final totalProtein = records.map((e) => 3.0).sum;
 
   return [
     PieChartSectionData(
