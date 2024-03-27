@@ -1,4 +1,6 @@
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:dialife/api/api.dart';
+import 'package:dialife/api/entities.dart';
 import 'package:dialife/blood_glucose_tracking/glucose_tracking.dart';
 import 'package:dialife/bmi_tracking/entities.dart';
 import 'package:dialife/bmi_tracking/utils.dart';
@@ -727,6 +729,11 @@ class _BMIRecordInputFormInternalState
                                     where: "id = ?",
                                     whereArgs: [widget._existing!.id]);
 
+                                MonitoringAPI.uploadPatientRecord(
+                                  await APIPatientRecordUploadable
+                                      .latestCompiled(),
+                                );
+
                                 if (!context.mounted) {
                                   return;
                                 }
@@ -847,6 +854,10 @@ class _BMIRecordInputFormInternalState
                   if (context.mounted) {
                     Navigator.of(context).pop();
                   }
+
+                  MonitoringAPI.uploadPatientRecord(
+                    await APIPatientRecordUploadable.latestCompiled(),
+                  );
                 },
                 style: ButtonStyle(
                   backgroundColor: MaterialStateProperty.all(fgColor),

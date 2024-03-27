@@ -1,3 +1,5 @@
+import 'package:dialife/api/api.dart';
+import 'package:dialife/api/entities.dart';
 import 'package:dialife/blood_glucose_tracking/entities.dart';
 import 'package:dialife/blood_glucose_tracking/glucose_tracking.dart';
 import 'package:dialife/blood_glucose_tracking/utils.dart';
@@ -505,6 +507,11 @@ class _GlucoseRecordInputFormInternalState
                                       where: "id = ?",
                                       whereArgs: [widget._existing!.id]);
 
+                                  MonitoringAPI.uploadPatientRecord(
+                                    await APIPatientRecordUploadable
+                                        .latestCompiled(),
+                                  );
+
                                   if (!context.mounted) {
                                     return;
                                   }
@@ -630,6 +637,10 @@ class _GlucoseRecordInputFormInternalState
                       ],
                     );
                   }
+
+                  await MonitoringAPI.uploadPatientRecord(
+                    await APIPatientRecordUploadable.latestCompiled(),
+                  );
 
                   if (context.mounted) {
                     await ScaffoldMessenger.of(context)

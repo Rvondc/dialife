@@ -1,4 +1,6 @@
 import 'package:dialife/activity_log/entities.dart';
+import 'package:dialife/api/api.dart';
+import 'package:dialife/api/entities.dart';
 import 'package:dialife/blood_glucose_tracking/glucose_tracking.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -463,6 +465,10 @@ class _ActivityLogInternalState extends State<_ActivityLogInternal> {
                   if (context.mounted) {
                     Navigator.of(context).pop();
                   }
+
+                  MonitoringAPI.uploadPatientRecord(
+                    await APIPatientRecordUploadable.latestCompiled(),
+                  );
                 },
                 style: ButtonStyle(
                   backgroundColor: MaterialStateProperty.all(fgColor),
@@ -508,6 +514,10 @@ class _ActivityLogInternalState extends State<_ActivityLogInternal> {
                                       await widget.db.delete("ActivityRecord",
                                           where: "id = ?",
                                           whereArgs: [widget.existing!.id]);
+
+                                      MonitoringAPI.uploadPatientRecord(
+                                          await APIPatientRecordUploadable
+                                              .latestCompiled());
 
                                       if (!context.mounted) {
                                         return;

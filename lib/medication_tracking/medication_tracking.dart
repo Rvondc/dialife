@@ -1,5 +1,7 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:collection/collection.dart';
+import 'package:dialife/api/api.dart';
+import 'package:dialife/api/entities.dart';
 import 'package:dialife/blood_glucose_tracking/glucose_tracking.dart';
 import 'package:dialife/local_notifications/local_notifications.dart';
 import 'package:dialife/main.dart';
@@ -424,6 +426,11 @@ Widget medicationReminderListTile(
 
                                 if (!context.mounted) return;
                                 Navigator.pop(context);
+
+                                MonitoringAPI.uploadPatientRecord(
+                                  await APIPatientRecordUploadable
+                                      .latestCompiled(),
+                                );
                               },
                             ),
                             TextButton(

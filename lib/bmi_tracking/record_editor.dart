@@ -1,3 +1,5 @@
+import 'package:dialife/api/api.dart';
+import 'package:dialife/api/entities.dart';
 import 'package:dialife/blood_glucose_tracking/glucose_tracking.dart';
 import 'package:dialife/blood_glucose_tracking/utils.dart';
 import 'package:dialife/bmi_tracking/bmi_tracking.dart';
@@ -176,6 +178,10 @@ class _BMIRecordEditorInternalState extends State<_BMIRecordEditorInternal> {
                   "BMIRecord",
                   where: "id = ?",
                   whereArgs: [current.id],
+                );
+
+                MonitoringAPI.uploadPatientRecord(
+                  await APIPatientRecordUploadable.latestCompiled(),
                 );
               },
               child: Container(

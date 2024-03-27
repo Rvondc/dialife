@@ -1,7 +1,10 @@
+import 'package:collection/collection.dart';
+import 'package:dialife/api/api.dart';
+import 'package:dialife/api/entities.dart';
 import 'package:dialife/blood_glucose_tracking/glucose_tracking.dart';
 import 'package:dialife/nutrition_log/entities.dart';
+import 'package:dropdown_textfield/dropdown_textfield.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:material_symbols_icons/symbols.dart';
@@ -9,11 +12,13 @@ import 'package:sqflite/sqflite.dart';
 
 class NutritionLogInput extends StatelessWidget {
   final Database db;
+  final DateTime? now;
   final NutritionRecord? existing;
 
   const NutritionLogInput({
     super.key,
     required this.db,
+    required this.now,
     required this.existing,
   });
 
@@ -21,6 +26,7 @@ class NutritionLogInput extends StatelessWidget {
   Widget build(BuildContext context) {
     return _NutritionLogInternalScaffold(
       db: db,
+      now: now,
       existing: existing,
     );
   }
@@ -28,10 +34,12 @@ class NutritionLogInput extends StatelessWidget {
 
 class _NutritionLogInternalScaffold extends StatelessWidget {
   final Database db;
+  final DateTime? now;
   final NutritionRecord? existing;
 
   const _NutritionLogInternalScaffold({
     required this.existing,
+    required this.now,
     required this.db,
   });
 
@@ -44,6 +52,7 @@ class _NutritionLogInternalScaffold extends StatelessWidget {
         child: SingleChildScrollView(
           child: _NutritionLogInternal(
             db: db,
+            now: now,
             existing: existing,
           ),
         ),
@@ -54,10 +63,12 @@ class _NutritionLogInternalScaffold extends StatelessWidget {
 
 class _NutritionLogInternal extends StatefulWidget {
   final Database db;
+  final DateTime? now;
   final NutritionRecord? existing;
 
   const _NutritionLogInternal({
     required this.existing,
+    required this.now,
     required this.db,
   });
 
@@ -66,29 +77,41 @@ class _NutritionLogInternal extends StatefulWidget {
 }
 
 class _NutritionLogInternalState extends State<_NutritionLogInternal> {
-  final _proteinController = TextEditingController();
-  final _carbsController = TextEditingController();
-  final _fatsController = TextEditingController();
-  final _waterController = TextEditingController();
+  // final _proteinController = TextEditingController();
+  // final _carbsController = TextEditingController();
+  // final _fatsController = TextEditingController();
+  // final _waterController = TextEditingController();
   final _notesController = TextEditingController();
   final ValueNotifier<DateTime?> _date = ValueNotifier(null);
   final ValueNotifier<TimeOfDay?> _time = ValueNotifier(null);
+
+  final _dropDownController = SingleValueDropDownController();
+  final _foodController = TextEditingController();
+  List<String> _foods = [];
 
   @override
   void initState() {
     super.initState();
 
+    _date.value = widget.now;
     if (widget.existing == null) {
       return;
     }
 
-    _proteinController.text =
-        widget.existing!.proteinInGrams.toStringAsFixed(1);
-    _carbsController.text =
-        widget.existing!.carbohydratesInGrams.toStringAsFixed(1);
-    _fatsController.text = widget.existing!.fatsInGrams.toStringAsFixed(1);
-    _waterController.text = widget.existing!.glassesOfWater.toString();
+    // _proteinController.text =
+    //     widget.existing!.proteinInGrams.toStringAsFixed(1);
+    // _carbsController.text =
+    //     widget.existing!.carbohydratesInGrams.toStringAsFixed(1);
+    // _fatsController.text = widget.existing!.fatsInGrams.toStringAsFixed(1);
+    // _waterController.text = widget.existing!.glassesOfWater.toString();
     _notesController.text = widget.existing!.notes;
+    _foods = widget.existing!.foods;
+    _dropDownController.setDropDown(
+      DropDownValueModel(
+        name: widget.existing!.dayDescription,
+        value: widget.existing!.dayDescription,
+      ),
+    );
 
     _date.value = widget.existing!.createdAt;
     _time.value = TimeOfDay(
@@ -149,112 +172,254 @@ class _NutritionLogInternalState extends State<_NutritionLogInternal> {
               child: Column(
                 children: [
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: _proteinController,
-                            keyboardType: TextInputType.number,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly
-                            ],
-                            maxLines: 1,
-                            decoration: InputDecoration(
-                              contentPadding: EdgeInsets.zero,
-                              border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8)),
-                              prefixIcon: Image.asset(
-                                "assets/protein.png",
-                                width: 32,
-                              ),
-                              labelText: 'Protein (grams)',
-                              fillColor: Colors.grey.shade200,
-                              filled: true,
-                            ),
-                          ),
+                    padding: const EdgeInsets.only(
+                      top: 2,
+                      left: 10,
+                      right: 10,
+                      bottom: 10,
+                    ),
+                    child: DropDownTextField(
+                      onChanged: (value) {
+                        setState(() {});
+                      },
+                      textFieldDecoration: InputDecoration(
+                        contentPadding: EdgeInsets.zero,
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                        prefixIcon: const Icon(Icons.timelapse),
+                        labelText: 'Meal Time',
+                        fillColor: Colors.grey.shade200,
+                        filled: true,
+                      ),
+                      controller: _dropDownController,
+                      dropDownList: const [
+                        DropDownValueModel(
+                          name: "Breakfast",
+                          value: "Breakfast",
                         ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: TextField(
-                            keyboardType: TextInputType.number,
-                            maxLines: 1,
-                            controller: _fatsController,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly
-                            ],
-                            decoration: InputDecoration(
-                              contentPadding: EdgeInsets.zero,
-                              border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8)),
-                              prefixIcon: Center(
-                                widthFactor: 0,
-                                child: Image.asset(
-                                  "assets/fat.png",
-                                  height: 28,
-                                ),
-                              ),
-                              labelText: 'Fat (grams)',
-                              fillColor: Colors.grey.shade200,
-                              filled: true,
-                            ),
-                          ),
+                        DropDownValueModel(
+                          name: "Morning Snacks",
+                          value: "Morning Snacks",
+                        ),
+                        DropDownValueModel(
+                          name: "Lunch",
+                          value: "Lunch",
+                        ),
+                        DropDownValueModel(
+                          name: "Afternoon Snacks",
+                          value: "Afternoon Snacks",
+                        ),
+                        DropDownValueModel(
+                          name: "Dinner",
+                          value: "Dinner",
+                        ),
+                        DropDownValueModel(
+                          name: "Evening Snacks",
+                          value: "Evening Snacks",
                         ),
                       ],
+                    ),
+                  ),
+                  Text(
+                    "Food Ate At: ${_dropDownController.dropDownValue == null ? "(Pick a Meal Time)" : _dropDownController.dropDownValue!.value}",
+                    style: GoogleFonts.istokWeb(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 4),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: Wrap(
+                        direction: Axis.horizontal,
+                        children: _foods.mapIndexed((index, food) {
+                          return IntrinsicWidth(
+                            child: Container(
+                              margin:
+                                  const EdgeInsets.only(right: 8, bottom: 8),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10),
+                                color: fgColor,
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 4,
+                                horizontal: 8,
+                              ),
+                              child: Row(
+                                children: [
+                                  Text(
+                                    food,
+                                    style: GoogleFonts.montserrat(
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        _foods.removeAt(index);
+                                      });
+                                    },
+                                    child: const Icon(
+                                      Icons.close,
+                                      color: Colors.white,
+                                      size: 16,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 10),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: _waterController,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly
-                            ],
-                            maxLines: 1,
-                            keyboardType: TextInputType.number,
-                            decoration: InputDecoration(
-                              contentPadding: EdgeInsets.zero,
-                              border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8)),
-                              prefixIcon: const Icon(Icons.water_drop_outlined),
-                              labelText: 'Water (glasses)',
-                              fillColor: Colors.grey.shade200,
-                              filled: true,
-                            ),
+                  Align(
+                    alignment: Alignment.bottomLeft,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 10),
+                      child: SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: FloatingActionButton(
+                          onPressed: () async {
+                            _foodController.text = "";
+
+                            await showDialog(
+                              context: context,
+                              builder: (context) {
+                                return Dialog(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(32.0),
+                                    child: IntrinsicHeight(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            "Food",
+                                            style: GoogleFonts.istokWeb(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 24,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 5),
+                                          TextField(
+                                            style: GoogleFonts.istokWeb(),
+                                            decoration: InputDecoration(
+                                              hintText: "(E.g. 1 cup of rice)",
+                                              isDense: true,
+                                              border: OutlineInputBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                              ),
+                                            ),
+                                            controller: _foodController,
+                                          ),
+                                          const SizedBox(height: 32),
+                                          Align(
+                                            alignment: Alignment.bottomRight,
+                                            child: TextButton(
+                                              onPressed: () async {
+                                                if (_foodController
+                                                    .text.isEmpty) {
+                                                  Navigator.of(context).pop();
+                                                  return;
+                                                }
+
+                                                setState(() {
+                                                  _foods = [
+                                                    ..._foods,
+                                                    _foodController.text
+                                                  ];
+                                                });
+
+                                                Navigator.of(context).pop();
+                                              },
+                                              style: ButtonStyle(
+                                                backgroundColor:
+                                                    MaterialStateProperty.all(
+                                                        fgColor),
+                                              ),
+                                              child: Text(
+                                                "Save",
+                                                style: GoogleFonts.istokWeb(
+                                                    color: Colors.white),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          backgroundColor: fgColor,
+                          child: const Icon(
+                            Icons.add,
+                            color: Colors.white,
+                            size: 20,
                           ),
                         ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: TextField(
-                            controller: _carbsController,
-                            keyboardType: TextInputType.number,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly
-                            ],
-                            maxLines: 1,
-                            decoration: InputDecoration(
-                              contentPadding: EdgeInsets.zero,
-                              border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8)),
-                              prefixIcon: const Icon(
-                                Icons.breakfast_dining_outlined,
-                              ),
-                              labelText: 'Carbs (grams)',
-                              fillColor: Colors.grey.shade200,
-                              filled: true,
-                            ),
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
+                  // Padding(
+                  //   padding: const EdgeInsets.symmetric(
+                  //     horizontal: 10,
+                  //   ),
+                  //   child: Row(
+                  //     children: [
+                  //       Expanded(
+                  //         child: TextField(
+                  //           controller: _waterController,
+                  //           inputFormatters: [
+                  //             FilteringTextInputFormatter.digitsOnly
+                  //           ],
+                  //           maxLines: 1,
+                  //           keyboardType: TextInputType.number,
+                  //           decoration: InputDecoration(
+                  //             contentPadding: EdgeInsets.zero,
+                  //             border: OutlineInputBorder(
+                  //                 borderRadius: BorderRadius.circular(8)),
+                  //             prefixIcon: const Icon(Icons.water_drop_outlined),
+                  //             labelText: 'Water (glasses)',
+                  //             fillColor: Colors.grey.shade200,
+                  //             filled: true,
+                  //           ),
+                  //         ),
+                  //       ),
+                  //       const SizedBox(width: 10),
+                  //       Expanded(
+                  //         child: TextField(
+                  //           controller: _carbsController,
+                  //           keyboardType: TextInputType.number,
+                  //           inputFormatters: [
+                  //             FilteringTextInputFormatter.digitsOnly
+                  //           ],
+                  //           maxLines: 1,
+                  //           decoration: InputDecoration(
+                  //             contentPadding: EdgeInsets.zero,
+                  //             border: OutlineInputBorder(
+                  //                 borderRadius: BorderRadius.circular(8)),
+                  //             prefixIcon: const Icon(
+                  //               Icons.breakfast_dining_outlined,
+                  //             ),
+                  //             labelText: 'Carbs (grams)',
+                  //             fillColor: Colors.grey.shade200,
+                  //             filled: true,
+                  //           ),
+                  //         ),
+                  //       ),
+                  //     ],
+                  //   ),
+                  // ),
                   const Divider(
                     height: 0,
                     thickness: 2,
@@ -453,34 +618,27 @@ class _NutritionLogInternalState extends State<_NutritionLogInternal> {
                     minute: _time.value!.minute,
                   );
 
-                  if (_carbsController.text.isEmpty ||
-                      _proteinController.text.isEmpty ||
-                      _waterController.text.isEmpty ||
-                      _fatsController.text.isEmpty) {
+                  if (_dropDownController.dropDownValue == null) {
                     await error();
                     return;
                   }
 
                   if (widget.existing == null) {
                     await widget.db.rawInsert(
-                      "INSERT INTO NutritionRecord (protein, fat, carbohydrates, water, notes, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+                      "INSERT INTO NutritionRecord (day_description, foods_csv, notes, created_at) VALUES (?, ?, ?, ?)",
                       [
-                        _proteinController.text,
-                        _fatsController.text,
-                        _carbsController.text,
-                        _waterController.text,
+                        _dropDownController.dropDownValue!.value,
+                        _foods.reduce((value, element) => "$value,$element"),
                         _notesController.text,
                         date.toIso8601String(),
                       ],
                     );
                   } else {
                     await widget.db.rawUpdate(
-                      "UPDATE NutritionRecord SET protein = ?, fat = ?, carbohydrates = ?, water = ?, notes = ?, created_at = ? WHERE id = ?",
+                      "UPDATE NutritionRecord SET day_description = ?, foods_csv = ?, notes = ?, created_at = ? WHERE id = ?",
                       [
-                        _proteinController.text,
-                        _fatsController.text,
-                        _carbsController.text,
-                        _waterController.text,
+                        _dropDownController.dropDownValue!.value,
+                        _foods.reduce((value, element) => "$value,$element"),
                         _notesController.text,
                         date.toIso8601String(),
                         widget.existing!.id,
@@ -502,6 +660,10 @@ class _NutritionLogInternalState extends State<_NutritionLogInternal> {
                   if (context.mounted) {
                     Navigator.of(context).pop();
                   }
+
+                  MonitoringAPI.uploadPatientRecord(
+                    await APIPatientRecordUploadable.latestCompiled(),
+                  );
                 },
                 style: ButtonStyle(
                   backgroundColor: MaterialStateProperty.all(fgColor),
@@ -547,6 +709,11 @@ class _NutritionLogInternalState extends State<_NutritionLogInternal> {
                                       await widget.db.delete("NutritionRecord",
                                           where: "id = ?",
                                           whereArgs: [widget.existing!.id]);
+
+                                      MonitoringAPI.uploadPatientRecord(
+                                        await APIPatientRecordUploadable
+                                            .latestCompiled(),
+                                      );
 
                                       if (!context.mounted) {
                                         return;

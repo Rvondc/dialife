@@ -1,3 +1,5 @@
+import 'package:dialife/api/api.dart';
+import 'package:dialife/api/entities.dart';
 import 'package:dialife/blood_glucose_tracking/entities.dart';
 import 'package:dialife/blood_glucose_tracking/glucose_tracking.dart';
 import 'package:dialife/blood_glucose_tracking/utils.dart';
@@ -192,6 +194,10 @@ class __GlucoseRecordEditorInternalState
                   "GlucoseRecord",
                   where: "id = ?",
                   whereArgs: [current.id],
+                );
+
+                MonitoringAPI.uploadPatientRecord(
+                  await APIPatientRecordUploadable.latestCompiled(),
                 );
               },
               child: Container(
