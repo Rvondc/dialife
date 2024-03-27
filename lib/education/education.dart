@@ -15,7 +15,7 @@ enum Language {
 }
 
 class _EducationState extends State<Education> {
-  var _lang = Language.english;
+  final _lang = Language.english;
 
   @override
   Widget build(BuildContext context) {
