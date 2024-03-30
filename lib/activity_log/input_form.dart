@@ -466,8 +466,8 @@ class _ActivityLogInternalState extends State<_ActivityLogInternal> {
                     Navigator.of(context).pop();
                   }
 
-                  MonitoringAPI.uploadPatientRecord(
-                    await APIPatientRecordUploadable.latestCompiled(),
+                  MonitoringAPI.recordSyncAll(
+                    await APIPatientRecordUploadable.normalizedRecords(),
                   );
                 },
                 style: ButtonStyle(
@@ -515,9 +515,10 @@ class _ActivityLogInternalState extends State<_ActivityLogInternal> {
                                           where: "id = ?",
                                           whereArgs: [widget.existing!.id]);
 
-                                      MonitoringAPI.uploadPatientRecord(
-                                          await APIPatientRecordUploadable
-                                              .latestCompiled());
+                                      MonitoringAPI.recordSyncAll(
+                                        await APIPatientRecordUploadable
+                                            .normalizedRecords(),
+                                      );
 
                                       if (!context.mounted) {
                                         return;

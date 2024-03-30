@@ -126,6 +126,14 @@ class _NutritionEditorInternalState extends State<_NutritionEditorInternal> {
   DateTime _focusedDay = DateTime.now();
   CalendarFormat _format = CalendarFormat.month;
 
+  @override
+  void initState() {
+    super.initState();
+    _focusedDayEvents = widget.records
+        .where((record) => isSameDay(record.createdAt, _focusedDay))
+        .toList();
+  }
+
   List<NutritionRecord> _focusedDayEvents = [];
   @override
   Widget build(BuildContext context) {
@@ -352,6 +360,8 @@ class _NutritionEditorInternalState extends State<_NutritionEditorInternal> {
                         "now": _focusedDay,
                       },
                     );
+
+                    widget.reset();
                   },
                   shape: const CircleBorder(),
                   backgroundColor: fgColor,
@@ -381,8 +391,8 @@ class _NutritionEditorInternalState extends State<_NutritionEditorInternal> {
                       whereArgs: [current.id],
                     );
 
-                    MonitoringAPI.uploadPatientRecord(
-                      await APIPatientRecordUploadable.latestCompiled(),
+                    MonitoringAPI.recordSyncAll(
+                      await APIPatientRecordUploadable.normalizedRecords(),
                     );
                   },
                   confirmDismiss: (direction) async {

@@ -965,8 +965,8 @@ class _NewMedicationReminderInputFormState
       }
     }
 
-    MonitoringAPI.uploadPatientRecord(
-      await APIPatientRecordUploadable.latestCompiled(),
+    MonitoringAPI.recordSyncAll(
+      await APIPatientRecordUploadable.normalizedRecords(),
     );
     // debugPrint(
     //     "Medication Reminder Records : ${await db.rawQuery("SELECT * FROM MedicationReminderRecords")}");

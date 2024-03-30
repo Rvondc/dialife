@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:collection/collection.dart';
+import 'package:dialife/api/api.dart';
+import 'package:dialife/api/entities.dart';
 import 'package:dialife/blood_glucose_tracking/glucose_tracking.dart';
 import 'package:dialife/blood_glucose_tracking/utils.dart';
 import 'package:dialife/nutrition_log/entities.dart';
@@ -421,6 +423,16 @@ class _NutritionLogInternalState extends State<_NutritionLogInternal> {
                                                               .toIso8601String(),
                                                         ],
                                                       );
+
+                                                      MonitoringAPI
+                                                          .recordSyncAll(
+                                                        await APIPatientRecordUploadable
+                                                            .normalizedRecords(),
+                                                      );
+
+                                                      if (!context.mounted) {
+                                                        return;
+                                                      }
 
                                                       Navigator.of(context)
                                                           .pop();

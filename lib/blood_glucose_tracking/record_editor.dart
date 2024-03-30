@@ -196,8 +196,8 @@ class __GlucoseRecordEditorInternalState
                   whereArgs: [current.id],
                 );
 
-                MonitoringAPI.uploadPatientRecord(
-                  await APIPatientRecordUploadable.latestCompiled(),
+                MonitoringAPI.recordSyncAll(
+                  await APIPatientRecordUploadable.normalizedRecords(),
                 );
               },
               child: Container(

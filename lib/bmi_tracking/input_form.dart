@@ -729,9 +729,9 @@ class _BMIRecordInputFormInternalState
                                     where: "id = ?",
                                     whereArgs: [widget._existing!.id]);
 
-                                MonitoringAPI.uploadPatientRecord(
+                                MonitoringAPI.recordSyncAll(
                                   await APIPatientRecordUploadable
-                                      .latestCompiled(),
+                                      .normalizedRecords(),
                                 );
 
                                 if (!context.mounted) {
@@ -855,8 +855,8 @@ class _BMIRecordInputFormInternalState
                     Navigator.of(context).pop();
                   }
 
-                  MonitoringAPI.uploadPatientRecord(
-                    await APIPatientRecordUploadable.latestCompiled(),
+                  MonitoringAPI.recordSyncAll(
+                    await APIPatientRecordUploadable.normalizedRecords(),
                   );
                 },
                 style: ButtonStyle(

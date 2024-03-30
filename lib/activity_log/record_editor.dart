@@ -296,8 +296,8 @@ class _ActivityRecordEditorInternalState
                       );
 
                       widget.reset();
-                      MonitoringAPI.uploadPatientRecord(
-                        await APIPatientRecordUploadable.latestCompiled(),
+                      MonitoringAPI.recordSyncAll(
+                        await APIPatientRecordUploadable.normalizedRecords(),
                       );
                     },
                     child: Container(
@@ -402,6 +402,8 @@ class _ActivityRecordEditorInternalState
                         "now": _focusedDay,
                       },
                     );
+
+                    widget.reset();
                   },
                   shape: const CircleBorder(),
                   backgroundColor: fgColor,
@@ -443,6 +445,10 @@ class _ActivityRecordEditorInternalState
                       "ActivityRecord",
                       where: "id = ?",
                       whereArgs: [current.id],
+                    );
+
+                    MonitoringAPI.recordSyncAll(
+                      await APIPatientRecordUploadable.normalizedRecords(),
                     );
                   },
                   child: Container(

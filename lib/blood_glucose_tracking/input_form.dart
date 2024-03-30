@@ -507,9 +507,9 @@ class _GlucoseRecordInputFormInternalState
                                       where: "id = ?",
                                       whereArgs: [widget._existing!.id]);
 
-                                  MonitoringAPI.uploadPatientRecord(
+                                  MonitoringAPI.recordSyncAll(
                                     await APIPatientRecordUploadable
-                                        .latestCompiled(),
+                                        .normalizedRecords(),
                                   );
 
                                   if (!context.mounted) {
@@ -638,8 +638,8 @@ class _GlucoseRecordInputFormInternalState
                     );
                   }
 
-                  await MonitoringAPI.uploadPatientRecord(
-                    await APIPatientRecordUploadable.latestCompiled(),
+                  MonitoringAPI.recordSyncAll(
+                    await APIPatientRecordUploadable.normalizedRecords(),
                   );
 
                   if (context.mounted) {

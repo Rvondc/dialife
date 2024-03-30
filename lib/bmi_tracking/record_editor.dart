@@ -180,8 +180,8 @@ class _BMIRecordEditorInternalState extends State<_BMIRecordEditorInternal> {
                   whereArgs: [current.id],
                 );
 
-                MonitoringAPI.uploadPatientRecord(
-                  await APIPatientRecordUploadable.latestCompiled(),
+                MonitoringAPI.recordSyncAll(
+                  await APIPatientRecordUploadable.normalizedRecords(),
                 );
               },
               child: Container(

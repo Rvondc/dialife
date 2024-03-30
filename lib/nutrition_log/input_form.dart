@@ -5,6 +5,7 @@ import 'package:dialife/blood_glucose_tracking/glucose_tracking.dart';
 import 'package:dialife/nutrition_log/entities.dart';
 import 'package:dropdown_textfield/dropdown_textfield.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:material_symbols_icons/symbols.dart';
@@ -306,6 +307,10 @@ class _NutritionLogInternalState extends State<_NutritionLogInternal> {
                                           const SizedBox(height: 5),
                                           TextField(
                                             style: GoogleFonts.istokWeb(),
+                                            inputFormatters: [
+                                              FilteringTextInputFormatter.allow(
+                                                  RegExp("[0-9a-zA-Z]"))
+                                            ],
                                             decoration: InputDecoration(
                                               hintText: "(E.g. 1 cup of rice)",
                                               isDense: true,
@@ -661,8 +666,8 @@ class _NutritionLogInternalState extends State<_NutritionLogInternal> {
                     Navigator.of(context).pop();
                   }
 
-                  MonitoringAPI.uploadPatientRecord(
-                    await APIPatientRecordUploadable.latestCompiled(),
+                  MonitoringAPI.recordSyncAll(
+                    await APIPatientRecordUploadable.normalizedRecords(),
                   );
                 },
                 style: ButtonStyle(
@@ -710,9 +715,9 @@ class _NutritionLogInternalState extends State<_NutritionLogInternal> {
                                           where: "id = ?",
                                           whereArgs: [widget.existing!.id]);
 
-                                      MonitoringAPI.uploadPatientRecord(
+                                      MonitoringAPI.recordSyncAll(
                                         await APIPatientRecordUploadable
-                                            .latestCompiled(),
+                                            .normalizedRecords(),
                                       );
 
                                       if (!context.mounted) {
