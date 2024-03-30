@@ -117,14 +117,10 @@ class _NutritionAndActivityState extends State<NutritionAndActivity> {
                       );
                     }
 
-                    final nutritionDaysMap =
-                        dayConsolidateNutritionRecord(widget.nutritionRecords);
                     final nutritionDays =
                         validDaysNutritionRecord(widget.nutritionRecords);
 
                     nutritionDays.sort((a, b) => a.compareTo(b));
-                    final latestNutritionRecords =
-                        nutritionDaysMap[nutritionDays.last];
 
                     return Column(
                       children: [

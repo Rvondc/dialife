@@ -5,7 +5,6 @@ import 'dart:io';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:dialife/activity_log/utils.dart';
 import 'package:dialife/api/api.dart';
-import 'package:dialife/api/entities.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
@@ -67,7 +66,7 @@ void main() async {
   FlutterNativeSplash.preserve(widgetsBinding: binding);
 
   await LocalNotification.init();
-  MonitoringAPI.init(https: true, baseUrl: 'dialife.info');
+  MonitoringAPI.init(https: true, baseUrl: 'idontknowanymore.site');
 
   runApp(const Main());
 }
