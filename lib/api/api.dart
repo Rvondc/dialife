@@ -21,6 +21,63 @@ class MonitoringAPI {
     _baseUrl = baseUrl;
   }
 
+  static Future<void> recordSyncAll(
+      List<APIPatientRecordUploadable> records) async {
+    if (records.isEmpty) {
+      return;
+    }
+
+    final isConnected = await InternetConnection().hasInternetAccess;
+    if (!isConnected) {
+      return;
+    }
+
+    if (_https) {
+      final response = await http.post(
+        Uri.https(
+          _baseUrl,
+          '$_basePath/patient/record/syncall',
+        ),
+        body: jsonEncode({
+          "patient_id": records.first.patientId,
+          "records": records.map((record) => record.toApiInsertable()).toList(),
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception("Status Code not OK: ${response.body}");
+      }
+    } else {
+      final response = await http.post(
+        Uri.http(
+          _baseUrl,
+          '$_basePath/patient/record/syncall',
+        ),
+        body: jsonEncode({
+          "patient_id": records.first.patientId,
+          "records": records.map((record) => record.toApiInsertable()).toList(),
+        }),
+      );
+
+      // var logger = Logger(
+      //   filter: null,
+      //   printer: PrettyPrinter(),
+      //   output: null,
+      // );
+
+      // logger.d(
+      //   jsonEncode({
+      //     "patient_id": records.first.patientId,
+      //     "records": records.map((record) => record.toApiInsertable()).toList(),
+      //   }),
+      // );
+
+      if (response.statusCode != 200) {
+        throw Exception("Status Code not OK: ${response.body}");
+      }
+    }
+  }
+
   static Future<void> uploadPatientRecord(
       APIPatientRecordUploadable record) async {
     final isConnected = await InternetConnection().hasInternetAccess;

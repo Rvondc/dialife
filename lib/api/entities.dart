@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:dialife/activity_log/entities.dart';
 import 'package:dialife/blood_glucose_tracking/entities.dart';
 import 'package:dialife/bmi_tracking/entities.dart';
@@ -16,6 +18,11 @@ class APIPatientRecordUploadable {
   final WaterRecord? waterRecord;
   final int? patientId;
 
+  @override
+  String toString() {
+    return toApiInsertable().toString();
+  }
+
   Map toApiInsertable() {
     return {
       "glucose_created_at": glucoseRecord?.bloodTestDate.toIso8601String(),
@@ -23,13 +30,13 @@ class APIPatientRecordUploadable {
       "bmi_created_at": bmiRecord?.createdAt.toIso8601String(),
       "bmi_level": bmiRecord?.bmi,
       "activity_created_at": activityRecord?.createdAt.toIso8601String(),
-      "activity_type": activityRecord?.type,
+      "activity_type": activityRecord?.type.asString,
       "activity_duration": activityRecord?.duration,
       "activity_frequency": activityRecord?.frequency,
       "nutrition_created_at": nutritionRecord?.createdAt.toIso8601String(),
       "meal_time": nutritionRecord?.dayDescription,
-      "foods": nutritionRecord?.foods,
-      "water_created_at": waterRecord?.time,
+      "foods": nutritionRecord?.foods.join(","),
+      "water_created_at": waterRecord?.time.toIso8601String(),
       "water_glasses": waterRecord?.glasses,
       "medicine_taken_at":
           medicationDetailsRecord?.medicationDatetime.toIso8601String(),
@@ -39,6 +46,60 @@ class APIPatientRecordUploadable {
       "medicine_dosage": medicationDetailsRecord?.medicineDosage,
       "patient_id": patientId,
     };
+  }
+
+  static Future<List<APIPatientRecordUploadable>> normalizedRecords() async {
+    final path = await getDatabasesPath();
+    final db = await initAppDatabase(path);
+
+    final [
+      glucoseRecords,
+      activityRecords,
+      nutritionRecords,
+      bmiRecords,
+      waterRecords,
+      medicationRecords
+    ] = await Future.wait([
+      db.rawQuery('SELECT * FROM GlucoseRecord ORDER BY blood_test_date DESC'),
+      db.rawQuery('SELECT * FROM ActivityRecord ORDER BY created_at DESC'),
+      db.rawQuery('SELECT * FROM NutritionRecord ORDER BY created_at DESC'),
+      db.rawQuery('SELECT * FROM BMIRecord ORDER BY created_at DESC'),
+      db.rawQuery('SELECT * FROM WaterRecord ORDER BY time DESC'),
+      db.rawQuery(
+          'SELECT * FROM MedicationRecordDetails WHERE medication_datetime < ? ORDER BY medication_datetime DESC ',
+          [
+            DateTime.now().toIso8601String(),
+          ]),
+    ]);
+
+    final glucose = GlucoseRecord.fromListOfMaps(glucoseRecords);
+    final activity = ActivityRecord.fromListOfMaps(activityRecords);
+    final nutrition = NutritionRecord.fromListOfMaps(nutritionRecords);
+    final bmi = BMIRecord.fromListOfMaps(bmiRecords);
+    final water = WaterRecord.fromListOfMaps(waterRecords);
+    final medication =
+        MedicationRecordDetails.fromListOfMaps(medicationRecords);
+
+    final user = User.fromMap((await db.query("User")).first);
+    if (user.webId == null) {
+      throw Exception("Patient does not exist in Monitoring API");
+    }
+
+    final maxCount = [glucose, activity, nutrition, bmi, water, medication]
+        .map((records) => records.length)
+        .reduce(max);
+
+    return List.generate(maxCount, (index) {
+      return APIPatientRecordUploadable(
+        glucoseRecord: glucose.elementAtOrNull(index),
+        activityRecord: activity.elementAtOrNull(index),
+        nutritionRecord: nutrition.elementAtOrNull(index),
+        bmiRecord: bmi.elementAtOrNull(index),
+        waterRecord: water.elementAtOrNull(index),
+        medicationDetailsRecord: medication.elementAtOrNull(index),
+        patientId: user.webId,
+      );
+    });
   }
 
   static Future<APIPatientRecordUploadable> latestCompiled() async {
