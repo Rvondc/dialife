@@ -190,3 +190,33 @@ class APIPatientRecordUploadable {
     required this.patientId,
   });
 }
+
+class APIDoctor {
+  final int doctorId;
+  final String name;
+  final String email;
+  final String profilPictureLink;
+
+  static APIDoctor fromMap(Map<String, dynamic> map) {
+    final doctor = APIDoctor(
+      doctorId: int.parse(map["doctor_id"] as String),
+      name: map["name"],
+      email: map["email"],
+      profilPictureLink: map["profile_picture_link"],
+    );
+
+    return doctor;
+  }
+
+  static List<APIDoctor> fromListOfMaps(List<Map<String, dynamic>> list) {
+    final parsed = list.map((map) => fromMap(map)).toList();
+    return parsed;
+  }
+
+  const APIDoctor({
+    required this.doctorId,
+    required this.name,
+    required this.email,
+    required this.profilPictureLink,
+  });
+}
