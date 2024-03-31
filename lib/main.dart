@@ -5,7 +5,10 @@ import 'dart:io';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:dialife/activity_log/utils.dart';
 import 'package:dialife/api/api.dart';
+import 'package:dialife/api/entities.dart';
+import 'package:dialife/doctor_connections/doctor_connections.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -66,7 +69,10 @@ void main() async {
   FlutterNativeSplash.preserve(widgetsBinding: binding);
 
   await LocalNotification.init();
-  MonitoringAPI.init(https: true, baseUrl: 'idontknowanymore.site');
+  MonitoringAPI.init(
+    https: true,
+    baseUrl: 'idontknowanymore.site',
+  );
 
   runApp(const Main());
 }
@@ -293,6 +299,12 @@ class Main extends StatelessWidget {
               builder: (context) => DiabetesList(
                 lang: args["lang"],
               ),
+              settings: const RouteSettings(name: '/education/diabetes'),
+            );
+          case "/monitoring":
+            return MaterialPageRoute(
+              builder: (context) => const DoctorConnections(),
+              settings: const RouteSettings(name: '/monitoring'),
             );
         }
 
@@ -347,6 +359,23 @@ class _RootState extends State<Root> {
     return PageView(
       children: [
         Scaffold(
+          floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
+          floatingActionButton: _authenticated
+              ? FloatingActionButton(
+                  onPressed: () async {
+                    await Navigator.of(context).pushNamed("/monitoring");
+                  },
+                  backgroundColor: fgColor.withOpacity(0.8),
+                  child: SvgPicture.asset(
+                    "assets/doctor.svg",
+                    width: 32,
+                    colorFilter: const ColorFilter.mode(
+                      Colors.white,
+                      BlendMode.srcIn,
+                    ),
+                  ),
+                )
+              : null,
           appBar: AppBar(
             backgroundColor: !_authenticated
                 ? const Color.fromARGB(255, 217, 231, 251)
@@ -765,10 +794,11 @@ class _RootState extends State<Root> {
                                                   // TODO: Handle no internet
                                                 }
                                               }
-                                              // await MonitoringAPI
-                                              //     .uploadPatientRecord(
-                                              //         await APIPatientRecordUploadable
-                                              //             .latestCompiled());
+
+                                              await MonitoringAPI.recordSyncAll(
+                                                await APIPatientRecordUploadable
+                                                    .normalizedRecords(),
+                                              );
                                             }();
                                           }
 
@@ -1478,7 +1508,7 @@ class _RootState extends State<Root> {
 
                                                             final latestBmiRecord =
                                                                 _bmiRecords!
-                                                                    .first;
+                                                                    .last;
                                                             double fraction;
 
                                                             if (latestBmiRecord
@@ -2454,16 +2484,17 @@ class BMIGraph extends StatelessWidget {
                 Container(
                   constraints: const BoxConstraints(maxHeight: 30),
                   decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(5),
                     color: pointerColor,
-                    boxShadow: const [
+                    boxShadow: [
                       BoxShadow(
-                        spreadRadius: 3,
-                        offset: Offset(0, 0),
-                        color: Colors.white,
+                        spreadRadius: 2,
+                        offset: const Offset(0, 0),
+                        color: Colors.black.withOpacity(0.6),
                       )
                     ],
                   ),
-                  width: 2,
+                  width: 4,
                 ),
                 Expanded(
                   flex: backOffset,
