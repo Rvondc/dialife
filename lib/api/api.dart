@@ -1,9 +1,11 @@
 import 'dart:convert';
 
 import 'package:dialife/api/entities.dart';
+import 'package:dialife/main.dart';
 import 'package:dialife/user.dart';
 import 'package:http/http.dart' as http;
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
+import 'package:sqflite/sqflite.dart';
 
 class MonitoringAPI {
   // NOTE: Private constructor
@@ -19,6 +21,43 @@ class MonitoringAPI {
   }) {
     _https = https;
     _baseUrl = baseUrl;
+  }
+
+  static Future<List<APIDoctor>> getDoctors() async {
+    final path = await getDatabasesPath();
+    final db = await initAppDatabase(path);
+    final user = User.fromMap((await db.query("User")).first);
+
+    final isConnected = await InternetConnection().hasInternetAccess;
+    if (!isConnected) {
+      return [];
+    }
+
+    if (_https) {
+      final response = await http.get(
+          Uri.https(_baseUrl, '$_basePath/patient/doctors/get/${user.webId}'));
+
+      if (response.statusCode != 200) {
+        throw Exception("Status Code not OK: ${response.body}");
+      }
+
+      final body = jsonDecode(response.body);
+
+      return APIDoctor.fromListOfMaps(
+          (body as List<dynamic>).cast<Map<String, dynamic>>());
+    } else {
+      final response = await http.get(
+          Uri.http(_baseUrl, '$_basePath/patient/doctors/get/${user.webId}'));
+
+      if (response.statusCode != 200) {
+        throw Exception("Status Code not OK: ${response.body}");
+      }
+
+      final body = jsonDecode(response.body);
+
+      return APIDoctor.fromListOfMaps(
+          (body as List<dynamic>).cast<Map<String, dynamic>>());
+    }
   }
 
   static Future<void> recordSyncAll(
