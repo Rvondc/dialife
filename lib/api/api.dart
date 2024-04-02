@@ -23,6 +23,47 @@ class MonitoringAPI {
     _baseUrl = baseUrl;
   }
 
+  static String get baseUrl => "${_https ? "https://" : "http://"}$_baseUrl";
+
+  static Future<void> revokeDoctor(int id) async {
+    final isConnected = await InternetConnection().hasInternetAccess;
+    if (!isConnected) {
+      return;
+    }
+
+    final path = await getDatabasesPath();
+    final db = await initAppDatabase(path);
+    final user = User.fromMap((await db.query("User")).first);
+
+    if (user.webId == null) {
+      throw Exception("Patient does not exist in Monitoring API");
+    }
+
+    if (_https) {
+      final response = await http.post(
+        Uri.https(_baseUrl, '$_basePath/patient/revoke'),
+        body: jsonEncode({
+          "patient_id": user.webId,
+          "doctor_id": id,
+        }),
+      );
+      if (response.statusCode != 200) {
+        throw Exception("Status Code not OK: ${response.body}");
+      }
+    } else {
+      final response = await http.post(
+        Uri.http(_baseUrl, '$_basePath/patient/revoke'),
+        body: jsonEncode({
+          "patient_id": user.webId,
+          "doctor_id": id,
+        }),
+      );
+      if (response.statusCode != 200) {
+        throw Exception("Status Code not OK: ${response.body}");
+      }
+    }
+  }
+
   static Future<List<APIDoctor>> getDoctors() async {
     final path = await getDatabasesPath();
     final db = await initAppDatabase(path);
