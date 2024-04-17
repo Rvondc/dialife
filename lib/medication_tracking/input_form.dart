@@ -908,6 +908,7 @@ class _NewMedicationReminderInputFormState
             payload: "payload",
             delay: difference,
             id: lastMedicationRecordDetailsId + 1,
+            isAction: true,
           );
 
           if (notifId == null) {
@@ -922,6 +923,7 @@ class _NewMedicationReminderInputFormState
             medicineForm: medicationFormDropdownValue,
             medicineDosage: double.parse(_dosageController.text),
             medicationDatetime: DateTime(year, month, day, hour, minute),
+            actualTakenTime: null,
             notifId: notifId,
           );
 

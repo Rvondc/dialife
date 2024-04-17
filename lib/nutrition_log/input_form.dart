@@ -309,7 +309,7 @@ class _NutritionLogInternalState extends State<_NutritionLogInternal> {
                                             style: GoogleFonts.istokWeb(),
                                             inputFormatters: [
                                               FilteringTextInputFormatter.allow(
-                                                  RegExp("[0-9a-zA-Z]"))
+                                                  RegExp("[0-9a-zA-Z ]"))
                                             ],
                                             decoration: InputDecoration(
                                               hintText: "(E.g. 1 cup of rice)",

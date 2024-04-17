@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:dialife/api/api.dart';
 import 'package:dialife/api/entities.dart';
 import 'package:dialife/blood_glucose_tracking/glucose_tracking.dart';
@@ -33,12 +34,34 @@ class _DoctorConnectionsState extends State<DoctorConnections> {
             InternetConnection().hasInternetAccess,
             Future.delayed(const Duration(milliseconds: 200)),
           ]),
-          loading: const Center(child: CircularProgressIndicator()),
+          loading: Stack(
+            children: [
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Image.asset(
+                  "assets/bg.png",
+                  opacity: const AlwaysStoppedAnimation(0.5),
+                ),
+              ),
+              const Center(
+                child: CircularProgressIndicator(
+                  color: fgColor,
+                ),
+              ),
+            ],
+          ),
           builder: (context, data) {
             if (!data[1]) {
               // NOTE: Stupid hack to get pullup to refresh working
               return Stack(
                 children: [
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Image.asset(
+                      "assets/bg.png",
+                      opacity: const AlwaysStoppedAnimation(0.5),
+                    ),
+                  ),
                   ListView(),
                   Container(
                     alignment: Alignment.center,
@@ -63,10 +86,10 @@ class _DoctorConnectionsState extends State<DoctorConnections> {
                     children: [
                       Container(
                         padding: const EdgeInsets.all(12),
-                        margin: const EdgeInsets.only(bottom: 8),
+                        margin: const EdgeInsets.only(bottom: 16),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(8),
-                          color: Colors.white.withOpacity(0.7),
+                          color: Colors.white.withOpacity(0.8),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withOpacity(0.25),
@@ -87,6 +110,7 @@ class _DoctorConnectionsState extends State<DoctorConnections> {
                         (doctor) {
                           return Container(
                             padding: const EdgeInsets.all(8),
+                            margin: const EdgeInsets.only(bottom: 8),
                             height: 75,
                             decoration: BoxDecoration(
                               color: Colors.white.withOpacity(0.7),
@@ -137,10 +161,16 @@ class _DoctorConnectionsState extends State<DoctorConnections> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Text(
-                                        "Dr. ${doctor.name}",
-                                        style: GoogleFonts.montserrat(
-                                          fontSize: 16,
+                                      SizedBox(
+                                        width:
+                                            MediaQuery.of(context).size.width *
+                                                0.55,
+                                        child: AutoSizeText(
+                                          "Dr. ${doctor.name}",
+                                          maxLines: 1,
+                                          style: GoogleFonts.montserrat(
+                                            fontSize: 16,
+                                          ),
                                         ),
                                       ),
                                       Text(
