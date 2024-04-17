@@ -367,6 +367,54 @@ Widget medicationReminderListTile(
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   const Expanded(child: SizedBox()),
+                  firstRecord.medicationDatetime.isAfter(DateTime.now())
+                      ? const SizedBox()
+                      : TextButton(
+                          onPressed: firstRecord.actualTakenTime == null
+                              ? () async {
+                                  await db.update("MedicationRecordDetails", {
+                                    "actual_taken_time":
+                                        DateTime.now().toIso8601String(),
+                                  });
+
+                                  reset();
+                                }
+                              : null,
+                          style: ButtonStyle(
+                            padding: MaterialStateProperty.all(
+                              const EdgeInsets.symmetric(
+                                horizontal: 8,
+                              ),
+                            ),
+                            backgroundColor: MaterialStateProperty.all(
+                              firstRecord.actualTakenTime == null
+                                  ? const Color(0xFF326BFD)
+                                  : Colors.grey,
+                            ),
+                            overlayColor: firstRecord.actualTakenTime != null
+                                ? null
+                                : MaterialStateProperty.all(
+                                    Colors.white.withOpacity(0.3),
+                                  ),
+                          ),
+                          child: SizedBox(
+                            width: 80,
+                            height: 25,
+                            child: AutoSizeText(
+                              firstRecord.actualTakenTime == null
+                                  ? "Complete"
+                                  : "Taken @${DateFormat("h:mm a").format(firstRecord.actualTakenTime!)}",
+                              minFontSize: 10,
+                              maxLines: 2,
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.istokWeb(
+                                letterSpacing: 1.0,
+                                height: 1.0,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
                   IconButton(
                     onPressed: () async {
                       showDialog(
@@ -423,14 +471,13 @@ Widget medicationReminderListTile(
                                 );
 
                                 reset();
+                                await MonitoringAPI.recordSyncAll(
+                                  await APIPatientRecordUploadable
+                                      .normalizedRecords(),
+                                );
 
                                 if (!context.mounted) return;
                                 Navigator.pop(context);
-
-                                MonitoringAPI.uploadPatientRecord(
-                                  await APIPatientRecordUploadable
-                                      .latestCompiled(),
-                                );
                               },
                             ),
                             TextButton(

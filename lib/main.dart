@@ -55,7 +55,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:path/path.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -70,9 +69,9 @@ void main() async {
 
   await LocalNotification.init();
   MonitoringAPI.init(
-    https: true,
-    baseUrl: 'idontknowanymore.site',
-  );
+      // https: true,
+      // baseUrl: 'idontknowanymore.site',
+      );
 
   runApp(const Main());
 }
@@ -425,7 +424,7 @@ class _RootState extends State<Root> {
           body: FutureBuilder(
             future: getDatabasesPath(),
             builder: (context, data) {
-              const loading = SpinKitCircle(color: fgColor);
+              const loading = CircularProgressIndicator(color: fgColor);
 
               if (data.connectionState != ConnectionState.done ||
                   data.data == null) {
@@ -660,7 +659,8 @@ class _RootState extends State<Root> {
                                           ],
                                         ),
                                         loading:
-                                            const SpinKitCircle(color: fgColor),
+                                            const CircularProgressIndicator(
+                                                color: fgColor),
                                         builder: (context, data) {
                                           if (_glucoseRecords == null ||
                                               _bmiRecords == null ||
@@ -746,8 +746,9 @@ class _RootState extends State<Root> {
                                           }
 
                                           if (_glucoseRecords == null) {
-                                            return const SpinKitCircle(
-                                                color: fgColor);
+                                            return const CircularProgressIndicator(
+                                              color: fgColor,
+                                            );
                                           }
 
                                           if (user.webId == null) {
@@ -1551,7 +1552,8 @@ class _RootState extends State<Root> {
                                                             }
 
                                                             return BMIGraph(
-                                                                frac: fraction);
+                                                              frac: fraction,
+                                                            );
                                                           },
                                                         ),
                                                       ),
@@ -2521,6 +2523,29 @@ class BMIGraph extends StatelessWidget {
                       style: GoogleFonts.inter(
                         color: pointerColor,
                         fontWeight: FontWeight.bold,
+                        letterSpacing: 1.1,
+                        shadows: const [
+                          Shadow(
+                            // bottomLeft
+                            offset: Offset(-1, -1),
+                            color: Colors.black,
+                          ),
+                          Shadow(
+                            // bottomRight
+                            offset: Offset(1, -1),
+                            color: Colors.black,
+                          ),
+                          Shadow(
+                            // topRight
+                            offset: Offset(1, 1),
+                            color: Colors.black,
+                          ),
+                          Shadow(
+                            // topLeft
+                            offset: Offset(-1, 1),
+                            color: Colors.black,
+                          ),
+                        ],
                       ),
                     ),
                     TextSpan(
@@ -2735,6 +2760,7 @@ Future<Database> initAppDatabase(String path) async {
           medicine_dosage DECIMAL(5, 2) NOT NULL,
           medication_datetime DATETIME NOT NULL,
           notification_id INTEGER NOT NULL,
+          actual_taken_time DATETIME,
           FOREIGN KEY(medication_reminder_record_id) REFERENCES MedicationReminderRecords(id)
         )
       """);
@@ -2767,7 +2793,7 @@ Future<Database> initAppDatabase(String path) async {
         )
       """);
     },
-    version: 4,
+    version: 5,
   );
 }
 

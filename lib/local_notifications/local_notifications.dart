@@ -1,7 +1,9 @@
 import 'dart:typed_data';
 
+import 'package:dialife/main.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -31,8 +33,24 @@ class LocalNotification {
   */
 
   // on tap on any notification
-  static void onNotificationTap(NotificationResponse notificationResponse) {
-    onClickNotification.add(notificationResponse.payload!);
+  static void onNotificationTap(
+      NotificationResponse notificationResponse) async {
+    final actionId = notificationResponse.actionId;
+
+    if (actionId != null && actionId.contains("complete")) {
+      final dbPath = await getDatabasesPath();
+      final db = await initAppDatabase(dbPath);
+      final notifId = actionId.split("-")[1];
+
+      await db.update(
+        "MedicationRecordDetails",
+        {
+          "actual_taken_time": DateTime.now().toIso8601String(),
+        },
+        where: "notification_id = ?",
+        whereArgs: [notifId],
+      );
+    }
   }
 
   static Future<List<PendingNotificationRequest>> pendingNotifRequests() async {
@@ -46,7 +64,9 @@ class LocalNotification {
     // initialise the plugin. app_icon needs to be a added as a drawable resource to the Android head project
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings(
-            '@mipmap/launcher_icon'); // <-- Notif Icon
+      '@mipmap/launcher_icon',
+    ); // <-- Notif Icon
+
     // const AndroidInitializationSettings initializationSettingsAndroid =
     //     AndroidInitializationSettings('@mipmap/ic_launcher'); // <-- Notif Icon
 
@@ -81,6 +101,7 @@ class LocalNotification {
     required String payload,
     required Duration delay,
     required int id,
+    bool isAction = false,
   }) async {
     // await Future.delayed(delay);
 
@@ -94,6 +115,15 @@ class LocalNotification {
       ticker: 'ticker',
       sound: const RawResourceAndroidNotificationSound("notif"),
       vibrationPattern: Int64List.fromList([0, 1000, 500, 1000]),
+      actions: isAction
+          ? [
+              AndroidNotificationAction(
+                "complete-$id",
+                "Complete",
+                showsUserInterface: true,
+              ),
+            ]
+          : null,
     );
 
     NotificationDetails notificationDetails =

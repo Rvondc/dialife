@@ -40,6 +40,7 @@ class MedicationRecordDetails {
   final String medicineForm;
   final double medicineDosage;
   final DateTime medicationDatetime;
+  final DateTime? actualTakenTime;
   final int notifId;
 
   const MedicationRecordDetails({
@@ -50,6 +51,7 @@ class MedicationRecordDetails {
     required this.medicineForm,
     required this.medicineDosage,
     required this.medicationDatetime,
+    required this.actualTakenTime,
     required this.notifId,
   });
 
@@ -79,14 +81,17 @@ class MedicationRecordDetails {
 
   static MedicationRecordDetails fromMap(Map<String, dynamic> map) {
     return MedicationRecordDetails(
-      id: map["id"],
-      medicationReminderRecordId: map["medication_reminder_record_id"],
-      medicineName: map["medicine_name"],
-      medicineRoute: map["medicine_route"],
-      medicineForm: map["medicine_form"],
-      medicineDosage: map["medicine_dosage"].toDouble(),
-      medicationDatetime: DateTime.parse(map["medication_datetime"]),
-      notifId: map["notification_id"]
-    );
+        id: map["id"],
+        medicationReminderRecordId: map["medication_reminder_record_id"],
+        medicineName: map["medicine_name"],
+        medicineRoute: map["medicine_route"],
+        medicineForm: map["medicine_form"],
+        medicineDosage: map["medicine_dosage"].toDouble(),
+        medicationDatetime: DateTime.parse(map["medication_datetime"]),
+        // NOTE: Find better way to write this
+        actualTakenTime: map["actual_taken_time"] == null
+            ? null
+            : DateTime.parse(map["actual_taken_time"]),
+        notifId: map["notification_id"]);
   }
 }

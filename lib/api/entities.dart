@@ -43,6 +43,8 @@ class APIPatientRecordUploadable {
       "medicine_name": medicationDetailsRecord?.medicineName,
       "medicine_route": medicationDetailsRecord?.medicineRoute,
       "medicine_form": medicationDetailsRecord?.medicineForm,
+      "medicine_taken_time":
+          medicationDetailsRecord?.actualTakenTime?.toIso8601String(),
       "medicine_dosage": medicationDetailsRecord?.medicineDosage,
       "patient_id": patientId,
     };
