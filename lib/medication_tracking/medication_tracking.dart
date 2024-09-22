@@ -15,6 +15,7 @@ import 'package:intl/intl.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:easy_date_timeline/easy_date_timeline.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:table_calendar/table_calendar.dart';
 
 class MedicationTracking extends StatefulWidget {
   final User user;
@@ -323,7 +324,7 @@ Widget medicationReminderListTile(
     selectedTimes.add(time);
   }
 
-  List<TimeOfDay> unqiueTimes = selectedTimes.toSet().toList();
+  List<TimeOfDay> uniqueTimes = selectedTimes.toSet().toList();
 
   if (isSelectedDateInList(pickedDate, dateTimes)) {
     return Column(
@@ -367,54 +368,60 @@ Widget medicationReminderListTile(
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   const Expanded(child: SizedBox()),
-                  firstRecord.medicationDatetime.isAfter(DateTime.now())
-                      ? const SizedBox()
-                      : TextButton(
-                          onPressed: firstRecord.actualTakenTime == null
-                              ? () async {
-                                  await db.update("MedicationRecordDetails", {
-                                    "actual_taken_time":
-                                        DateTime.now().toIso8601String(),
-                                  });
+                  // firstRecord.medicationDatetime.isAfter(DateTime.now())
+                  //     ? const SizedBox()
+                  //     : TextButton(
+                  //         onPressed: firstRecord.actualTakenTime == null
+                  //             ? () async {
+                  //                 await db.update("MedicationRecordDetails", {
+                  //                   "actual_taken_time":
+                  //                       DateTime.now().toIso8601String(),
+                  //                 });
 
-                                  reset();
-                                }
-                              : null,
-                          style: ButtonStyle(
-                            padding: MaterialStateProperty.all(
-                              const EdgeInsets.symmetric(
-                                horizontal: 8,
-                              ),
-                            ),
-                            backgroundColor: MaterialStateProperty.all(
-                              firstRecord.actualTakenTime == null
-                                  ? const Color(0xFF326BFD)
-                                  : Colors.grey,
-                            ),
-                            overlayColor: firstRecord.actualTakenTime != null
-                                ? null
-                                : MaterialStateProperty.all(
-                                    Colors.white.withOpacity(0.3),
-                                  ),
-                          ),
-                          child: SizedBox(
-                            width: 80,
-                            height: 25,
-                            child: AutoSizeText(
-                              firstRecord.actualTakenTime == null
-                                  ? "Complete"
-                                  : "Taken @${DateFormat("h:mm a").format(firstRecord.actualTakenTime!)}",
-                              minFontSize: 10,
-                              maxLines: 2,
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.istokWeb(
-                                letterSpacing: 1.0,
-                                height: 1.0,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ),
+                  //                 reset();
+
+                  //                 MonitoringAPI.recordSyncAll(
+                  //                   await APIPatientRecordUploadable
+                  //                       .normalizedRecords(),
+                  //                 );
+                  //               }
+                  //             : null,
+                  //         style: ButtonStyle(
+                  //           padding: MaterialStateProperty.all(
+                  //             const EdgeInsets.symmetric(
+                  //               horizontal: 8,
+                  //             ),
+                  //           ),
+                  //           backgroundColor: MaterialStateProperty.all(
+                  //             firstRecord.actualTakenTime == null
+                  //                 ? const Color(0xFF326BFD)
+                  //                 : Colors.grey,
+                  //           ),
+                  //           overlayColor: firstRecord.actualTakenTime != null
+                  //               ? null
+                  //               : MaterialStateProperty.all(
+                  //                   Colors.white.withOpacity(0.3),
+                  //                 ),
+                  //         ),
+                  //         child: Container(
+                  //           alignment: Alignment.center,
+                  //           width: 80,
+                  //           height: 25,
+                  //           child: AutoSizeText(
+                  //             firstRecord.actualTakenTime == null
+                  //                 ? "Complete"
+                  //                 : "Taken @${DateFormat("h:mm a").format(firstRecord.actualTakenTime!)}",
+                  //             minFontSize: 10,
+                  //             maxLines: 2,
+                  //             textAlign: TextAlign.center,
+                  //             style: GoogleFonts.istokWeb(
+                  //               letterSpacing: 1.0,
+                  //               height: 1.0,
+                  //               color: Colors.white,
+                  //             ),
+                  //           ),
+                  //         ),
+                  //       ),
                   IconButton(
                     onPressed: () async {
                       showDialog(
@@ -471,7 +478,7 @@ Widget medicationReminderListTile(
                                 );
 
                                 reset();
-                                await MonitoringAPI.recordSyncAll(
+                                MonitoringAPI.recordSyncAll(
                                   await APIPatientRecordUploadable
                                       .normalizedRecords(),
                                 );
@@ -512,20 +519,24 @@ Widget medicationReminderListTile(
                     spacing: 5,
                     runSpacing: -5,
                     children: [
-                      ...unqiueTimes.map(
+                      // NOTE: Replace with relevant times
+                      ...values
+                          .where((element) =>
+                              isSameDay(element.medicationDatetime, pickedDate))
+                          .map(
                         (value) {
                           DateTime now = DateTime.now();
                           return Row(
                             children: [
                               Chip(
                                 label: Text(
-                                  DateFormat("HH:mm a").format(
+                                  DateFormat("hh:mm a").format(
                                     DateTime(
                                       now.year,
                                       now.month,
                                       now.day,
-                                      value.hour,
-                                      value.minute,
+                                      value.medicationDatetime.hour,
+                                      value.medicationDatetime.minute,
                                     ),
                                   ),
                                 ),
@@ -536,6 +547,58 @@ Widget medicationReminderListTile(
                                 backgroundColor: const Color(0xFF326BFD),
                               ),
                               const Expanded(child: SizedBox()),
+                              value.medicationDatetime.isAfter(DateTime.now())
+                                  ? const Text("Don't Take Yet")
+                                  : TextButton(
+                                      style: ButtonStyle(
+                                        padding: MaterialStateProperty.all(
+                                          const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                          ),
+                                        ),
+                                        backgroundColor:
+                                            MaterialStateProperty.all(
+                                          value.actualTakenTime == null
+                                              ? const Color(0xFF326BFD)
+                                              : Colors.grey,
+                                        ),
+                                        overlayColor: value.actualTakenTime !=
+                                                null
+                                            ? null
+                                            : MaterialStateProperty.all(
+                                                Colors.white.withOpacity(0.3),
+                                              ),
+                                      ),
+                                      onPressed: value.actualTakenTime != null
+                                          ? null
+                                          : () async {
+                                              await db.update(
+                                                "MedicationRecordDetails",
+                                                {
+                                                  "actual_taken_time":
+                                                      DateTime.now()
+                                                          .toIso8601String(),
+                                                },
+                                                where: "notification_id = ?",
+                                                whereArgs: [value.notifId],
+                                              );
+
+                                              reset();
+
+                                              MonitoringAPI.recordSyncAll(
+                                                await APIPatientRecordUploadable
+                                                    .normalizedRecords(),
+                                              );
+                                            },
+                                      child: Text(
+                                        value.actualTakenTime == null
+                                            ? "Complete"
+                                            : "Taken @${DateFormat("h:mm a").format(value.actualTakenTime!)}",
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
                             ],
                           );
                         },

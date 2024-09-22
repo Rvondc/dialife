@@ -69,9 +69,9 @@ void main() async {
 
   await LocalNotification.init();
   MonitoringAPI.init(
-      // https: true,
-      // baseUrl: 'idontknowanymore.site',
-      );
+    https: true,
+    baseUrl: 'dialife.info',
+  );
 
   runApp(const Main());
 }
@@ -1059,16 +1059,16 @@ class _RootState extends State<Root> {
                                                 },
                                                 style: ButtonStyle(
                                                   overlayColor:
-                                                      MaterialStateProperty.all(
+                                                      WidgetStateProperty.all(
                                                     Colors.white
                                                         .withOpacity(0.3),
                                                   ),
                                                   backgroundColor:
-                                                      MaterialStateProperty.all(
+                                                      WidgetStateProperty.all(
                                                     fgColor,
                                                   ),
                                                   shape:
-                                                      MaterialStateProperty.all(
+                                                      WidgetStateProperty.all(
                                                     RoundedRectangleBorder(
                                                       borderRadius:
                                                           BorderRadius.circular(
@@ -1357,6 +1357,13 @@ class _RootState extends State<Root> {
                                                                         day: DateTime.now().day -
                                                                             1));
                                                           }).toList();
+
+                                                          if (filtered
+                                                              .isEmpty) {
+                                                            return const Text(
+                                                                "  No Medications");
+                                                          }
+
                                                           filtered.sort(
                                                             (a, b) =>
                                                                 a.compareTo(b),
@@ -2125,7 +2132,11 @@ class _RootState extends State<Root> {
                           pw.TableRow(
                             children: [
                               pw.Text(
-                                "Date",
+                                "Schedule",
+                                textAlign: pw.TextAlign.center,
+                              ),
+                              pw.Text(
+                                "Actual Date Taken",
                                 textAlign: pw.TextAlign.center,
                               ),
                               pw.Text(
@@ -2176,6 +2187,11 @@ class _RootState extends State<Root> {
                                           const pw.EdgeInsets.only(left: 8),
                                       child: pw.Text("(No Data)"),
                                     ),
+                                    pw.Padding(
+                                      padding:
+                                          const pw.EdgeInsets.only(left: 8),
+                                      child: pw.Text("(No Data)"),
+                                    ),
                                   ],
                                 );
                               }
@@ -2192,6 +2208,15 @@ class _RootState extends State<Root> {
                                     DateFormat("MMM. dd, hh:mm a")
                                         .format(rec.medicationDatetime),
                                   ),
+                                ),
+                                pw.Padding(
+                                  padding: const pw.EdgeInsets.only(left: 8),
+                                  child: rec.actualTakenTime == null
+                                      ? pw.Text("(Not Taken)")
+                                      : pw.Text(
+                                          DateFormat("MMM. dd, hh:mm a")
+                                              .format(rec.actualTakenTime!),
+                                        ),
                                 ),
                                 pw.Padding(
                                   padding: const pw.EdgeInsets.only(left: 8),
@@ -2406,7 +2431,7 @@ class BMIGraph extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    assert(frac >= 0 && frac <= 1);
+    assert(frac >= 0 && frac <= 1, "fraction must be between 0 and 1");
 
     int frontOffset = (frac * 100).toInt();
     int backOffset = ((1 - frac) * 100).toInt();
@@ -2759,8 +2784,8 @@ Future<Database> initAppDatabase(String path) async {
           medicine_form VARCHAR(255) NOT NULL,
           medicine_dosage DECIMAL(5, 2) NOT NULL,
           medication_datetime DATETIME NOT NULL,
-          notification_id INTEGER NOT NULL,
           actual_taken_time DATETIME,
+          notification_id INTEGER NOT NULL,
           FOREIGN KEY(medication_reminder_record_id) REFERENCES MedicationReminderRecords(id)
         )
       """);
@@ -2793,7 +2818,31 @@ Future<Database> initAppDatabase(String path) async {
         )
       """);
     },
-    version: 5,
+    version: 6,
+    onUpgrade: (db, oldVersion, newVersion) async {
+      if (oldVersion != 5 && newVersion == 6) {
+        await db.rawQuery(
+          'ALTER TABLE MedicationRecordDetails ADD actual_taken_time DATETIME',
+        );
+
+        final records =
+            await db.rawQuery("SELECT * FROM MedicationRecordDetails");
+
+        final parsed = MedicationRecordDetails.fromListOfMaps(records);
+
+        for (var record in parsed) {
+          if (record.actualTakenTime == null) {
+            await db.rawUpdate(
+              "UPDATE MedicationRecordDetails SET actual_taken_time = ? WHERE id = ?",
+              [
+                record.medicationDatetime.toIso8601String(),
+                record.id,
+              ],
+            );
+          }
+        }
+      }
+    },
   );
 }
 
