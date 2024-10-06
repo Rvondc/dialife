@@ -632,8 +632,8 @@ class __BMITrackingInternalState extends State<_BMITrackingInternal> {
               widget.reset();
             },
             style: ButtonStyle(
-              backgroundColor: MaterialStateProperty.all(fgColor),
-              shape: MaterialStateProperty.all(RoundedRectangleBorder(
+              backgroundColor: WidgetStateProperty.all(fgColor),
+              shape: WidgetStateProperty.all(RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10))),
             ),
             child: const Text(

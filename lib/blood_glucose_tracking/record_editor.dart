@@ -101,7 +101,7 @@ class _GlucoseRecordEditorInternalScaffoldState
                   child: Switch(
                     value: _isMmolPerLiter,
                     activeColor: fgColor,
-                    trackOutlineColor: MaterialStateProperty.all(Colors.grey),
+                    trackOutlineColor: WidgetStateProperty.all(Colors.grey),
                     onChanged: (onChanged) {
                       setState(() {
                         _isMmolPerLiter = !_isMmolPerLiter;

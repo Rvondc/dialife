@@ -862,11 +862,11 @@ class _GlucoseTrackingInternalState extends State<_GlucoseTrackingInternal> {
               widget.reset();
             },
             style: ButtonStyle(
-              backgroundColor: MaterialStateProperty.all(fgColor),
-              overlayColor: MaterialStateProperty.all(
+              backgroundColor: WidgetStateProperty.all(fgColor),
+              overlayColor: WidgetStateProperty.all(
                 Colors.white.withOpacity(0.3),
               ),
-              shape: MaterialStateProperty.all(RoundedRectangleBorder(
+              shape: WidgetStateProperty.all(RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10))),
             ),
             child: const Text(

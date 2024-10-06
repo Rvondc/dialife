@@ -343,7 +343,7 @@ class _NutritionLogInternalState extends State<_NutritionLogInternal> {
                                               },
                                               style: ButtonStyle(
                                                 backgroundColor:
-                                                    MaterialStateProperty.all(
+                                                    WidgetStateProperty.all(
                                                         fgColor),
                                               ),
                                               child: Text(
@@ -671,11 +671,11 @@ class _NutritionLogInternalState extends State<_NutritionLogInternal> {
                   );
                 },
                 style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all(fgColor),
-                  overlayColor: MaterialStateProperty.all(
+                  backgroundColor: WidgetStateProperty.all(fgColor),
+                  overlayColor: WidgetStateProperty.all(
                     Colors.white.withOpacity(0.3),
                   ),
-                  shape: MaterialStateProperty.all(
+                  shape: WidgetStateProperty.all(
                     RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),

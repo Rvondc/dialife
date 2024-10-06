@@ -551,13 +551,13 @@ Widget medicationReminderListTile(
                                   ? const Text("Don't Take Yet")
                                   : TextButton(
                                       style: ButtonStyle(
-                                        padding: MaterialStateProperty.all(
+                                        padding: WidgetStateProperty.all(
                                           const EdgeInsets.symmetric(
                                             horizontal: 8,
                                           ),
                                         ),
                                         backgroundColor:
-                                            MaterialStateProperty.all(
+                                            WidgetStateProperty.all(
                                           value.actualTakenTime == null
                                               ? const Color(0xFF326BFD)
                                               : Colors.grey,
@@ -565,7 +565,7 @@ Widget medicationReminderListTile(
                                         overlayColor: value.actualTakenTime !=
                                                 null
                                             ? null
-                                            : MaterialStateProperty.all(
+                                            : WidgetStateProperty.all(
                                                 Colors.white.withOpacity(0.3),
                                               ),
                                       ),

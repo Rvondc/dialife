@@ -536,14 +536,14 @@ class _EditUserInternalState extends State<_EditUserInternal> {
               Navigator.of(context).pop();
             },
             style: ButtonStyle(
-              padding: MaterialStateProperty.all(
+              padding: WidgetStateProperty.all(
                 const EdgeInsets.all(12),
               ),
-              overlayColor: MaterialStateProperty.all(
+              overlayColor: WidgetStateProperty.all(
                 Colors.white.withOpacity(0.3),
               ),
-              backgroundColor: MaterialStateProperty.all(fgColor),
-              shape: MaterialStateProperty.all(
+              backgroundColor: WidgetStateProperty.all(fgColor),
+              shape: WidgetStateProperty.all(
                 RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),

@@ -860,13 +860,13 @@ class _BMIRecordInputFormInternalState
                   );
                 },
                 style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all(fgColor),
-                  shape: MaterialStateProperty.all(
+                  backgroundColor: WidgetStateProperty.all(fgColor),
+                  shape: WidgetStateProperty.all(
                     RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  overlayColor: MaterialStateProperty.all(
+                  overlayColor: WidgetStateProperty.all(
                     Colors.white.withOpacity(0.5),
                   ),
                 ),
