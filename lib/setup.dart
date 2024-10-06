@@ -106,7 +106,7 @@ class _UserSetupState extends State<UserSetup> {
                     ),
                     const SizedBox(height: 5),
                     Text(
-                      "DiaLife",
+                      "PulsePilot",
                       textAlign: TextAlign.center,
                       style: GoogleFonts.italianno(
                         color: fgColor,
@@ -122,7 +122,7 @@ class _UserSetupState extends State<UserSetup> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Text(
-                        "Dialife is a mobile application for diabetes management designed to help diabetic patients improve self-management, enhance access to care, and facilitate communication with healthcare providers. This app provides features such as blood sugar monitoring, medication intake tracking, doctor’s appointment scheduling, weight and activity logging, nutrition tracking, instant messaging, and access to reading materials, all aimed at improving the quality of life for individuals with diabetes.",
+                        "PulsePilot is a mobile application for diabetes management designed to help diabetic patients improve self-management, enhance access to care, and facilitate communication with healthcare providers. This app provides features such as blood sugar monitoring, medication intake tracking, doctor’s appointment scheduling, weight and activity logging, nutrition tracking, instant messaging, and access to reading materials, all aimed at improving the quality of life for individuals with diabetes.",
                         textAlign: TextAlign.justify,
                         style: TextStyle(fontSize: 16),
                       ),
@@ -315,7 +315,7 @@ class _UserSetupState extends State<UserSetup> {
                   children: [
                     const SizedBox(height: 10),
                     Text(
-                      "DiaLife",
+                      "PulsePilot",
                       textAlign: TextAlign.center,
                       style: GoogleFonts.italianno(
                         color: fgColor,
@@ -627,7 +627,7 @@ class _UserSetupState extends State<UserSetup> {
                   children: [
                     const SizedBox(height: 10),
                     Text(
-                      "DiaLife",
+                      "PulsePilot",
                       textAlign: TextAlign.center,
                       style: GoogleFonts.italianno(
                         color: fgColor,
@@ -957,7 +957,7 @@ class _UserSetupState extends State<UserSetup> {
                   children: [
                     const SizedBox(height: 10),
                     Text(
-                      "DiaLife",
+                      "PulsePilot",
                       textAlign: TextAlign.center,
                       style: GoogleFonts.italianno(
                         color: fgColor,
