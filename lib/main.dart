@@ -70,8 +70,8 @@ void main() async {
 
   await LocalNotification.init();
   MonitoringAPI.init(
-    https: false,
-    baseUrl: '10.0.2.2:8080',
+    https: true,
+    baseUrl: 'dialife.info',
   );
 
   runApp(const Main());
