@@ -193,6 +193,50 @@ class MonitoringAPI {
     }
   }
 
+  static Future<bool> chatExistsWith(APIDoctor doctor) async {
+    final path = await getDatabasesPath();
+    final db = await initAppDatabase(path);
+
+    final user = User.fromMap((await db.query("User")).first);
+
+    final isConnected = await InternetConnection().hasInternetAccess;
+    if (!isConnected) {
+      return false;
+    }
+
+    if (_https) {
+      final response = await http.get(
+        Uri.https(
+          _baseUrl,
+          '$_basePath/doctor/chat/getid/${doctor.doctorId}/${user.webId}',
+        ),
+      );
+
+      if (response.statusCode == 404) {
+        return false;
+      } else if (response.statusCode == 200) {
+        return true;
+      }
+
+      throw Exception("Invalid Response: ${response.body}");
+    } else {
+      final response = await http.get(
+        Uri.http(
+          _baseUrl,
+          '$_basePath/doctor/chat/getid/${doctor.doctorId}/${user.webId}',
+        ),
+      );
+
+      if (response.statusCode == 404) {
+        return false;
+      } else if (response.statusCode == 200) {
+        return true;
+      }
+
+      throw Exception("Invalid Response: ${response.body}");
+    }
+  }
+
   static Future<void> sendMessageTo(APIDoctor doctor, String message) async {
     final path = await getDatabasesPath();
     final db = await initAppDatabase(path);
@@ -224,7 +268,7 @@ class MonitoringAPI {
           int.parse(jsonDecode(response.body)['chat_connection_id']);
 
       http.post(
-        Uri.https(baseUrl, '$_basePath/message/send/$connectionId'),
+        Uri.https(_baseUrl, '$_basePath/message/send/$connectionId'),
         body: jsonEncode({
           'sender_type': 'patient',
           'sender_id': user.webId,
@@ -389,10 +433,6 @@ class MonitoringAPI {
 
       return jsonDecode(response.body)["web_id"];
     } else {
-      // if (user.webId != null) {
-      //   throw Exception("Patient already exists in Monitoring API");
-      // }
-
       final response = await http.post(
         Uri.http(
           _baseUrl,

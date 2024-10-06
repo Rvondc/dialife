@@ -8,6 +8,7 @@ import 'package:dialife/chat/entities.dart';
 import 'package:dialife/main.dart';
 import 'package:dialife/user.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:sqflite/sqflite.dart';
@@ -15,7 +16,6 @@ import 'package:sqflite/sqflite.dart';
 class DoctorChat extends StatelessWidget {
   final APIDoctor doctor;
   final _scrollController = ScrollController();
-
   final _messageController = TextEditingController();
 
   DoctorChat({
@@ -33,9 +33,10 @@ class DoctorChat extends StatelessWidget {
       throw Exception("Patient does not exist in Monitoring API");
     }
 
-    yield (true, await MonitoringAPI.getChatLog(user, doctor));
+    final messages = await MonitoringAPI.getChatLog(user, doctor);
+    yield (true, messages);
 
-    var lastLength = 0;
+    var lastLength = messages.length;
 
     while (true) {
       await Future.delayed(const Duration(seconds: 1));
@@ -77,6 +78,12 @@ class DoctorChat extends StatelessWidget {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Container();
+          }
+
+          if (!snapshot.hasData) {
+            return const Center(
+              child: SpinKitRing(color: fgColor),
+            );
           }
 
           final (changed, messages) = snapshot.data!;

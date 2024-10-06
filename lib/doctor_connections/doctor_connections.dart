@@ -4,6 +4,7 @@ import 'package:dialife/api/entities.dart';
 import 'package:dialife/blood_glucose_tracking/glucose_tracking.dart';
 import 'package:dialife/doctors_appointment/utils.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 
@@ -180,19 +181,39 @@ class _DoctorConnectionsState extends State<DoctorConnections> {
                                               ),
                                             ),
                                             const SizedBox(width: 4),
-                                            GestureDetector(
-                                              onTap: () {
-                                                Navigator.of(context).pushNamed(
-                                                  "/monitoring/chat",
-                                                  arguments: {"doctor": doctor},
-                                                );
-                                              },
-                                              child: const Icon(
-                                                Icons.message_outlined,
-                                                size: 20,
-                                                color: fgColor,
-                                              ),
-                                            )
+                                            FutureBuilder(
+                                                future: MonitoringAPI
+                                                    .chatExistsWith(doctor),
+                                                builder: (context, snapshot) {
+                                                  if (!snapshot.hasData) {
+                                                    return const SpinKitRing(
+                                                      color: fgColor,
+                                                      size: 16,
+                                                      lineWidth: 2,
+                                                    );
+                                                  }
+
+                                                  if (!snapshot.data!) {
+                                                    return const SizedBox();
+                                                  }
+
+                                                  return GestureDetector(
+                                                    onTap: () {
+                                                      Navigator.of(context)
+                                                          .pushNamed(
+                                                        "/monitoring/chat",
+                                                        arguments: {
+                                                          "doctor": doctor
+                                                        },
+                                                      );
+                                                    },
+                                                    child: const Icon(
+                                                      Icons.message_outlined,
+                                                      size: 20,
+                                                      color: fgColor,
+                                                    ),
+                                                  );
+                                                })
                                           ],
                                         ),
                                       ),
