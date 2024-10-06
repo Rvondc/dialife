@@ -153,7 +153,7 @@ class _EditUserInternalState extends State<_EditUserInternal> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          "DiaLife",
+          "PulsePilot",
           textAlign: TextAlign.center,
           style: GoogleFonts.italianno(
             fontSize: 60,

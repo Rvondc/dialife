@@ -44,7 +44,7 @@ class _PasscodeState extends State<Passcode> {
               child: Column(
                 children: [
                   Text(
-                    "DiaLife",
+                    "PulsePilot",
                     textAlign: TextAlign.center,
                     style: GoogleFonts.italianno(
                       color: fgColor,
