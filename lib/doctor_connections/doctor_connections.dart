@@ -132,9 +132,6 @@ class _DoctorConnectionsState extends State<DoctorConnections> {
                                   borderRadius: BorderRadius.circular(30),
                                   child: Container(
                                     decoration: BoxDecoration(
-                                      border: Border.all(
-                                        color: fgColor.withOpacity(0.7),
-                                      ),
                                       color: Colors.transparent,
                                       borderRadius: BorderRadius.circular(30),
                                     ),
@@ -142,14 +139,22 @@ class _DoctorConnectionsState extends State<DoctorConnections> {
                                     height: 60,
                                     child: ClipRRect(
                                       borderRadius: BorderRadius.circular(30),
-                                      child: FadeInImage.assetNetwork(
-                                        image: MonitoringAPI.baseUrl +
-                                            doctor.profilPictureLink,
-                                        placeholder: "assets/default.jpg",
-                                        fadeOutCurve:
-                                            Easing.emphasizedAccelerate,
-                                        fit: BoxFit.cover,
-                                      ),
+                                      child: Builder(builder: (context) {
+                                        if (doctor.profilPictureLink.isEmpty) {
+                                          return Image.asset(
+                                            "assets/default.jpg",
+                                          );
+                                        }
+
+                                        return FadeInImage.assetNetwork(
+                                          image: MonitoringAPI.baseUrl +
+                                              doctor.profilPictureLink,
+                                          placeholder: "assets/default.jpg",
+                                          fadeOutCurve:
+                                              Easing.emphasizedAccelerate,
+                                          fit: BoxFit.cover,
+                                        );
+                                      }),
                                     ),
                                   ),
                                 ),
@@ -164,13 +169,31 @@ class _DoctorConnectionsState extends State<DoctorConnections> {
                                       SizedBox(
                                         width:
                                             MediaQuery.of(context).size.width *
-                                                0.55,
-                                        child: AutoSizeText(
-                                          "Dr. ${doctor.name}",
-                                          maxLines: 1,
-                                          style: GoogleFonts.montserrat(
-                                            fontSize: 16,
-                                          ),
+                                                0.4,
+                                        child: Row(
+                                          children: [
+                                            AutoSizeText(
+                                              "Dr. ${doctor.name}",
+                                              maxLines: 1,
+                                              style: GoogleFonts.montserrat(
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 4),
+                                            GestureDetector(
+                                              onTap: () {
+                                                Navigator.of(context).pushNamed(
+                                                  "/monitoring/chat",
+                                                  arguments: {"doctor": doctor},
+                                                );
+                                              },
+                                              child: const Icon(
+                                                Icons.message_outlined,
+                                                size: 20,
+                                                color: fgColor,
+                                              ),
+                                            )
+                                          ],
                                         ),
                                       ),
                                       Text(

@@ -2,10 +2,11 @@ import 'dart:ui' as ui;
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:carousel_slider/carousel_slider.dart';
+import 'package:carousel_slider/carousel_slider.dart' as crs;
 import 'package:dialife/activity_log/utils.dart';
 import 'package:dialife/api/api.dart';
 import 'package:dialife/api/entities.dart';
+import 'package:dialife/chat/doctor_chat.dart';
 import 'package:dialife/doctor_connections/doctor_connections.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_svg/svg.dart';
@@ -52,7 +53,7 @@ import 'package:dialife/passcode.dart';
 import 'package:dialife/setup.dart';
 import 'package:dialife/user.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide CarouselController;
 import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:material_symbols_icons/symbols.dart';
@@ -69,8 +70,8 @@ void main() async {
 
   await LocalNotification.init();
   MonitoringAPI.init(
-    https: true,
-    baseUrl: 'dialife.info',
+    https: false,
+    baseUrl: '10.0.2.2:8080',
   );
 
   runApp(const Main());
@@ -88,7 +89,7 @@ class Main extends StatelessWidget {
     ]);
 
     return MaterialApp(
-      title: 'DiaLife',
+      title: 'PulsePilot',
       theme: ThemeData(
         primaryColor: Colors.white,
         useMaterial3: true,
@@ -304,6 +305,13 @@ class Main extends StatelessWidget {
             return MaterialPageRoute(
               builder: (context) => const DoctorConnections(),
               settings: const RouteSettings(name: '/monitoring'),
+            );
+          case "/monitoring/chat":
+            final args = settings.arguments as Map<String, dynamic>;
+
+            return MaterialPageRoute(
+              builder: (context) => DoctorChat(doctor: args['doctor']),
+              settings: const RouteSettings(name: '/monitoring/chat'),
             );
         }
 
@@ -564,7 +572,7 @@ class _RootState extends State<Root> {
                               ListView(
                                 children: [
                                   Text(
-                                    'DiaLife',
+                                    'PulsePilot',
                                     textAlign: TextAlign.center,
                                     style: GoogleFonts.italianno(
                                       fontSize: 60,
@@ -1675,7 +1683,7 @@ class _RootState extends State<Root> {
                   ),
                   pw.SizedBox(width: 12),
                   pw.Text(
-                    "Dialife",
+                    "PulsePilot",
                     style: pw.TextStyle(
                       font: italianno,
                       color: PdfColor.fromInt(
@@ -2011,7 +2019,7 @@ class _RootState extends State<Root> {
                 ),
                 pw.SizedBox(width: 12),
                 pw.Text(
-                  "Dialife",
+                  "PuslePilot",
                   style: pw.TextStyle(
                     font: italianno,
                     color: PdfColor.fromInt(
@@ -2291,7 +2299,7 @@ class DoctorsAppointment extends StatefulWidget {
 }
 
 class _DoctorsAppointmentState extends State<DoctorsAppointment> {
-  final _carouselController = CarouselController();
+  final _carouselController = crs.CarouselSliderController();
 
   int _page = 0;
 
@@ -2322,8 +2330,8 @@ class _DoctorsAppointmentState extends State<DoctorsAppointment> {
         ),
         child: Column(
           children: [
-            CarouselSlider(
-              options: CarouselOptions(
+            crs.CarouselSlider(
+              options: crs.CarouselOptions(
                 aspectRatio: 8,
                 padEnds: false,
                 enlargeCenterPage: true,

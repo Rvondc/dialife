@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:dialife/api/entities.dart';
+import 'package:dialife/chat/entities.dart';
 import 'package:dialife/main.dart';
 import 'package:dialife/user.dart';
 import 'package:http/http.dart' as http;
@@ -189,6 +190,140 @@ class MonitoringAPI {
       if (response.statusCode != 200) {
         throw Exception("Status Code not OK: ${response.body}");
       }
+    }
+  }
+
+  static Future<void> sendMessageTo(APIDoctor doctor, String message) async {
+    final path = await getDatabasesPath();
+    final db = await initAppDatabase(path);
+
+    final user = User.fromMap((await db.query("User")).first);
+
+    final isConnected = await InternetConnection().hasInternetAccess;
+    if (!isConnected) {
+      throw Exception("No internet");
+    }
+
+    if (user.webId == null) {
+      throw Exception("Patient does not exist in Monitoring API");
+    }
+
+    if (_https) {
+      final response = await http.get(
+        Uri.https(
+          _baseUrl,
+          '$_basePath/doctor/chat/getid/${doctor.doctorId}/${user.webId}',
+        ),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception("Status Code not OK: ${response.body}");
+      }
+
+      final connectionId =
+          int.parse(jsonDecode(response.body)['chat_connection_id']);
+
+      http.post(
+        Uri.https(baseUrl, '$_basePath/message/send/$connectionId'),
+        body: jsonEncode({
+          'sender_type': 'patient',
+          'sender_id': user.webId,
+          'content': message,
+        }),
+      );
+    } else {
+      final response = await http.get(
+        Uri.http(
+          _baseUrl,
+          '$_basePath/doctor/chat/getid/${doctor.doctorId}/${user.webId}',
+        ),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception("Status Code not OK: ${response.body}");
+      }
+
+      final connectionId =
+          int.parse(jsonDecode(response.body)['chat_connection_id']);
+
+      http.post(
+        Uri.http(_baseUrl, '$_basePath/message/send/$connectionId'),
+        body: jsonEncode({
+          'sender_type': 'patient',
+          'sender_id': user.webId,
+          'content': message,
+        }),
+      );
+    }
+  }
+
+  static Future<List<ChatMessage>> getChatLog(
+    User user,
+    APIDoctor doctor,
+  ) async {
+    final isConnected = await InternetConnection().hasInternetAccess;
+    if (!isConnected) {
+      throw Exception("No internet");
+    }
+
+    if (user.webId == null) {
+      throw Exception("Patient does not exist in Monitoring API");
+    }
+
+    if (_https) {
+      final response = await http.get(
+        Uri.https(
+          _baseUrl,
+          '$_basePath/doctor/chat/getid/${doctor.doctorId}/${user.webId}',
+        ),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception("Status Code not OK: ${response.body}");
+      }
+
+      final connectionId =
+          int.parse(jsonDecode(response.body)['chat_connection_id']);
+
+      final messages = await http.get(
+        Uri.https(
+          _baseUrl,
+          '$_basePath/message/get/$connectionId',
+        ),
+      );
+
+      final chatMessages = (jsonDecode(messages.body) as List<dynamic>)
+          .cast<Map<String, dynamic>>()
+          .map(ChatMessage.fromMap);
+
+      return chatMessages.toList();
+    } else {
+      final response = await http.get(
+        Uri.http(
+          _baseUrl,
+          '$_basePath/doctor/chat/getid/${doctor.doctorId}/${user.webId}',
+        ),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception("Status Code not OK: ${response.body}");
+      }
+
+      final connectionId =
+          int.parse(jsonDecode(response.body)['chat_connection_id']);
+
+      final messages = await http.get(
+        Uri.http(
+          _baseUrl,
+          '$_basePath/message/get/$connectionId',
+        ),
+      );
+
+      final chatMessages = (jsonDecode(messages.body) as List<dynamic>)
+          .cast<Map<String, dynamic>>()
+          .map(ChatMessage.fromMap);
+
+      return chatMessages.toList();
     }
   }
 
