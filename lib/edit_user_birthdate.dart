@@ -91,7 +91,7 @@ class _EditUserBirthDateState extends State<EditUserBirthDate> {
           child: Column(
             children: [
               Text(
-                "DiaLife",
+                "PulsePilot",
                 textAlign: TextAlign.center,
                 style: GoogleFonts.italianno(
                   fontSize: 60,
