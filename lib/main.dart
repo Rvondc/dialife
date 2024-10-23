@@ -8,6 +8,8 @@ import 'package:dialife/api/api.dart';
 import 'package:dialife/api/entities.dart';
 import 'package:dialife/chat/doctor_chat.dart';
 import 'package:dialife/doctor_connections/doctor_connections.dart';
+import 'package:dialife/expanded_root.dart';
+import 'package:dialife/root.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
@@ -80,7 +82,6 @@ void main() async {
 class Main extends StatelessWidget {
   const Main({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([
@@ -313,6 +314,11 @@ class Main extends StatelessWidget {
               builder: (context) => DoctorChat(doctor: args['doctor']),
               settings: const RouteSettings(name: '/monitoring/chat'),
             );
+          case "/more":
+            return MaterialPageRoute(
+              builder: (context) => const ExapndedRoot(),
+              settings: const RouteSettings(name: '/more'),
+            );
         }
 
         return null;
@@ -321,14 +327,14 @@ class Main extends StatelessWidget {
   }
 }
 
-class Root extends StatefulWidget {
-  const Root({super.key});
+class RootOld extends StatefulWidget {
+  const RootOld({super.key});
 
   @override
-  State<Root> createState() => _RootState();
+  State<RootOld> createState() => _RootOldState();
 }
 
-class _RootState extends State<Root> {
+class _RootOldState extends State<RootOld> {
   List<GlucoseRecord>? _glucoseRecords;
   List<BMIRecord>? _bmiRecords;
   List<NutritionRecord>? _nutritionRecords;
@@ -576,12 +582,7 @@ class _RootState extends State<Root> {
                                     textAlign: TextAlign.center,
                                     style: GoogleFonts.italianno(
                                       fontSize: 60,
-                                      color: const Color.fromRGBO(
-                                        76,
-                                        102,
-                                        240,
-                                        1.0,
-                                      ),
+                                      color: fgColor,
                                     ),
                                   ),
                                   // Current health status text label

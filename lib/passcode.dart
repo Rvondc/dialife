@@ -43,18 +43,16 @@ class _PasscodeState extends State<Passcode> {
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  Text(
-                    "PulsePilot",
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.italianno(
-                      color: fgColor,
-                      fontSize: 64,
-                      height: 1,
-                    ),
+                  const SizedBox(height: 8),
+                  Image.asset(
+                    'assets/logo.png',
+                    height: 48,
                   ),
+                  const SizedBox(height: 8),
                   Text(
                     "Never share your passcode to anyone",
                     style: GoogleFonts.montserrat(
+                      fontWeight: FontWeight.bold,
                       height: 1,
                     ),
                   ),
