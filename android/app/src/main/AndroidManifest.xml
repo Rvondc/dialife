@@ -15,7 +15,7 @@
     <uses-permission android:name="android.permission.VIBRATE"/>
     <!-- <uses-permission android:name="android.permission.WAKE_LOCK"/> -->
     <application
-        android:label="dialife"
+        android:label="PulsePilot"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
         <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ActionBroadcastReceiver" /> 
