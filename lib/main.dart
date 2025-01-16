@@ -9,6 +9,7 @@ import 'package:dialife/api/entities.dart';
 import 'package:dialife/chat/doctor_chat.dart';
 import 'package:dialife/doctor_connections/doctor_connections.dart';
 import 'package:dialife/expanded_root.dart';
+import 'package:dialife/lab_results/lab_results.dart';
 import 'package:dialife/root.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_svg/svg.dart';
@@ -315,9 +316,19 @@ class Main extends StatelessWidget {
               settings: const RouteSettings(name: '/monitoring/chat'),
             );
           case "/more":
+            final args = settings.arguments as Map<String, dynamic>;
+
             return MaterialPageRoute(
-              builder: (context) => const ExapndedRoot(),
+              builder: (context) => ExapndedRoot(
+                db: args["db"],
+                user: args["user"],
+              ),
               settings: const RouteSettings(name: '/more'),
+            );
+          case "/lab-results":
+            return MaterialPageRoute(
+              builder: (context) => const LabResults(),
+              settings: const RouteSettings(name: '/lab-results'),
             );
         }
 
@@ -533,6 +544,12 @@ class _RootOldState extends State<RootOld> {
                           ),
                           precacheImage(
                             const AssetImage("assets/water.png"),
+                            context,
+                          ),
+                          precacheImage(
+                            const AssetImage(
+                              "assets/pp_banner_lab_results.png",
+                            ),
                             context,
                           ),
                           GoogleFonts.pendingFonts([
@@ -966,8 +983,10 @@ class _RootOldState extends State<RootOld> {
                                                                     calcAverageGlucoseRecord(
                                                                   DateTime.now()
                                                                       .subtract(
-                                                                          const Duration(
-                                                                              days: 7)),
+                                                                    const Duration(
+                                                                      days: 7,
+                                                                    ),
+                                                                  ),
                                                                   DateTime
                                                                       .now(),
                                                                   _glucoseRecords!,
@@ -2470,7 +2489,6 @@ class BMIGraph extends StatelessWidget {
     return Stack(
       children: [
         const Positioned.fill(
-          bottom: 20,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -2508,8 +2526,6 @@ class BMIGraph extends StatelessWidget {
             padding: const EdgeInsets.only(
               left: 7,
               right: 7,
-              top: 10,
-              bottom: 30,
             ),
             child: Row(
               children: [
@@ -2518,19 +2534,13 @@ class BMIGraph extends StatelessWidget {
                   child: const SizedBox(),
                 ),
                 Container(
-                  constraints: const BoxConstraints(maxHeight: 30),
+                  height: 25,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(5),
+                    borderRadius: BorderRadius.circular(3),
+                    border: Border.all(color: Colors.grey.shade700),
                     color: pointerColor,
-                    boxShadow: [
-                      BoxShadow(
-                        spreadRadius: 2,
-                        offset: const Offset(0, 0),
-                        color: Colors.black.withOpacity(0.6),
-                      )
-                    ],
                   ),
-                  width: 4,
+                  width: 10,
                 ),
                 Expanded(
                   flex: backOffset,
@@ -2540,64 +2550,64 @@ class BMIGraph extends StatelessWidget {
             ),
           ),
         ),
-        Positioned(
-          child: Align(
-            alignment: Alignment.bottomCenter,
-            child: Padding(
-              padding: const EdgeInsets.only(
-                bottom: 8.0,
-                left: 4,
-                right: 4,
-              ),
-              child: AutoSizeText.rich(
-                TextSpan(
-                  children: [
-                    TextSpan(
-                      text: "$category, ",
-                      style: GoogleFonts.inter(
-                        color: pointerColor,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.1,
-                        shadows: const [
-                          Shadow(
-                            // bottomLeft
-                            offset: Offset(-1, -1),
-                            color: Colors.black,
-                          ),
-                          Shadow(
-                            // bottomRight
-                            offset: Offset(1, -1),
-                            color: Colors.black,
-                          ),
-                          Shadow(
-                            // topRight
-                            offset: Offset(1, 1),
-                            color: Colors.black,
-                          ),
-                          Shadow(
-                            // topLeft
-                            offset: Offset(-1, 1),
-                            color: Colors.black,
-                          ),
-                        ],
-                      ),
-                    ),
-                    TextSpan(
-                      text: description,
-                      style: GoogleFonts.inter(
-                        color: Colors.black,
-                      ),
-                    ),
-                  ],
-                ),
-                textAlign: TextAlign.center,
-                minFontSize: 4,
-                overflow: TextOverflow.fade,
-                maxLines: 1,
-              ),
-            ),
-          ),
-        ),
+        // Positioned(
+        //   child: Align(
+        //     alignment: Alignment.bottomCenter,
+        //     child: Padding(
+        //       padding: const EdgeInsets.only(
+        //         bottom: 8.0,
+        //         left: 4,
+        //         right: 4,
+        //       ),
+        //       child: AutoSizeText.rich(
+        //         TextSpan(
+        //           children: [
+        //             TextSpan(
+        //               text: "$category, ",
+        //               style: GoogleFonts.inter(
+        //                 color: pointerColor,
+        //                 fontWeight: FontWeight.bold,
+        //                 letterSpacing: 1.1,
+        //                 shadows: const [
+        //                   Shadow(
+        //                     // bottomLeft
+        //                     offset: Offset(-1, -1),
+        //                     color: Colors.black,
+        //                   ),
+        //                   Shadow(
+        //                     // bottomRight
+        //                     offset: Offset(1, -1),
+        //                     color: Colors.black,
+        //                   ),
+        //                   Shadow(
+        //                     // topRight
+        //                     offset: Offset(1, 1),
+        //                     color: Colors.black,
+        //                   ),
+        //                   Shadow(
+        //                     // topLeft
+        //                     offset: Offset(-1, 1),
+        //                     color: Colors.black,
+        //                   ),
+        //                 ],
+        //               ),
+        //             ),
+        //             TextSpan(
+        //               text: description,
+        //               style: GoogleFonts.inter(
+        //                 color: Colors.black,
+        //               ),
+        //             ),
+        //           ],
+        //         ),
+        //         textAlign: TextAlign.center,
+        //         minFontSize: 4,
+        //         overflow: TextOverflow.fade,
+        //         maxLines: 1,
+        //       ),
+        //     ),
+        //   ),
+        // ),
       ],
     );
   }

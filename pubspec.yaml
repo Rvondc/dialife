@@ -75,6 +75,7 @@ dependencies:
   logger: ^2.2.0
   flutter_svg: ^2.0.10+1
   carousel_slider: ^5.0.0
+  get_time_ago: ^2.0.0
 
 
 

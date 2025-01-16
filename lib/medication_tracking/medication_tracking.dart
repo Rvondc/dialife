@@ -101,10 +101,6 @@ class _MedicationTrackingInteralScaffold extends StatelessWidget {
             },
           );
 
-          // LocalNotification.cancelAll();
-          // debugPrint(
-          //     (await LocalNotification.pendingNotifRequests()).toString());
-
           reset();
         },
         label: Text(
@@ -116,7 +112,7 @@ class _MedicationTrackingInteralScaffold extends StatelessWidget {
             letterSpacing: 1,
           ),
         ),
-        backgroundColor: const Color(0xFF6078F8),
+        backgroundColor: fgColor,
         elevation: 4,
       ),
       body: RefreshIndicator(
@@ -222,7 +218,7 @@ class __MedicationTrackingInternalState
                         _selectedDate = selectedDate;
                       });
                     },
-                    activeColor: const Color(0xFF326BFD),
+                    activeColor: fgColor,
                     headerProps: EasyHeaderProps(
                       selectedDateStyle: TextStyle(
                         fontFamily: GoogleFonts.istokWeb().fontFamily,
@@ -428,14 +424,6 @@ Widget medicationReminderListTile(
                         context: context,
                         builder: (context) => AlertDialog(
                           title: const Text('Delete Medication Reminder?'),
-                          // content: SingleChildScrollView(
-                          //   child: Column(
-                          //     children: <Widget>[
-                          //       Text('This is a demo alert dialog.'),
-                          //       Text('Would you like to confirm this message?'),
-                          //     ],
-                          //   ),
-                          // ),
                           actions: <Widget>[
                             TextButton(
                               child: const Text('Confirm'),

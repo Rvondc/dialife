@@ -1,7 +1,15 @@
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:dialife/activity_log/entities.dart';
 import 'package:dialife/blood_glucose_tracking/entities.dart';
 import 'package:dialife/blood_glucose_tracking/glucose_tracking.dart';
 import 'package:dialife/bmi_tracking/entities.dart';
+import 'package:dialife/carousel_items/activity_carousel.dart';
+import 'package:dialife/carousel_items/bmi_carousel.dart';
+import 'package:dialife/carousel_items/glucose_carousel.dart';
+import 'package:dialife/carousel_items/medication_reminder_carousel.dart';
+import 'package:dialife/carousel_items/nutrition_carousel.dart';
+import 'package:dialife/carousel_items/reading_material_carousel.dart';
+import 'package:dialife/carousel_items/water_intake_carousel.dart';
 import 'package:dialife/doctors_appointment/entities.dart';
 import 'package:collection/collection.dart';
 import 'package:dialife/main.dart';
@@ -45,6 +53,78 @@ class _RootState extends State<Root> {
 
     setState(() {
       _user = user;
+    });
+  }
+
+  Future<void> _refreshGlucose() async {
+    final path = await getDatabasesPath();
+    final db = await initAppDatabase(path);
+
+    final records = await db.query('GlucoseRecord');
+
+    setState(() {
+      _glucoseRecords =
+          records.map((record) => GlucoseRecord.fromMap(record)).toList();
+    });
+  }
+
+  Future<void> _refreshActivity() async {
+    final path = await getDatabasesPath();
+    final db = await initAppDatabase(path);
+
+    final records = await db.query('ActivityRecord');
+
+    setState(() {
+      _activityRecords =
+          records.map((record) => ActivityRecord.fromMap(record)).toList();
+    });
+  }
+
+  Future<void> _refreshNutrition() async {
+    final path = await getDatabasesPath();
+    final db = await initAppDatabase(path);
+
+    final records = await db.query('NutritionRecord');
+
+    setState(() {
+      _nutritionRecords =
+          records.map((record) => NutritionRecord.fromMap(record)).toList();
+    });
+  }
+
+  Future<void> _refreshBMI() async {
+    final path = await getDatabasesPath();
+    final db = await initAppDatabase(path);
+
+    final records = await db.query('BMIRecord');
+
+    setState(() {
+      _bmiRecords = records.map((record) => BMIRecord.fromMap(record)).toList();
+    });
+  }
+
+  Future<void> _refreshWaterIntake() async {
+    final path = await getDatabasesPath();
+    final db = await initAppDatabase(path);
+
+    final records = await db.query('WaterRecord');
+
+    setState(() {
+      _waterRecords =
+          records.map((record) => WaterRecord.fromMap(record)).toList();
+    });
+  }
+
+  Future<void> _refreshMedication() async {
+    final path = await getDatabasesPath();
+    final db = await initAppDatabase(path);
+
+    final records = await db.query('MedicationRecordDetails');
+
+    setState(() {
+      _medicationRecordDetails = records
+          .map((record) => MedicationRecordDetails.fromMap(record))
+          .toList();
     });
   }
 
@@ -187,8 +267,16 @@ class _RootState extends State<Root> {
 
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.grey.shade50,
         title: SvgPicture.asset('assets/logo_simp.svg'),
+        actions: [
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(Icons.contact_support_outlined),
+          ),
+        ],
       ),
+      backgroundColor: Colors.grey.shade50,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -209,106 +297,161 @@ class _RootState extends State<Root> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    child: Column(
-                      children: [
-                        AspectRatio(
-                          aspectRatio: 1,
-                          child: Material(
-                            elevation: 1,
-                            borderRadius: BorderRadius.circular(12),
-                            child: Center(
-                              child: SvgPicture.asset(
-                                'assets/glucose.svg',
-                                width: 40,
+                    child: GestureDetector(
+                      onTap: () async {
+                        await Navigator.of(context).pushNamed(
+                          '/blood-glucose-tracking',
+                          arguments: {
+                            'user': _user!,
+                            'db': _db!,
+                          },
+                        );
+
+                        _refreshGlucose();
+                      },
+                      child: Column(
+                        children: [
+                          AspectRatio(
+                            aspectRatio: 1,
+                            child: Material(
+                              elevation: 1,
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              child: Center(
+                                child: SvgPicture.asset(
+                                  'assets/glucose.svg',
+                                  width: 40,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Glucose Records',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.roboto(height: 1),
-                        ),
-                      ],
+                          const SizedBox(height: 8),
+                          Text(
+                            'Glucose Records',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.roboto(height: 1),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(width: 24),
                   Expanded(
-                    child: Column(
-                      children: [
-                        AspectRatio(
-                          aspectRatio: 1,
-                          child: Material(
-                            elevation: 1,
-                            borderRadius: BorderRadius.circular(12),
-                            child: Center(
-                              child: SvgPicture.asset(
-                                'assets/meds.svg',
-                                width: 40,
+                    child: GestureDetector(
+                      onTap: () async {
+                        await Navigator.of(context).pushNamed(
+                          '/medication-tracking',
+                          arguments: {
+                            'user': _user!,
+                            'db': _db!,
+                          },
+                        );
+
+                        _refreshMedication();
+                      },
+                      child: Column(
+                        children: [
+                          AspectRatio(
+                            aspectRatio: 1,
+                            child: Material(
+                              elevation: 1,
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              child: Center(
+                                child: SvgPicture.asset(
+                                  'assets/meds.svg',
+                                  width: 40,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Medicine Reminders',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.roboto(height: 1),
-                        ),
-                      ],
+                          const SizedBox(height: 8),
+                          Text(
+                            'Medicine Reminders',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.roboto(height: 1),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(width: 24),
                   Expanded(
-                    child: Column(
-                      children: [
-                        AspectRatio(
-                          aspectRatio: 1,
-                          child: Material(
-                            elevation: 1,
-                            borderRadius: BorderRadius.circular(12),
-                            child: Center(
-                              child: SvgPicture.asset(
-                                'assets/exercise.svg',
-                                width: 40,
+                    child: GestureDetector(
+                      onTap: () async {
+                        await Navigator.of(context).pushNamed(
+                          '/activity-log',
+                          arguments: {
+                            'db': _db!,
+                          },
+                        );
+
+                        _refreshActivity();
+                      },
+                      child: Column(
+                        children: [
+                          AspectRatio(
+                            aspectRatio: 1,
+                            child: Material(
+                              elevation: 1,
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              child: Center(
+                                child: SvgPicture.asset(
+                                  'assets/exercise.svg',
+                                  width: 40,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Activity Log',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.roboto(height: 1),
-                        ),
-                      ],
+                          const SizedBox(height: 8),
+                          Text(
+                            'Activity Log',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.roboto(height: 1),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(width: 24),
                   Expanded(
-                    child: Column(
-                      children: [
-                        AspectRatio(
-                          aspectRatio: 1,
-                          child: Material(
-                            elevation: 1,
-                            borderRadius: BorderRadius.circular(12),
-                            child: Center(
-                              child: SvgPicture.asset(
-                                'assets/scale.svg',
-                                width: 40,
+                    child: GestureDetector(
+                      onTap: () async {
+                        await Navigator.of(context).pushNamed(
+                          '/bmi-tracking',
+                          arguments: {
+                            'user': _user!,
+                            'db': _db!,
+                          },
+                        );
+
+                        _refreshBMI();
+                      },
+                      child: Column(
+                        children: [
+                          AspectRatio(
+                            aspectRatio: 1,
+                            child: Material(
+                              elevation: 1,
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              child: Center(
+                                child: SvgPicture.asset(
+                                  'assets/scale.svg',
+                                  width: 40,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'BMI',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.roboto(height: 1),
-                        ),
-                      ],
+                          const SizedBox(height: 8),
+                          Text(
+                            'BMI',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.roboto(height: 1),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -318,28 +461,78 @@ class _RootState extends State<Root> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    child: Column(
-                      children: [
-                        AspectRatio(
-                          aspectRatio: 1,
-                          child: Material(
-                            elevation: 1,
-                            borderRadius: BorderRadius.circular(12),
-                            child: Center(
-                              child: SvgPicture.asset(
-                                'assets/fork_spoon.svg',
-                                width: 40,
+                    child: GestureDetector(
+                      onTap: () async {
+                        await Navigator.of(context).pushNamed(
+                          '/nutrition-log',
+                          arguments: {
+                            'db': _db!,
+                          },
+                        );
+
+                        _refreshNutrition();
+                      },
+                      child: Column(
+                        children: [
+                          AspectRatio(
+                            aspectRatio: 1,
+                            child: Material(
+                              elevation: 1,
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              child: Center(
+                                child: SvgPicture.asset(
+                                  'assets/fork_spoon.svg',
+                                  width: 40,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Nutrition Log',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.roboto(height: 1),
-                        ),
-                      ],
+                          const SizedBox(height: 8),
+                          Text(
+                            'Nutrition Log',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.roboto(height: 1),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 24),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).pushNamed(
+                          '/doctors-appointment/input',
+                          arguments: {
+                            'db': _db!,
+                          },
+                        );
+                      },
+                      child: Column(
+                        children: [
+                          AspectRatio(
+                            aspectRatio: 1,
+                            child: Material(
+                              elevation: 1,
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              child: Center(
+                                child: SvgPicture.asset(
+                                  'assets/event.svg',
+                                  width: 40,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Appointments',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.roboto(height: 1),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(width: 24),
@@ -350,32 +543,7 @@ class _RootState extends State<Root> {
                           aspectRatio: 1,
                           child: Material(
                             elevation: 1,
-                            borderRadius: BorderRadius.circular(12),
-                            child: Center(
-                              child: SvgPicture.asset(
-                                'assets/event.svg',
-                                width: 40,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Appointments',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.roboto(height: 1),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 24),
-                  Expanded(
-                    child: Column(
-                      children: [
-                        AspectRatio(
-                          aspectRatio: 1,
-                          child: Material(
-                            elevation: 1,
+                            color: Colors.white,
                             borderRadius: BorderRadius.circular(12),
                             child: Center(
                               child: SvgPicture.asset(
@@ -398,7 +566,13 @@ class _RootState extends State<Root> {
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        Navigator.of(context).pushNamed('/more');
+                        Navigator.of(context).pushNamed(
+                          '/more',
+                          arguments: {
+                            'db': _db!,
+                            'user': _user!,
+                          },
+                        );
                       },
                       child: Column(
                         children: [
@@ -406,6 +580,7 @@ class _RootState extends State<Root> {
                             aspectRatio: 1,
                             child: Material(
                               elevation: 1,
+                              color: Colors.white,
                               borderRadius: BorderRadius.circular(12),
                               child: Center(
                                 child: SvgPicture.asset(
@@ -426,6 +601,59 @@ class _RootState extends State<Root> {
                     ),
                   ),
                 ],
+              ),
+              const Expanded(child: SizedBox()),
+              CarouselSlider(
+                items: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: GlucoseCarousel(
+                      records: _glucoseRecords,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: BMICarousel(
+                      records: _bmiRecords,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: MedicationReminderCarousel(
+                      records: _medicationRecordDetails,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: NutritionCarousel(
+                      records: _nutritionRecords,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: WaterIntakeCarousel(
+                      records: _waterRecords,
+                      refreshWaterIntake: _refreshWaterIntake,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: ActivityCarousel(
+                      records: _activityRecords,
+                    ),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 4),
+                    child: ReadingMaterialCarousel(),
+                  ),
+                ],
+                options: CarouselOptions(
+                  aspectRatio: 2.3,
+                  viewportFraction: 1,
+                  // autoPlay: true,
+                  enlargeFactor: 0,
+                  enlargeCenterPage: true,
+                ),
               ),
               const Expanded(child: SizedBox()),
             ],

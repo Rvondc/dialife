@@ -1,3 +1,4 @@
+import 'package:dialife/blood_glucose_tracking/glucose_tracking.dart';
 import 'package:dialife/doctors_appointment/entities.dart';
 import 'package:dialife/local_notifications/local_notifications.dart';
 import 'package:flutter/material.dart';
@@ -74,7 +75,7 @@ class _NewDoctorsAppointmentFormState extends State<NewDoctorsAppointmentForm> {
             letterSpacing: 1,
           ),
         ),
-        backgroundColor: const Color(0xFF6078F8),
+        backgroundColor: fgColor,
         elevation: 4,
       ),
       floatingActionButtonLocation:

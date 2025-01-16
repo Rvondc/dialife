@@ -19,6 +19,7 @@ import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 
 const fgColor = Color(0xFF3878A6);
+const fgColor2 = Color(0xFFDD4848);
 const bgColorToggleSwitch = Color(0xFFBFBFBF);
 const a1cPurple = Color.fromARGB(255, 81, 31, 163);
 

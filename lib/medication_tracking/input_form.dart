@@ -1,5 +1,6 @@
 import 'package:dialife/api/api.dart';
 import 'package:dialife/api/entities.dart';
+import 'package:dialife/blood_glucose_tracking/glucose_tracking.dart';
 import 'package:dialife/local_notifications/local_notifications.dart';
 import 'package:dialife/medication_tracking/entities.dart';
 import 'package:flutter/material.dart';
@@ -174,7 +175,7 @@ class _NewMedicationReminderInputFormState
             letterSpacing: 1,
           ),
         ),
-        backgroundColor: const Color(0xFF6078F8),
+        backgroundColor: fgColor ,
         elevation: 4,
       ),
       floatingActionButtonLocation:
@@ -576,7 +577,7 @@ class _NewMedicationReminderInputFormState
                           }
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF6078F8),
+                          backgroundColor: fgColor,
                           shape: const CircleBorder(),
                           padding: const EdgeInsets.all(15),
                           elevation: 4,
