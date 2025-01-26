@@ -181,7 +181,6 @@ class _BMIRecordEditorInternalState extends State<_BMIRecordEditorInternal> {
                 );
 
                 MonitoringAPI.recordSyncAll(
-                  await APIPatientRecordUploadable.normalizedRecords(),
                 );
               },
               child: Container(

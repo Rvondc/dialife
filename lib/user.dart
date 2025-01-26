@@ -1,3 +1,6 @@
+import 'package:dialife/main.dart';
+import 'package:sqflite/sqflite.dart';
+
 class User {
   final int id;
   final String firstName;
@@ -11,6 +14,7 @@ class User {
   final String addressDescription;
   final String zipCode;
   final String contactNumber;
+  final String? recoveryId;
   final int? webId;
 
   const User({
@@ -27,7 +31,17 @@ class User {
     required this.province,
     required this.municipality,
     required this.webId,
+    required this.recoveryId,
   });
+
+  static Future<User> get currentUser async {
+    final path = await getDatabasesPath();
+    final db = await initAppDatabase(path);
+
+    final List<Map<String, dynamic>> maps = await db.query("User");
+
+    return User.fromMap(maps.first);
+  }
 
   String get name {
     if (middleName.isEmpty) {
@@ -43,9 +57,9 @@ class User {
 
   Map toApiInsertable() {
     return {
-      "name": middleName.isEmpty
-          ? "$firstName $lastName"
-          : "$firstName ${middleName[0]}. $lastName",
+      "first_name": firstName,
+      "middle_name": middleName,
+      "last_name": lastName,
       "birthdate": birthday.toIso8601String(),
       "province": province,
       "municipality": municipality,
@@ -63,7 +77,7 @@ class User {
       "first_name": firstName,
       "middle_name": middleName,
       "last_name": lastName,
-      "is_male": isMale ? 1 : 0,
+      "is_male": isMale ? 'male' : 'female',
       "contact_number": contactNumber,
       "zip_code": zipCode,
       "address_description": addressDescription,
@@ -90,6 +104,7 @@ class User {
       municipality: map["municipality"],
       province: map["province"],
       webId: map["web_id"],
+      recoveryId: map["recovery_id"],
     );
   }
 }

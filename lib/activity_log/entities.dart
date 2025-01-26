@@ -8,6 +8,16 @@ class ActivityRecord {
   final String notes;
   final DateTime createdAt;
 
+  Map<String, dynamic> toApiInsertable() {
+    return {
+      "type": type.asString,
+      "duration": duration,
+      "frequency": frequency,
+      "notes": notes,
+      "recorded_at": createdAt.toIso8601String(),
+    };
+  }
+
   String toCSVRow() {
     return "$id, ${type.asString}, $duration, $frequency, ${base64.encode(utf8.encode(notes))}, $createdAt";
   }

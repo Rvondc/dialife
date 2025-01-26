@@ -296,9 +296,7 @@ class _ActivityRecordEditorInternalState
                       );
 
                       widget.reset();
-                      MonitoringAPI.recordSyncAll(
-                        await APIPatientRecordUploadable.normalizedRecords(),
-                      );
+                      MonitoringAPI.recordSyncAll();
                     },
                     child: Container(
                       margin: const EdgeInsets.only(top: 10),
@@ -447,9 +445,7 @@ class _ActivityRecordEditorInternalState
                       whereArgs: [current.id],
                     );
 
-                    MonitoringAPI.recordSyncAll(
-                      await APIPatientRecordUploadable.normalizedRecords(),
-                    );
+                    MonitoringAPI.recordSyncAll();
                   },
                   child: Container(
                     margin: const EdgeInsets.only(top: 10),

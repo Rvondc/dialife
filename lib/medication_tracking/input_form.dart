@@ -175,7 +175,7 @@ class _NewMedicationReminderInputFormState
             letterSpacing: 1,
           ),
         ),
-        backgroundColor: fgColor ,
+        backgroundColor: fgColor,
         elevation: 4,
       ),
       floatingActionButtonLocation:
@@ -968,9 +968,25 @@ class _NewMedicationReminderInputFormState
       }
     }
 
-    MonitoringAPI.recordSyncAll(
-      await APIPatientRecordUploadable.normalizedRecords(),
-    );
+    await MonitoringAPI.syncMedicationRecords().then((_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            duration: Duration(milliseconds: 1000),
+            content: Text('Synced medication records'),
+          ),
+        );
+      }
+    }).catchError((_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            duration: Duration(milliseconds: 1000),
+            content: Text('Failed to sync medication records'),
+          ),
+        );
+      }
+    });
     // debugPrint(
     //     "Medication Reminder Records : ${await db.rawQuery("SELECT * FROM MedicationReminderRecords")}");
     // debugPrint(

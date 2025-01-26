@@ -63,6 +63,15 @@ class GlucoseRecord {
     };
   }
 
+  Map<String, dynamic> toApiInsertable() {
+    return {
+      "glucose_level": glucoseLevel,
+      "notes": notes,
+      "blood_test_date": bloodTestDate.toIso8601String(),
+      "is_a1c": isA1C ? 1 : 0,
+    };
+  }
+
   String toCSVRow() {
     return "$id, $glucoseLevel, ${base64.encode(utf8.encode(notes))}, $bloodTestDate, $isA1C";
   }

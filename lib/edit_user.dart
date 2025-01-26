@@ -1,6 +1,7 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:collection/collection.dart';
 import 'package:dialife/activity_log/input_form.dart';
+import 'package:dialife/api/api.dart';
 import 'package:dialife/blood_glucose_tracking/glucose_tracking.dart';
 import 'package:dialife/blood_glucose_tracking/utils.dart';
 import 'package:dialife/edit_user_birthdate.dart';
@@ -519,6 +520,8 @@ class _EditUserInternalState extends State<_EditUserInternal> {
               if (!context.mounted) {
                 return;
               }
+
+              MonitoringAPI.syncPatientState();
 
               await ScaffoldMessenger.of(context)
                   .showSnackBar(

@@ -1,6 +1,5 @@
 import 'package:dialife/activity_log/entities.dart';
 import 'package:dialife/api/api.dart';
-import 'package:dialife/api/entities.dart';
 import 'package:dialife/blood_glucose_tracking/glucose_tracking.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -462,13 +461,29 @@ class _ActivityLogInternalState extends State<_ActivityLogInternal> {
                         .closed;
                   }
 
+                  await MonitoringAPI.syncActivityRecords().then((_) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          duration: Duration(milliseconds: 1000),
+                          content: Text('Synced activity records'),
+                        ),
+                      );
+                    }
+                  }).catchError((_) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          duration: Duration(milliseconds: 1000),
+                          content: Text('Failed to sync activity records'),
+                        ),
+                      );
+                    }
+                  });
+
                   if (context.mounted) {
                     Navigator.of(context).pop();
                   }
-
-                  MonitoringAPI.recordSyncAll(
-                    await APIPatientRecordUploadable.normalizedRecords(),
-                  );
                 },
                 style: ButtonStyle(
                   backgroundColor: WidgetStateProperty.all(fgColor),
@@ -515,10 +530,34 @@ class _ActivityLogInternalState extends State<_ActivityLogInternal> {
                                           where: "id = ?",
                                           whereArgs: [widget.existing!.id]);
 
-                                      MonitoringAPI.recordSyncAll(
-                                        await APIPatientRecordUploadable
-                                            .normalizedRecords(),
-                                      );
+                                      try {
+                                        await MonitoringAPI
+                                            .syncActivityRecords();
+
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            const SnackBar(
+                                              duration:
+                                                  Duration(milliseconds: 1000),
+                                              content: Text(
+                                                  'Synced activity records'),
+                                            ),
+                                          );
+                                        }
+                                      } catch (_) {
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            const SnackBar(
+                                              duration:
+                                                  Duration(milliseconds: 1000),
+                                              content: Text(
+                                                  'Failed to sync activity records'),
+                                            ),
+                                          );
+                                        }
+                                      }
 
                                       if (!context.mounted) {
                                         return;

@@ -58,9 +58,7 @@ class LocalNotification {
         whereArgs: [notifId],
       );
 
-      MonitoringAPI.recordSyncAll(
-        await APIPatientRecordUploadable.normalizedRecords(),
-      );
+      MonitoringAPI.recordSyncAll();
     }
   }
 

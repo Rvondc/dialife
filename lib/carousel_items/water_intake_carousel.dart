@@ -1,3 +1,4 @@
+import 'package:dialife/api/api.dart';
 import 'package:dialife/blood_glucose_tracking/glucose_tracking.dart';
 import 'package:dialife/main.dart';
 import 'package:dialife/nutrition_log/entities.dart';
@@ -130,6 +131,8 @@ class WaterIntakeCarousel extends StatelessWidget {
                                         "DELETE FROM WaterRecord WHERE id = (SELECT MAX(id) FROM WaterRecord)",
                                       );
 
+                                      MonitoringAPI.syncWaterRecords();
+
                                       _refreshWaterIntake();
                                     },
                                     child: Container(
@@ -169,6 +172,8 @@ class WaterIntakeCarousel extends StatelessWidget {
                                           DateTime.now().toIso8601String(),
                                         ],
                                       );
+
+                                      MonitoringAPI.syncWaterRecords();
 
                                       _refreshWaterIntake();
                                     },

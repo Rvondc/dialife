@@ -11,6 +11,15 @@ class NutritionRecord {
   // final int glassesOfWater;
   final DateTime createdAt;
 
+  Map<String, dynamic> toApiInsertable() {
+    return {
+      "day_description": dayDescription,
+      "foods_csv": foods.join(","),
+      "notes": notes,
+      "recorded_at": createdAt.toIso8601String(),
+    };
+  }
+
   String toCSVRow() {
     return "$id, $dayDescription, ${base64.encode(utf8.encode(foods.join(",")))}, ${base64.encode(utf8.encode(notes))}, $createdAt";
   }
@@ -86,6 +95,14 @@ class WaterRecord {
   final int id;
   final int glasses;
   final DateTime time;
+
+  Map<String, dynamic> toApiInsertable() {
+    return {
+      "id": id,
+      "glasses": glasses,
+      "recorded_at": time.toIso8601String(),
+    };
+  }
 
   static WaterRecord fromMap(Map<String, dynamic> map) {
     return WaterRecord(

@@ -20,6 +20,15 @@ class BMIRecord {
     return weightInKilograms / (heightInMeters * heightInMeters);
   }
 
+  Map<String, dynamic> toApiInsertable() {
+    return {
+      "height": heightInMeters,
+      "weight": weightInKilograms,
+      "notes": notes,
+      "recorded_at": createdAt.toIso8601String(),
+    };
+  }
+
   Map<String, dynamic> toMap() {
     return {
       "id": id,

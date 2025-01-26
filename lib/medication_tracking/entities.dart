@@ -55,6 +55,17 @@ class MedicationRecordDetails {
     required this.notifId,
   });
 
+  Map<String, dynamic> toApiInsertable() {
+    return {
+      "medicine_name": medicineName,
+      "medicine_route": medicineRoute,
+      "medicine_form": medicineForm,
+      "medicine_dosage": medicineDosage,
+      "medication_reminder_date": medicationDatetime.toIso8601String(),
+      "recorded_time_taken": actualTakenTime?.toIso8601String(),
+    };
+  }
+
   @override
   String toString() {
     return "$id, $medicationReminderRecordId, $medicineName, $medicineRoute, $medicineForm, $medicineDosage, $medicationDatetime";

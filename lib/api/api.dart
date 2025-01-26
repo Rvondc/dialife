@@ -1,9 +1,15 @@
 import 'dart:convert';
 
+import 'package:dialife/activity_log/entities.dart';
 import 'package:dialife/api/entities.dart';
+import 'package:dialife/blood_glucose_tracking/entities.dart';
+import 'package:dialife/bmi_tracking/entities.dart';
 import 'package:dialife/chat/entities.dart';
 import 'package:dialife/main.dart';
+import 'package:dialife/medication_tracking/entities.dart';
+import 'package:dialife/nutrition_log/entities.dart';
 import 'package:dialife/user.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:sqflite/sqflite.dart';
@@ -14,11 +20,11 @@ class MonitoringAPI {
 
   static late final bool _https;
   static late final String _baseUrl;
-  static const String _basePath = "/dialife-api";
+  static const String _basePath = "";
 
   static void init({
     bool https = false,
-    String baseUrl = "10.0.2.2:8080",
+    String baseUrl = "10.0.2.2:8000",
   }) {
     _https = https;
     _baseUrl = baseUrl;
@@ -102,61 +108,15 @@ class MonitoringAPI {
     }
   }
 
-  static Future<void> recordSyncAll(
-      List<APIPatientRecordUploadable> records) async {
-    if (records.isEmpty) {
-      return;
-    }
-
-    final isConnected = await InternetConnection().hasInternetAccess;
-    if (!isConnected) {
-      return;
-    }
-
-    if (_https) {
-      final response = await http.post(
-        Uri.https(
-          _baseUrl,
-          '$_basePath/patient/record/syncall',
-        ),
-        body: jsonEncode({
-          "patient_id": records.first.patientId,
-          "records": records.map((record) => record.toApiInsertable()).toList(),
-        }),
-      );
-
-      if (response.statusCode != 200) {
-        throw Exception("Status Code not OK: ${response.body}");
-      }
-    } else {
-      final response = await http.post(
-        Uri.http(
-          _baseUrl,
-          '$_basePath/patient/record/syncall',
-        ),
-        body: jsonEncode({
-          "patient_id": records.first.patientId,
-          "records": records.map((record) => record.toApiInsertable()).toList(),
-        }),
-      );
-
-      // var logger = Logger(
-      //   filter: null,
-      //   printer: PrettyPrinter(),
-      //   output: null,
-      // );
-
-      // logger.d(
-      //   jsonEncode({
-      //     "patient_id": records.first.patientId,
-      //     "records": records.map((record) => record.toApiInsertable()).toList(),
-      //   }),
-      // );
-
-      if (response.statusCode != 200) {
-        throw Exception("Status Code not OK: ${response.body}");
-      }
-    }
+  static Future<void> recordSyncAll() async {
+    await Future.wait([
+      syncBmiRecords(),
+      syncActivityRecords(),
+      syncMedicationRecords(),
+      syncNutritionRecords(),
+      syncWaterRecords(),
+      syncGlucoseRecords(),
+    ]);
   }
 
   static Future<void> uploadPatientRecord(
@@ -371,7 +331,9 @@ class MonitoringAPI {
     }
   }
 
-  static Future<void> syncPatientState(User user) async {
+  static Future<void> syncPatientState() async {
+    final user = await User.currentUser;
+
     final isConnected = await InternetConnection().hasInternetAccess;
     if (!isConnected) {
       return;
@@ -385,7 +347,7 @@ class MonitoringAPI {
       final response = await http.post(
         Uri.https(
           _baseUrl,
-          '$_basePath/patient/sync',
+          '$_basePath/api/patient/${user.webId}/sync',
         ),
         body: jsonEncode(user.toMap()),
       );
@@ -401,7 +363,7 @@ class MonitoringAPI {
       final response = await http.post(
         Uri.http(
           _baseUrl,
-          '$_basePath/patient/sync',
+          '$_basePath/api/patient/${user.webId}/sync',
         ),
         body: jsonEncode(user.toMap()),
       );
@@ -412,7 +374,349 @@ class MonitoringAPI {
     }
   }
 
-  static Future<int> createPatient(User user) async {
+  static Future<void> syncBmiRecords() async {
+    final path = await getDatabasesPath();
+    final db = await initAppDatabase(path);
+
+    final user = await User.currentUser;
+    final bmiRecords = (await db.query("BmiRecord"))
+        .map((record) => BMIRecord.fromMap(record))
+        .toList();
+
+    final isConnected = await InternetConnection().hasInternetAccess;
+    if (!isConnected) {
+      throw Exception("No internet");
+    }
+
+    if (_https) {
+      if (user.webId == null) {
+        throw Exception("Patient does not exist in Monitoring API");
+      }
+
+      final response = await http.post(
+        Uri.https(
+          _baseUrl,
+          '$_basePath/api/patient/${user.webId}/bmi',
+        ),
+        body: jsonEncode({
+          "records":
+              bmiRecords.map((record) => record.toApiInsertable()).toList(),
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception("Status Code not OK: ${response.body}");
+      }
+    } else {
+      if (user.webId == null) {
+        throw Exception("Patient does not exist in Monitoring API");
+      }
+
+      final response = await http.post(
+        Uri.http(
+          _baseUrl,
+          '$_basePath/api/patient/${user.webId}/bmi',
+        ),
+        body: jsonEncode({
+          "records":
+              bmiRecords.map((record) => record.toApiInsertable()).toList(),
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        debugPrint(response.body);
+        throw Exception("Status Code not OK: ${response.body}");
+      }
+    }
+  }
+
+  static Future<void> syncActivityRecords() async {
+    final path = await getDatabasesPath();
+    final db = await initAppDatabase(path);
+
+    final user = await User.currentUser;
+    final activityRecords = (await db.query("ActivityRecord"))
+        .map((record) => ActivityRecord.fromMap(record))
+        .toList();
+
+    final isConnected = await InternetConnection().hasInternetAccess;
+    if (!isConnected) {
+      throw Exception("No internet");
+    }
+
+    if (_https) {
+      if (user.webId == null) {
+        throw Exception("Patient does not exist in Monitoring API");
+      }
+
+      final response = await http.post(
+        Uri.https(
+          _baseUrl,
+          '$_basePath/api/patient/${user.webId}/activity',
+        ),
+        body: jsonEncode({
+          "records": activityRecords
+              .map((record) => record.toApiInsertable())
+              .toList(),
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception("Status Code not OK: ${response.body}");
+      }
+    } else {
+      if (user.webId == null) {
+        throw Exception("Patient does not exist in Monitoring API");
+      }
+
+      final response = await http.post(
+        Uri.http(
+          _baseUrl,
+          '$_basePath/api/patient/${user.webId}/activity',
+        ),
+        body: jsonEncode({
+          "records": activityRecords
+              .map((record) => record.toApiInsertable())
+              .toList(),
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        debugPrint(response.body);
+        throw Exception("Status Code not OK: ${response.body}");
+      }
+    }
+  }
+
+  static Future<void> syncMedicationRecords() async {
+    final path = await getDatabasesPath();
+    final db = await initAppDatabase(path);
+
+    final user = await User.currentUser;
+    final medicationRecords = (await db.query("MedicationRecordDetails"))
+        .map((record) => MedicationRecordDetails.fromMap(record))
+        .toList();
+
+    final isConnected = await InternetConnection().hasInternetAccess;
+    if (!isConnected) {
+      throw Exception("No internet");
+    }
+
+    if (_https) {
+      if (user.webId == null) {
+        throw Exception("Patient does not exist in Monitoring API");
+      }
+
+      final response = await http.post(
+        Uri.https(
+          _baseUrl,
+          '$_basePath/api/patient/${user.webId}/medication',
+        ),
+        body: jsonEncode({
+          "records": medicationRecords
+              .map((record) => record.toApiInsertable())
+              .toList(),
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception("Status Code not OK: ${response.body}");
+      }
+    } else {
+      if (user.webId == null) {
+        throw Exception("Patient does not exist in Monitoring API");
+      }
+
+      final response = await http.post(
+        Uri.http(
+          _baseUrl,
+          '$_basePath/api/patient/${user.webId}/medication',
+        ),
+        body: jsonEncode({
+          "records": medicationRecords
+              .map((record) => record.toApiInsertable())
+              .toList(),
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        debugPrint(response.body);
+        throw Exception("Status Code not OK: ${response.body}");
+      }
+    }
+  }
+
+  static Future<void> syncNutritionRecords() async {
+    final path = await getDatabasesPath();
+    final db = await initAppDatabase(path);
+
+    final user = await User.currentUser;
+    final nutritionRecords = (await db.query("NutritionRecord"))
+        .map((record) => NutritionRecord.fromMap(record))
+        .toList();
+
+    final isConnected = await InternetConnection().hasInternetAccess;
+    if (!isConnected) {
+      throw Exception("No internet");
+    }
+
+    if (_https) {
+      if (user.webId == null) {
+        throw Exception("Patient does not exist in Monitoring API");
+      }
+
+      final response = await http.post(
+        Uri.https(
+          _baseUrl,
+          '$_basePath/api/patient/${user.webId}/nutrition',
+        ),
+        body: jsonEncode({
+          "records": nutritionRecords
+              .map((record) => record.toApiInsertable())
+              .toList(),
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception("Status Code not OK: ${response.body}");
+      }
+    } else {
+      if (user.webId == null) {
+        throw Exception("Patient does not exist in Monitoring API");
+      }
+
+      final response = await http.post(
+        Uri.http(
+          _baseUrl,
+          '$_basePath/api/patient/${user.webId}/nutrition',
+        ),
+        body: jsonEncode({
+          "records": nutritionRecords
+              .map((record) => record.toApiInsertable())
+              .toList(),
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        debugPrint(response.body);
+        throw Exception("Status Code not OK: ${response.body}");
+      }
+    }
+  }
+
+  static Future<void> syncWaterRecords() async {
+    final path = await getDatabasesPath();
+    final db = await initAppDatabase(path);
+
+    final user = await User.currentUser;
+    final waterRecords = (await db.query("WaterRecord"))
+        .map((record) => WaterRecord.fromMap(record))
+        .toList();
+
+    final isConnected = await InternetConnection().hasInternetAccess;
+    if (!isConnected) {
+      throw Exception("No internet");
+    }
+
+    if (_https) {
+      if (user.webId == null) {
+        throw Exception("Patient does not exist in Monitoring API");
+      }
+
+      final response = await http.post(
+        Uri.https(
+          _baseUrl,
+          '$_basePath/api/patient/${user.webId}/water',
+        ),
+        body: jsonEncode({
+          "records":
+              waterRecords.map((record) => record.toApiInsertable()).toList(),
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception("Status Code not OK: ${response.body}");
+      }
+    } else {
+      if (user.webId == null) {
+        throw Exception("Patient does not exist in Monitoring API");
+      }
+
+      final response = await http.post(
+        Uri.http(
+          _baseUrl,
+          '$_basePath/api/patient/${user.webId}/water',
+        ),
+        body: jsonEncode({
+          "records":
+              waterRecords.map((record) => record.toApiInsertable()).toList(),
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        debugPrint(response.body);
+        throw Exception("Status Code not OK: ${response.body}");
+      }
+    }
+  }
+
+  static Future<void> syncGlucoseRecords() async {
+    final path = await getDatabasesPath();
+    final db = await initAppDatabase(path);
+
+    final user = await User.currentUser;
+    final glucoseRecords = (await db.query("GlucoseRecord"))
+        .map((record) => GlucoseRecord.fromMap(record))
+        .toList();
+
+    final isConnected = await InternetConnection().hasInternetAccess;
+    if (!isConnected) {
+      throw Exception("No internet");
+    }
+
+    if (_https) {
+      if (user.webId == null) {
+        throw Exception("Patient does not exist in Monitoring API");
+      }
+
+      final response = await http.post(
+        Uri.https(
+          _baseUrl,
+          '$_basePath/api/patient/${user.webId}/glucose',
+        ),
+        body: jsonEncode({
+          "records":
+              glucoseRecords.map((record) => record.toApiInsertable()).toList(),
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception("Status Code not OK: ${response.body}");
+      }
+    } else {
+      if (user.webId == null) {
+        throw Exception("Patient does not exist in Monitoring API");
+      }
+
+      final response = await http.post(
+        Uri.http(
+          _baseUrl,
+          '$_basePath/api/patient/${user.webId}/glucose',
+        ),
+        body: jsonEncode({
+          "records":
+              glucoseRecords.map((record) => record.toApiInsertable()).toList(),
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        debugPrint(response.body);
+        throw Exception("Status Code not OK: ${response.body}");
+      }
+    }
+  }
+
+  static Future<(int, String)> createPatient(User user) async {
     final isConnected = await InternetConnection().hasInternetAccess;
     if (!isConnected) {
       throw Exception("No internet");
@@ -422,7 +726,7 @@ class MonitoringAPI {
       final response = await http.post(
         Uri.https(
           _baseUrl,
-          '$_basePath/patient/create',
+          '$_basePath/api/patient/create',
         ),
         body: jsonEncode(user.toApiInsertable()),
       );
@@ -436,7 +740,7 @@ class MonitoringAPI {
       final response = await http.post(
         Uri.http(
           _baseUrl,
-          '$_basePath/patient/create',
+          '$_basePath/api/patient/create',
         ),
         body: jsonEncode(user.toApiInsertable()),
       );
@@ -445,7 +749,10 @@ class MonitoringAPI {
         throw Exception("Status Code not OK: ${response.body}");
       }
 
-      return jsonDecode(response.body)["web_id"];
+      return (
+        jsonDecode(response.body)["web_id"] as int,
+        jsonDecode(response.body)["recovery_id"] as String
+      );
     }
   }
 }

@@ -466,10 +466,28 @@ Widget medicationReminderListTile(
                                 );
 
                                 reset();
-                                MonitoringAPI.recordSyncAll(
-                                  await APIPatientRecordUploadable
-                                      .normalizedRecords(),
-                                );
+                                await MonitoringAPI.syncMedicationRecords()
+                                    .then((_) {
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        duration: Duration(milliseconds: 1000),
+                                        content:
+                                            Text('Synced activity records'),
+                                      ),
+                                    );
+                                  }
+                                }).catchError((_) {
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        duration: Duration(milliseconds: 1000),
+                                        content: Text(
+                                            'Failed to sync activity records'),
+                                      ),
+                                    );
+                                  }
+                                });
 
                                 if (!context.mounted) return;
                                 Navigator.pop(context);
@@ -573,10 +591,33 @@ Widget medicationReminderListTile(
 
                                               reset();
 
-                                              MonitoringAPI.recordSyncAll(
-                                                await APIPatientRecordUploadable
-                                                    .normalizedRecords(),
-                                              );
+                                              await MonitoringAPI
+                                                      .syncMedicationRecords()
+                                                  .then((_) {
+                                                if (context.mounted) {
+                                                  ScaffoldMessenger.of(context)
+                                                      .showSnackBar(
+                                                    const SnackBar(
+                                                      duration: Duration(
+                                                          milliseconds: 1000),
+                                                      content: Text(
+                                                          'Synced medication records'),
+                                                    ),
+                                                  );
+                                                }
+                                              }).catchError((_) {
+                                                if (context.mounted) {
+                                                  ScaffoldMessenger.of(context)
+                                                      .showSnackBar(
+                                                    const SnackBar(
+                                                      duration: Duration(
+                                                          milliseconds: 1000),
+                                                      content: Text(
+                                                          'Failed to sync medication records'),
+                                                    ),
+                                                  );
+                                                }
+                                              });
                                             },
                                       child: Text(
                                         value.actualTakenTime == null

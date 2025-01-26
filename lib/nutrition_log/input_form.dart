@@ -662,13 +662,29 @@ class _NutritionLogInternalState extends State<_NutritionLogInternal> {
                         .closed;
                   }
 
+                  await MonitoringAPI.syncNutritionRecords().then((_) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          duration: Duration(milliseconds: 1000),
+                          content: Text('Synced nutrition records'),
+                        ),
+                      );
+                    }
+                  }).catchError((_) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          duration: Duration(milliseconds: 1000),
+                          content: Text('Failed to sync nutrition records'),
+                        ),
+                      );
+                    }
+                  });
+
                   if (context.mounted) {
                     Navigator.of(context).pop();
                   }
-
-                  MonitoringAPI.recordSyncAll(
-                    await APIPatientRecordUploadable.normalizedRecords(),
-                  );
                 },
                 style: ButtonStyle(
                   backgroundColor: WidgetStateProperty.all(fgColor),
@@ -715,10 +731,36 @@ class _NutritionLogInternalState extends State<_NutritionLogInternal> {
                                           where: "id = ?",
                                           whereArgs: [widget.existing!.id]);
 
-                                      MonitoringAPI.recordSyncAll(
-                                        await APIPatientRecordUploadable
-                                            .normalizedRecords(),
-                                      );
+                                      try {
+                                        await MonitoringAPI
+                                            .syncNutritionRecords();
+
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            const SnackBar(
+                                              duration:
+                                                  Duration(milliseconds: 1000),
+                                              content: Text(
+                                                'Synced nutrition records',
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      } catch (_) {
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            const SnackBar(
+                                              duration:
+                                                  Duration(milliseconds: 1000),
+                                              content: Text(
+                                                'Failed to sync nutrition records',
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      }
 
                                       if (!context.mounted) {
                                         return;

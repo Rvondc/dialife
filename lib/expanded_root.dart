@@ -1,19 +1,25 @@
+import 'package:dialife/api/api.dart';
 import 'package:dialife/user.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:sqflite/sqflite.dart';
 
 class ExapndedRoot extends StatelessWidget {
   final Database _db;
   final User _user;
+  final Future<void> Function() _generatePdfFile;
 
   const ExapndedRoot({
     super.key,
     required Database db,
     required User user,
+    required Future<void> Function() generatePdfFile,
   })  : _db = db,
-        _user = user;
+        _user = user,
+        _generatePdfFile = generatePdfFile;
 
   @override
   Widget build(BuildContext context) {
@@ -283,7 +289,7 @@ class ExapndedRoot extends StatelessWidget {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'Emergency Hotlines',
+                            'My Doctors',
                             textAlign: TextAlign.center,
                             style: GoogleFonts.roboto(height: 1),
                           ),
@@ -387,17 +393,227 @@ class ExapndedRoot extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 24),
-                    const Expanded(
-                      child: AspectRatio(
-                        aspectRatio: 1,
-                        child: SizedBox(),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: _generatePdfFile,
+                        child: Column(
+                          children: [
+                            AspectRatio(
+                              aspectRatio: 1,
+                              child: Material(
+                                elevation: 1,
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                child: Center(
+                                  child: SvgPicture.asset(
+                                    'assets/history.svg',
+                                    width: 40,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Generate Summary',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.roboto(height: 1),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                     const SizedBox(width: 24),
-                    const Expanded(
-                      child: AspectRatio(
-                        aspectRatio: 1,
-                        child: SizedBox(),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () async {
+                          final user = await User.currentUser;
+
+                          if (!context.mounted) return;
+
+                          if (user.webId != null && user.recoveryId != null) {
+                            await showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: const Row(
+                                  children: [
+                                    Icon(Icons.info_outline,
+                                        color: Colors.blue),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'Already Connected',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                content: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 8,
+                                  ),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'Your account is already synced with the monitoring service. Doctors can view your health metrics.',
+                                        style: TextStyle(fontSize: 16),
+                                      ),
+                                      const SizedBox(height: 16),
+                                      Row(
+                                        children: [
+                                          Text(
+                                            'Recovery ID: ${user.recoveryId}',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color: Colors.grey[600],
+                                            ),
+                                          ),
+                                          IconButton(
+                                            icon: const Icon(Icons.copy,
+                                                size: 16),
+                                            onPressed: () {
+                                              Clipboard.setData(ClipboardData(
+                                                text: user.recoveryId!,
+                                              ));
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                const SnackBar(
+                                                  content: Text(
+                                                      'Recovery ID copied to clipboard'),
+                                                  duration:
+                                                      Duration(seconds: 2),
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: Colors.blue[700],
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16),
+                                    ),
+                                    child: const Text(
+                                      'Close',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w500),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+
+                            return;
+                          }
+
+                          showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text(
+                                'Sync your account with the web!',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              content: const Text(
+                                'Sync your account to the web and allow doctors to monitor your health metrics',
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: Colors.grey[600],
+                                  ),
+                                  child: const Text(
+                                    'Back',
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.w500),
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: () async {
+                                    final isConnected =
+                                        await InternetConnection()
+                                            .hasInternetAccess;
+
+                                    if (!context.mounted) return;
+                                    Navigator.pop(context);
+
+                                    if (!(isConnected as bool)) {
+                                      await showDialog(
+                                        context: context,
+                                        builder: (context) => AlertDialog(
+                                          title: const Text(
+                                            'No Internet Connection',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                          content: const Text(
+                                            'Please check your internet connection and try again.',
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () =>
+                                                  Navigator.pop(context),
+                                              child: const Text('OK'),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+
+                                      return;
+                                    }
+
+                                    _showSyncDialog(context);
+                                  },
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: Colors.blue[700],
+                                    backgroundColor: Colors.blue[50],
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    'Sync Now',
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                        child: Column(
+                          children: [
+                            AspectRatio(
+                              aspectRatio: 1,
+                              child: Material(
+                                elevation: 1,
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                child: Center(
+                                  child: SvgPicture.asset(
+                                    'assets/history.svg',
+                                    width: 40,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Monitoring',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.roboto(height: 1),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ],
@@ -434,24 +650,29 @@ class ExapndedRoot extends StatelessWidget {
                           ),
                         ),
                         const Divider(height: 1),
-                        Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.account_circle_outlined,
-                                color: Colors.grey.shade600,
-                              ),
-                              const SizedBox(width: 12),
-                              Text(
-                                'My Profile',
-                                style: GoogleFonts.roboto(
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).pushNamed('/edit-user');
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.account_circle_outlined,
                                   color: Colors.grey.shade600,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
                                 ),
-                              ),
-                            ],
+                                const SizedBox(width: 12),
+                                Text(
+                                  'My Profile',
+                                  style: GoogleFonts.roboto(
+                                    color: Colors.grey.shade600,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                         const Divider(height: 1),
@@ -513,6 +734,147 @@ class ExapndedRoot extends StatelessWidget {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showSyncDialog(BuildContext context) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text(
+          'Creating your account...',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content: Container(
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          child: FutureBuilder(future: () async {
+            try {
+              final user = await User.currentUser;
+              final (webId, recoveryId) =
+                  await MonitoringAPI.createPatient(user);
+
+              await _db.update(
+                "User",
+                {
+                  "web_id": webId,
+                  "recovery_id": recoveryId,
+                },
+                where: "id = ?",
+                whereArgs: [user.id],
+              );
+            } catch (e) {
+              if (!context.mounted) return;
+              await showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Row(
+                    children: [
+                      Icon(Icons.error_outline, color: Colors.red),
+                      SizedBox(width: 8),
+                      Text(
+                        'Creation Failed',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'We encountered an error while creating your account. Please try again later.',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Technical details:\n${e.toString()}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.blue[700],
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                      ),
+                      child: const Text(
+                        'Close',
+                        style: TextStyle(fontWeight: FontWeight.w500),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+
+              if (!context.mounted) return;
+              Navigator.pop(context);
+              return;
+            }
+          }(), builder: (context, snapshot) {
+            if (snapshot.connectionState != ConnectionState.done) {
+              return const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(width: 24),
+                  Text('Please wait...'),
+                ],
+              );
+            }
+
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.check_circle_outline,
+                  color: Colors.green,
+                  size: 48,
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Account Successfully Created',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'You can now sync your health data with your healthcare provider.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 32,
+                      vertical: 12,
+                    ),
+                    backgroundColor: Colors.blue[700],
+                  ),
+                  child: const Text(
+                    'Continue',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }),
         ),
       ),
     );

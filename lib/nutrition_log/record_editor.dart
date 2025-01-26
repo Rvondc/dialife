@@ -392,7 +392,6 @@ class _NutritionEditorInternalState extends State<_NutritionEditorInternal> {
                     );
 
                     MonitoringAPI.recordSyncAll(
-                      await APIPatientRecordUploadable.normalizedRecords(),
                     );
                   },
                   confirmDismiss: (direction) async {

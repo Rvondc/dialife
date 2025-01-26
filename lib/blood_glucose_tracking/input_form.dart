@@ -507,10 +507,33 @@ class _GlucoseRecordInputFormInternalState
                                       where: "id = ?",
                                       whereArgs: [widget._existing!.id]);
 
-                                  MonitoringAPI.recordSyncAll(
-                                    await APIPatientRecordUploadable
-                                        .normalizedRecords(),
-                                  );
+                                  try {
+                                    await MonitoringAPI.syncGlucoseRecords();
+
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                          duration:
+                                              Duration(milliseconds: 1000),
+                                          content:
+                                              Text('Synced glucose records'),
+                                        ),
+                                      );
+                                    }
+                                  } catch (_) {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                          duration:
+                                              Duration(milliseconds: 1000),
+                                          content: Text(
+                                              'Failed to sync glucose records'),
+                                        ),
+                                      );
+                                    }
+                                  }
 
                                   if (!context.mounted) {
                                     return;
@@ -638,20 +661,25 @@ class _GlucoseRecordInputFormInternalState
                     );
                   }
 
-                  MonitoringAPI.recordSyncAll(
-                    await APIPatientRecordUploadable.normalizedRecords(),
-                  );
-
-                  if (context.mounted) {
-                    await ScaffoldMessenger.of(context)
-                        .showSnackBar(
-                          const SnackBar(
-                            duration: Duration(milliseconds: 300),
-                            content: Text('Success'),
-                          ),
-                        )
-                        .closed;
-                  }
+                  await MonitoringAPI.syncGlucoseRecords().then((_) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          duration: Duration(milliseconds: 1000),
+                          content: Text('Synced glucose records'),
+                        ),
+                      );
+                    }
+                  }).catchError((_) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          duration: Duration(milliseconds: 1000),
+                          content: Text('Failed to sync glucose records'),
+                        ),
+                      );
+                    }
+                  });
 
                   if (context.mounted) {
                     Navigator.of(context).pop();
