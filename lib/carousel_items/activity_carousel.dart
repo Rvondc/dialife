@@ -4,9 +4,12 @@ import 'package:dialife/activity_log/activity_log.dart';
 import 'package:dialife/activity_log/entities.dart';
 import 'package:dialife/activity_log/utils.dart';
 import 'package:dialife/blood_glucose_tracking/glucose_tracking.dart';
+import 'package:dialife/main.dart';
+import 'package:dialife/user.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:sqflite/sqflite.dart';
 
 class ActivityCarousel extends StatelessWidget {
   final List<ActivityRecord> _records;
@@ -245,7 +248,20 @@ class ActivityCarousel extends StatelessWidget {
                   width: 200,
                 ),
                 TextButton(
-                  onPressed: () {},
+                  onPressed: () async {
+                    final path = await getDatabasesPath();
+                    final db = await initAppDatabase(path);
+                    final user = await User.currentUser;
+
+                    if (!context.mounted) return;
+                    Navigator.of(context).pushNamed(
+                      '/activity-log',
+                      arguments: {
+                        'db': db,
+                        'user': user,
+                      },
+                    );
+                  },
                   style: ButtonStyle(
                     backgroundColor: WidgetStateProperty.all(fgColor),
                     visualDensity: VisualDensity.comfortable,

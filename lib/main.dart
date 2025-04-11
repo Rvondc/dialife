@@ -4,9 +4,12 @@ import 'package:carousel_slider/carousel_slider.dart' as crs;
 import 'package:dialife/api/api.dart';
 import 'package:dialife/chat/doctor_chat.dart';
 import 'package:dialife/doctor_connections/doctor_connections.dart';
+import 'package:dialife/emergency_numbers.dart';
 import 'package:dialife/expanded_root.dart';
 import 'package:dialife/lab_results/lab_results.dart';
+import 'package:dialife/medical_history/medical_history.dart';
 import 'package:dialife/root.dart';
+import 'package:dialife/user.dart';
 import 'package:intl/intl.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:dialife/activity_log/activity_log.dart';
@@ -49,7 +52,24 @@ void main() async {
   FlutterNativeSplash.preserve(widgetsBinding: binding);
 
   await LocalNotification.init();
-  MonitoringAPI.init();
+  MonitoringAPI.init(
+    baseUrl: 'pulsepilot.info',
+    https: true,
+  );
+
+  if (await User.initialized) {
+    () async {
+      final user = await User.currentUser;
+      if (user.webId == null) {
+        return;
+      }
+
+      while (true) {
+        MonitoringAPI.pingOnline();
+        await Future.delayed(const Duration(seconds: 50));
+      }
+    }();
+  }
 
   runApp(const Main());
 }
@@ -306,6 +326,16 @@ class Main extends StatelessWidget {
               builder: (context) => const LabResults(),
               settings: const RouteSettings(name: '/lab-results'),
             );
+          case "/medical-history":
+            return MaterialPageRoute(
+              builder: (context) => const MedicalHistory(),
+              settings: const RouteSettings(name: '/medical-history'),
+            );
+          case "/emergency-numbers":
+            return MaterialPageRoute(
+              builder: (context) => const EmergencyNumbers(),
+              settings: const RouteSettings(name: '/emergency-numbers'),
+            );
         }
 
         return null;
@@ -413,10 +443,12 @@ class _DoctorsAppointmentState extends State<DoctorsAppointment> {
                             ),
                           ],
                         ),
-                        Text(rec.appointmentPurpose,
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
-                            )),
+                        Text(
+                          rec.appointmentPurpose,
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                          ),
+                        ),
                       ],
                     ),
                     Column(
@@ -569,64 +601,6 @@ class BMIGraph extends StatelessWidget {
               ),
             ),
           ),
-          // Positioned(
-          //   child: Align(
-          //     alignment: Alignment.bottomCenter,
-          //     child: Padding(
-          //       padding: const EdgeInsets.only(
-          //         bottom: 8.0,
-          //         left: 4,
-          //         right: 4,
-          //       ),
-          //       child: AutoSizeText.rich(
-          //         TextSpan(
-          //           children: [
-          //             TextSpan(
-          //               text: "$category, ",
-          //               style: GoogleFonts.inter(
-          //                 color: pointerColor,
-          //                 fontWeight: FontWeight.bold,
-          //                 letterSpacing: 1.1,
-          //                 shadows: const [
-          //                   Shadow(
-          //                     // bottomLeft
-          //                     offset: Offset(-1, -1),
-          //                     color: Colors.black,
-          //                   ),
-          //                   Shadow(
-          //                     // bottomRight
-          //                     offset: Offset(1, -1),
-          //                     color: Colors.black,
-          //                   ),
-          //                   Shadow(
-          //                     // topRight
-          //                     offset: Offset(1, 1),
-          //                     color: Colors.black,
-          //                   ),
-          //                   Shadow(
-          //                     // topLeft
-          //                     offset: Offset(-1, 1),
-          //                     color: Colors.black,
-          //                   ),
-          //                 ],
-          //               ),
-          //             ),
-          //             TextSpan(
-          //               text: description,
-          //               style: GoogleFonts.inter(
-          //                 color: Colors.black,
-          //               ),
-          //             ),
-          //           ],
-          //         ),
-          //         textAlign: TextAlign.center,
-          //         minFontSize: 4,
-          //         overflow: TextOverflow.fade,
-          //         maxLines: 1,
-          //       ),
-          //     ),
-          //   ),
-          // ),
         ],
       ),
     );

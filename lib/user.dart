@@ -34,6 +34,19 @@ class User {
     required this.recoveryId,
   });
 
+  static Future<bool> get initialized async {
+    final path = await getDatabasesPath();
+    final db = await initAppDatabase(path);
+
+    final List<Map<String, dynamic>> maps = await db.query("User");
+
+    if (maps.isEmpty) {
+      return false;
+    }
+
+    return true;
+  }
+
   static Future<User> get currentUser async {
     final path = await getDatabasesPath();
     final db = await initAppDatabase(path);

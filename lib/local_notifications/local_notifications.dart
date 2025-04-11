@@ -1,7 +1,6 @@
 import 'dart:typed_data';
 
 import 'package:dialife/api/api.dart';
-import 'package:dialife/api/entities.dart';
 import 'package:dialife/main.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:rxdart/rxdart.dart';
@@ -38,10 +37,8 @@ class LocalNotification {
   @pragma('vm:entry-point')
   static void onNotificationTap(
       NotificationResponse notificationResponse) async {
-    MonitoringAPI.init(
-      https: true,
-      baseUrl: 'idontknowanymore.site',
-    );
+    MonitoringAPI.init();
+
     final actionId = notificationResponse.actionId;
 
     if (actionId != null && actionId.contains("complete")) {
@@ -58,7 +55,7 @@ class LocalNotification {
         whereArgs: [notifId],
       );
 
-      MonitoringAPI.recordSyncAll();
+      MonitoringAPI.syncMedicationRecords();
     }
   }
 

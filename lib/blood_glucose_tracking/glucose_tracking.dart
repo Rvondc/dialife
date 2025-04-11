@@ -243,22 +243,26 @@ class _GlucoseTrackingInternalState extends State<_GlucoseTrackingInternal> {
 
     return Column(
       children: [
+        // Time Range Selector
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Builder(
               builder: (context) {
-                int index = 3;
-
+                int index = 0;
                 switch (_scopeString) {
                   case "allTime":
                     index = 3;
+                    break;
                   case "month":
                     index = 2;
+                    break;
                   case "week":
                     index = 1;
+                    break;
                   case "day":
                     index = 0;
+                    break;
                 }
 
                 return Container(
@@ -266,9 +270,9 @@ class _GlucoseTrackingInternalState extends State<_GlucoseTrackingInternal> {
                     borderRadius: BorderRadius.circular(10),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.5),
-                        blurRadius: 3,
-                        offset: const Offset(0, 2), // Shadow position
+                        color: Colors.black.withOpacity(0.3),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
                       ),
                     ],
                   ),
@@ -277,13 +281,13 @@ class _GlucoseTrackingInternalState extends State<_GlucoseTrackingInternal> {
                     activeBgColor: const [Colors.white],
                     activeFgColor: Colors.black,
                     inactiveFgColor: Colors.grey.shade700,
-                    cornerRadius: 8,
+                    cornerRadius: 10,
                     radiusStyle: true,
                     centerText: true,
                     activeBorders: [
                       Border.all(
                         width: 3,
-                        color: bgColorToggleSwitch,
+                        color: fgColor.withOpacity(0.7),
                       )
                     ],
                     labels: const ["DAY", "WEEK", "MONTH"],
@@ -323,95 +327,122 @@ class _GlucoseTrackingInternalState extends State<_GlucoseTrackingInternal> {
             ),
           ],
         ),
-        const SizedBox(height: 20),
+
+        const SizedBox(height: 24),
+
+        // Current Glucose Display
         LayoutBuilder(
           builder: (context, constraints) {
             return Container(
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    blurRadius: 3,
-                    color: Colors.black.withOpacity(0.2),
-                    offset: const Offset(0, 2),
+                    blurRadius: 6,
+                    spreadRadius: 1,
+                    color: Colors.black.withOpacity(0.1),
+                    offset: const Offset(0, 3),
                   ),
                   BoxShadow(
-                    blurRadius: 3,
-                    color: fgColor.withOpacity(0.6),
+                    blurRadius: 4,
+                    color: fgColor.withOpacity(0.3),
                     offset: const Offset(0, 2),
                   )
                 ],
               ),
-              padding: const EdgeInsets.only(left: 10, right: 10, top: 5),
-              width: constraints.maxWidth * 0.75,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              width: constraints.maxWidth * 0.85,
               child: Builder(
                 builder: (context) {
-                  double glucoseLevel;
-
-                  if (_unit == Units.milligramsPerDeciliter) {
-                    glucoseLevel =
-                        mmolLToMgDL(widget.glucoseRecords.last.glucoseLevel);
-                  } else {
-                    glucoseLevel = widget.glucoseRecords.last.glucoseLevel;
-                  }
+                  double glucoseLevel = _unit == Units.milligramsPerDeciliter
+                      ? mmolLToMgDL(widget.glucoseRecords.last.glucoseLevel)
+                      : widget.glucoseRecords.last.glucoseLevel;
 
                   return Column(
                     children: [
                       Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          SizedBox(
-                            width: 160,
-                            child: AutoSizeText(
-                              "Your Current Glucose",
-                              maxLines: 1,
-                              style: TextStyle(
-                                fontWeight: FontWeight.w500,
-                                color: Colors.grey.shade600,
-                                fontSize: 20,
-                              ),
+                          const Text(
+                            "Current Glucose",
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black87,
+                              fontSize: 18,
                             ),
                           ),
-                          FlutterSwitch(
-                            value: _unit == Units.mmolPerLiter,
-                            height: 20,
-                            width: 45,
-                            padding: 2,
-                            duration: const Duration(milliseconds: 100),
-                            activeColor: const Color(0xFFF7C6FF),
-                            activeToggleColor: const Color(0xFF841896),
-                            borderRadius: 10,
-                            onToggle: (value) {
-                              setState(() {
-                                _unit = _unit == Units.mmolPerLiter
-                                    ? Units.milligramsPerDeciliter
-                                    : Units.mmolPerLiter;
-                              });
-                            },
+                          Row(
+                            children: [
+                              Text(
+                                _unit == Units.mmolPerLiter
+                                    ? "mmol/L"
+                                    : "mg/dL",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.grey.shade600,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              FlutterSwitch(
+                                value: _unit == Units.mmolPerLiter,
+                                height: 22,
+                                width: 45,
+                                padding: 2,
+                                duration: const Duration(milliseconds: 100),
+                                activeColor: const Color(0xFFF0E5FF),
+                                activeToggleColor: const Color(0xFF841896),
+                                inactiveColor: Colors.grey.shade200,
+                                inactiveToggleColor: Colors.grey.shade700,
+                                borderRadius: 12,
+                                onToggle: (value) {
+                                  setState(() {
+                                    _unit = value
+                                        ? Units.mmolPerLiter
+                                        : Units.milligramsPerDeciliter;
+                                  });
+                                },
+                              ),
+                            ],
                           ),
                         ],
                       ),
+                      const SizedBox(height: 8),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.end,
+                        crossAxisAlignment: CrossAxisAlignment.baseline,
+                        textBaseline: TextBaseline.alphabetic,
                         children: [
-                          AutoSizeText(
-                            glucoseLevel.toStringAsFixed(2),
-                            maxLines: 1,
+                          Text(
+                            glucoseLevel.toStringAsFixed(1),
                             textAlign: TextAlign.center,
-                            minFontSize: 44,
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
+                              fontSize: 46,
+                              color: fgColor,
+                              height: 1.1,
                             ),
                           ),
+                          const SizedBox(width: 4),
                           Text(
-                            _unit == Units.mmolPerLiter ? " mmol/L" : "mg/dL",
+                            _unit == Units.mmolPerLiter ? "mmol/L" : "mg/dL",
                             textAlign: TextAlign.center,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              fontWeight: FontWeight.w500,
+                              fontSize: 16,
+                              color: Colors.grey.shade700,
+                            ),
                           ),
                         ],
+                      ),
+                      Text(
+                        DateFormat("MMM d, yyyy 'at' h:mm a")
+                            .format(widget.glucoseRecords.last.bloodTestDate),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
                       ),
                     ],
                   );
@@ -420,79 +451,59 @@ class _GlucoseTrackingInternalState extends State<_GlucoseTrackingInternal> {
             );
           },
         ),
-        const SizedBox(height: 20),
+
+        const SizedBox(height: 24),
+
+        // Glucose Chart
         Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(16),
             color: Colors.white,
             boxShadow: [
               BoxShadow(
-                blurRadius: 3,
-                color: Colors.black.withOpacity(0.2),
-                offset: const Offset(0, 2),
+                blurRadius: 6,
+                spreadRadius: 1,
+                color: Colors.black.withOpacity(0.1),
+                offset: const Offset(0, 3),
               ),
               BoxShadow(
-                blurRadius: 3,
-                color: fgColor.withOpacity(0.6),
+                blurRadius: 4,
+                color: fgColor.withOpacity(0.3),
                 offset: const Offset(0, 2),
               )
             ],
           ),
-          padding: const EdgeInsets.only(top: 10, bottom: 8),
-          height: 280,
+          padding: const EdgeInsets.fromLTRB(8, 16, 12, 12),
+          height: 300,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 10,
-                        height: 10,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF67E88B),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      const SizedBox(width: 5),
-                      const Text("Normal"),
-                    ],
+              Padding(
+                padding: const EdgeInsets.only(left: 12.0, bottom: 8.0),
+                child: Text(
+                  "Glucose Trends",
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                    color: Colors.grey.shade800,
                   ),
-                  Row(
-                    children: [
-                      Container(
-                        width: 10,
-                        height: 10,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFCBCF10),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      const SizedBox(width: 5),
-                      const Text("Pre-Diabetes"),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Container(
-                        width: 10,
-                        height: 10,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFB84141),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      const SizedBox(width: 5),
-                      const Text("Diabetes"),
-                    ],
-                  ),
-                ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 12.0, bottom: 8.0),
+                child: Row(
+                  children: [
+                    _legendItem("Normal", const Color(0xFF67E88B)),
+                    const SizedBox(width: 16),
+                    _legendItem("Pre-Diabetes", const Color(0xFFCBCF10)),
+                    const SizedBox(width: 16),
+                    _legendItem("Diabetes", const Color(0xFFB84141)),
+                  ],
+                ),
               ),
               Expanded(
                 child: Builder(
                   builder: (context) {
-                    // NOTE: This convoluted step is required in order to get the last element that is not in the dataPoints list
                     final glucoseDataPointsMap = widget.glucoseRecords
                         .asMap()
                         .entries
@@ -515,34 +526,24 @@ class _GlucoseTrackingInternalState extends State<_GlucoseTrackingInternal> {
 
                     double interval = 1;
 
-                    // NOTE: This is for optimization purposes
-                    // TODO: Implement in settings
                     switch (_scopeString) {
                       case "allTime":
                         interval = 7;
-                      // TODO: Replace with glucoseDataPoints
-                      // dataPoints = sparsifyGlucoseRecords(dataPoints, 1);
                       case "month":
                         interval = 7;
-                      // dataPoints = sparsify(dataPoints, 4);
                       case "week":
                         interval = 1;
-                      // dataPoints = sparsify(dataPoints, 10);
                       case "day":
                         interval = 0.3;
                     }
 
                     final normalGlucoseRecMap = widget.glucoseRecords
-                        .where(
-                          (data) => !data.isA1C,
-                        )
+                        .where((data) => !data.isA1C)
                         .toList()
                         .asMap()
                         .entries
                         .toList();
 
-                    // NOTE: Selects the element just before the first element in glucoseDataPoints if it exists
-                    // TODO: Fix this garbage
                     if (glucoseDataPointsMap.isNotEmpty &&
                         glucoseDataPointsMap.first.key - 1 >= 0) {
                       glucoseDataPoints.insert(
@@ -559,110 +560,110 @@ class _GlucoseTrackingInternalState extends State<_GlucoseTrackingInternal> {
                     return SfCartesianChart(
                       backgroundColor: Colors.white,
                       zoomPanBehavior: _zoomPanBehavior,
+                      margin: const EdgeInsets.only(right: 8),
                       crosshairBehavior: CrosshairBehavior(
                         enable: true,
+                        lineColor: fgColor.withOpacity(0.5),
+                        lineWidth: 1,
                       ),
                       tooltipBehavior: TooltipBehavior(
-                        animationDuration: 500,
-                        duration: 2000,
+                        animationDuration: 200,
+                        duration: 2500,
                         enable: true,
                         builder:
                             (data, point, series, pointIndex, seriesIndex) {
                           var typedData = data as GlucoseRecord;
+                          bool isA1C = typedData.isA1C;
+                          Color tooltipColor = isA1C
+                              ? const Color.fromARGB(255, 153, 104, 230)
+                              : const Color(0xFF67E88B);
+                          Color borderColor =
+                              isA1C ? a1cPurple : const Color(0xFF016629);
 
                           return Container(
                             width: 120,
                             height: 120,
                             decoration: BoxDecoration(
-                              color: !typedData.isA1C
-                                  ? const Color(0xFF67E88B)
-                                  : const Color.fromARGB(255, 153, 104, 230),
-                              borderRadius: BorderRadius.circular(5),
+                              color: tooltipColor,
+                              borderRadius: BorderRadius.circular(8),
                               border: Border.all(
                                 width: 1,
-                                color: !typedData.isA1C
-                                    ? const Color(0xFF016629)
-                                    : a1cPurple,
+                                color: borderColor,
                               ),
                               boxShadow: [
                                 BoxShadow(
                                   offset: const Offset(0, 4),
-                                  color: Colors.black.withOpacity(0.3),
-                                  blurRadius: 4,
-                                  spreadRadius: 2,
+                                  color: Colors.black.withOpacity(0.25),
+                                  blurRadius: 6,
                                 ),
                               ],
                             ),
-                            padding: const EdgeInsets.all(5),
-                            child: Row(
+                            padding: const EdgeInsets.all(8),
+                            child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Container(
-                                  width: 6,
-                                  height: 6,
-                                  decoration: BoxDecoration(
-                                    color: !typedData.isA1C
-                                        ? const Color(0xFF016629)
-                                        : a1cPurple,
-                                    borderRadius: BorderRadius.circular(5),
+                                Row(
+                                  children: [
+                                    Container(
+                                      width: 6,
+                                      height: 6,
+                                      decoration: BoxDecoration(
+                                        color: borderColor,
+                                        borderRadius: BorderRadius.circular(5),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      isA1C ? "A1C TEST" : "GLUCOSE",
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  DateFormat("MMMM d")
+                                      .format(typedData.bloodTestDate),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
                                   ),
                                 ),
-                                Container(
-                                  margin: const EdgeInsets.only(left: 5),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      SizedBox(
-                                        width: 95,
-                                        child: AutoSizeText(
-                                          "${(typedData.isA1C ? "(A1C)" : "")} ${DateFormat.EEEE().format(typedData.bloodTestDate).toUpperCase()} ",
-                                          maxLines: 1,
-                                          minFontSize: 8,
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                      Text(
-                                        DateFormat("MMMM d")
-                                            .format(typedData.bloodTestDate)
-                                            .toUpperCase(),
-                                        style: const TextStyle(
-                                          height: 1,
-                                          color: Colors.white,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                      Text(
-                                        DateFormat("hh:mm a")
-                                            .format(typedData.bloodTestDate)
-                                            .toUpperCase(),
-                                        style: const TextStyle(
-                                          height: 1,
-                                          color: Colors.white,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 10),
-                                      SizedBox(
-                                        width: 95,
-                                        child: AutoSizeText(
-                                          "Notes: ${typedData.notes.isEmpty ? "--" : "\n${typedData.notes}"}",
-                                          maxLines: 4,
-                                          overflow: TextOverflow.fade,
-                                          style: const TextStyle(
-                                            height: 1,
-                                            color: Colors.black,
-                                            fontSize: 10,
-                                          ),
-                                        ),
-                                      )
-                                    ],
+                                Text(
+                                  DateFormat("h:mm a")
+                                      .format(typedData.bloodTestDate),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
                                   ),
                                 ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  "Value: ${_unit == Units.milligramsPerDeciliter ? mmolLToMgDL(typedData.glucoseLevel).toStringAsFixed(1) : typedData.glucoseLevel.toStringAsFixed(1)} ${_unit == Units.milligramsPerDeciliter ? 'mg/dL' : 'mmol/L'}",
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                if (typedData.notes.isNotEmpty)
+                                  SizedBox(
+                                    width: 95,
+                                    child: Text(
+                                      typedData.notes,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        color: Colors.black87,
+                                        fontSize: 10,
+                                      ),
+                                    ),
+                                  )
                               ],
                             ),
                           );
@@ -675,7 +676,10 @@ class _GlucoseTrackingInternalState extends State<_GlucoseTrackingInternal> {
                             ? glucoseDataPoints.first.bloodTestDate
                                 .copyWith(hour: -12)
                             : _scope.start,
-                        majorGridLines: const MajorGridLines(color: fgColor),
+                        majorGridLines: MajorGridLines(
+                          color: Colors.grey.shade300,
+                          width: 0.5,
+                        ),
                         intervalType: DateTimeIntervalType.days,
                         interval: interval,
                         dateFormat: DateFormat.Md(),
@@ -687,7 +691,6 @@ class _GlucoseTrackingInternalState extends State<_GlucoseTrackingInternal> {
                           if (lastRecords.length > 1) {
                             return null;
                           }
-
                           return _unit == Units.milligramsPerDeciliter
                               ? 200.0
                               : mgDLToMmolL(200);
@@ -701,7 +704,7 @@ class _GlucoseTrackingInternalState extends State<_GlucoseTrackingInternal> {
                                 ? 100
                                 : mgDLToMmolL(100),
                             color: const Color(0xFF67E88B),
-                            opacity: 0.5,
+                            opacity: 0.3,
                           ),
                           PlotBand(
                             start: _unit == Units.milligramsPerDeciliter
@@ -711,22 +714,21 @@ class _GlucoseTrackingInternalState extends State<_GlucoseTrackingInternal> {
                                 ? 125
                                 : mgDLToMmolL(125),
                             color: const Color(0xFFCBCF10),
-                            opacity: 0.5,
+                            opacity: 0.3,
                           ),
                           PlotBand(
                             start: _unit == Units.milligramsPerDeciliter
                                 ? 125
                                 : mgDLToMmolL(125),
                             color: const Color(0xFFB84141),
-                            opacity: 0.5,
+                            opacity: 0.3,
                           ),
                         ],
-                        majorGridLines: const MajorGridLines(color: fgColor),
+                        majorGridLines: MajorGridLines(
+                          color: Colors.grey.shade300,
+                          width: 0.5,
+                        ),
                       ),
-                      trackballBehavior: TrackballBehavior(
-                        enable: true,
-                      ),
-                      legend: const Legend(isVisible: true),
                       series: <ChartSeries<GlucoseRecord, DateTime>>[
                         LineSeries(
                           dataSource: glucoseDataPoints,
@@ -735,23 +737,30 @@ class _GlucoseTrackingInternalState extends State<_GlucoseTrackingInternal> {
                               _unit == Units.milligramsPerDeciliter
                                   ? mmolLToMgDL(datum.glucoseLevel)
                                   : datum.glucoseLevel,
-                          markerSettings: const MarkerSettings(
+                          markerSettings: MarkerSettings(
                             isVisible: true,
-                            width: 5,
-                            height: 5,
+                            width: 8,
+                            height: 8,
                             borderWidth: 1,
                             borderColor: fgColor,
-                            color: fgColor,
+                            color: fgColor.withOpacity(0.8),
                           ),
-                          color: Colors.black,
-                          width: 1,
+                          color: fgColor,
+                          width: 2,
                           isVisibleInLegend: false,
                         ),
                         LineSeries(
                           dataSource: a1cDataPoints,
                           dataLabelMapper: (datum, index) => "A1C",
-                          dataLabelSettings:
-                              const DataLabelSettings(isVisible: true),
+                          dataLabelSettings: DataLabelSettings(
+                            isVisible: true,
+                            labelAlignment: ChartDataLabelAlignment.top,
+                            textStyle: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: a1cPurple,
+                              fontSize: 12,
+                            ),
+                          ),
                           xValueMapper: (datum, index) => datum.bloodTestDate,
                           yValueMapper: (datum, index) =>
                               _unit == Units.milligramsPerDeciliter
@@ -760,9 +769,13 @@ class _GlucoseTrackingInternalState extends State<_GlucoseTrackingInternal> {
                           isVisibleInLegend: false,
                           markerSettings: const MarkerSettings(
                             isVisible: true,
+                            width: 10,
+                            height: 10,
+                            shape: DataMarkerType.diamond,
                             borderColor: a1cPurple,
+                            color: a1cPurple,
                           ),
-                          color: Colors.transparent,
+                          color: a1cPurple.withOpacity(0.5),
                         ),
                       ],
                     );
@@ -772,111 +785,339 @@ class _GlucoseTrackingInternalState extends State<_GlucoseTrackingInternal> {
             ],
           ),
         ),
+
+        const SizedBox(height: 24),
+
+        // Average Section
         Container(
-          margin: const EdgeInsets.all(12),
-          child: Text(
-            "AVERAGE (${_unit == Units.milligramsPerDeciliter ? "mg/dL" : "mmol/L"})",
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.grey.shade700),
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                blurRadius: 6,
+                spreadRadius: 1,
+                color: Colors.black.withOpacity(0.1),
+                offset: const Offset(0, 3),
+              ),
+            ],
           ),
-        ),
-        Builder(
-          builder: (context) {
-            final dayScope = DateScope.day(DateTime.now());
-            final weekScope = DateScope.week(DateTime.now());
-            final monthScope = DateScope.month(DateTime.now());
-
-            double? dayAverage = calcAverageGlucoseRecord(
-                dayScope.start, dayScope.end, widget.glucoseRecords);
-            double? weekAverage = calcAverageGlucoseRecord(
-                weekScope.start, weekScope.end, widget.glucoseRecords);
-            double? monthAverage = calcAverageGlucoseRecord(
-                monthScope.start, monthScope.end, widget.glucoseRecords);
-
-            if (_unit == Units.milligramsPerDeciliter) {
-              dayAverage = dayAverage == null ? null : mmolLToMgDL(dayAverage);
-              weekAverage =
-                  weekAverage == null ? null : mmolLToMgDL(weekAverage);
-              monthAverage =
-                  monthAverage == null ? null : mmolLToMgDL(monthAverage);
-            }
-
-            return Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                averageContainer("Day", dayAverage),
-                averageContainer("Week", weekAverage),
-                averageContainer("Month", monthAverage),
-              ],
-            );
-          },
-        ),
-        const SizedBox(height: 10),
-        Text(
-          "Recent Records",
-          style: TextStyle(color: Colors.grey.shade700),
-        ),
-        ...lastRecords.map(
-          (record) {
-            double glucoseLevel = _unit == Units.milligramsPerDeciliter
-                ? mmolLToMgDL(record.glucoseLevel)
-                : record.glucoseLevel;
-
-            return GestureDetector(
-              onTap: () async {
-                await Navigator.of(context).pushNamed(
-                  "/blood-glucose-tracking/input",
-                  arguments: {
-                    "user": widget.user,
-                    "db": widget.db,
-                    "existing": record,
-                  },
-                );
-
-                widget.reset();
-              },
-              child: Container(
-                margin: const EdgeInsets.symmetric(vertical: 5),
-                child: glucoseRecordListTile(
-                  record.bloodTestDate,
-                  record.notes,
-                  glucoseLevel,
-                  _unit,
-                  record.isA1C,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0, bottom: 12.0),
+                child: Text(
+                  "Average Glucose",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey.shade800,
+                  ),
                 ),
               ),
-            );
-          },
-        ),
-        Container(
-          margin: const EdgeInsets.all(12),
-          child: TextButton(
-            onPressed: () async {
-              await Navigator.of(context).pushNamed(
-                "/blood-glucose-tracking/editor",
-                arguments: {
-                  "user": widget.user,
-                  "db": widget.db,
-                },
-              );
+              Builder(
+                builder: (context) {
+                  final dayScope = DateScope.day(DateTime.now());
+                  final weekScope = DateScope.week(DateTime.now());
+                  final monthScope = DateScope.month(DateTime.now());
 
-              widget.reset();
-            },
-            style: ButtonStyle(
-              backgroundColor: WidgetStateProperty.all(fgColor),
-              overlayColor: WidgetStateProperty.all(
-                Colors.white.withOpacity(0.3),
+                  double? dayAverage = calcAverageGlucoseRecord(
+                      dayScope.start, dayScope.end, widget.glucoseRecords);
+                  double? weekAverage = calcAverageGlucoseRecord(
+                      weekScope.start, weekScope.end, widget.glucoseRecords);
+                  double? monthAverage = calcAverageGlucoseRecord(
+                      monthScope.start, monthScope.end, widget.glucoseRecords);
+
+                  if (_unit == Units.milligramsPerDeciliter) {
+                    dayAverage =
+                        dayAverage == null ? null : mmolLToMgDL(dayAverage);
+                    weekAverage =
+                        weekAverage == null ? null : mmolLToMgDL(weekAverage);
+                    monthAverage =
+                        monthAverage == null ? null : mmolLToMgDL(monthAverage);
+                  }
+
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _averageCard("Daily", dayAverage),
+                      _averageCard("Weekly", weekAverage),
+                      _averageCard("Monthly", monthAverage),
+                    ],
+                  );
+                },
               ),
-              shape: WidgetStateProperty.all(RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10))),
+              Padding(
+                padding: const EdgeInsets.only(top: 16.0, left: 8.0),
+                child: Text(
+                  "Unit: ${_unit == Units.milligramsPerDeciliter ? "mg/dL" : "mmol/L"}",
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 24),
+
+        // Recent Records Section
+        Container(
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                blurRadius: 6,
+                spreadRadius: 1,
+                color: Colors.black.withOpacity(0.1),
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0, bottom: 12.0),
+                child: Text(
+                  "Recent Records",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey.shade800,
+                  ),
+                ),
+              ),
+              ...lastRecords.map(
+                (record) {
+                  double glucoseLevel = _unit == Units.milligramsPerDeciliter
+                      ? mmolLToMgDL(record.glucoseLevel)
+                      : record.glucoseLevel;
+
+                  return GestureDetector(
+                    onTap: () async {
+                      await Navigator.of(context).pushNamed(
+                        "/blood-glucose-tracking/input",
+                        arguments: {
+                          "user": widget.user,
+                          "db": widget.db,
+                          "existing": record,
+                        },
+                      );
+                      widget.reset();
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 10),
+                      child: _recordCard(
+                        record.bloodTestDate,
+                        record.notes,
+                        glucoseLevel,
+                        _unit,
+                        record.isA1C,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 24),
+
+        // View Report Button
+        ElevatedButton.icon(
+          onPressed: () async {
+            await Navigator.of(context).pushNamed(
+              "/blood-glucose-tracking/editor",
+              arguments: {
+                "user": widget.user,
+                "db": widget.db,
+              },
+            );
+            widget.reset();
+          },
+          icon: const Icon(Icons.history_rounded),
+          label: const Text("VIEW COMPLETE HISTORY"),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: fgColor,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
             ),
-            child: const Text(
-              "VIEW REPORT HISTORY",
-              style: TextStyle(color: Colors.white),
-            ),
+            elevation: 3,
+            shadowColor: fgColor.withOpacity(0.5),
+          ),
+        ),
+
+        const SizedBox(height: 30),
+      ],
+    );
+  }
+
+  // Helper methods for UI components
+  Widget _legendItem(String label, Color color) {
+    return Row(
+      children: [
+        Container(
+          width: 10,
+          height: 10,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        const SizedBox(width: 5),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            color: Colors.grey.shade700,
           ),
         ),
       ],
+    );
+  }
+
+  Widget _averageCard(String period, double? average) {
+    return Container(
+      width: 100,
+      height: 80,
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+      decoration: BoxDecoration(
+        color: fgColor.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: fgColor.withOpacity(0.2), width: 1),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            period,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontWeight: FontWeight.w500,
+              color: Colors.grey.shade700,
+              fontSize: 13,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            average != null ? average.toStringAsFixed(1) : "No Data",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: average != null ? 24 : 16,
+              color: fgColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _recordCard(DateTime date, String notes, double glucoseLevel,
+      Units unit, bool isA1C) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+            color:
+                isA1C ? a1cPurple.withOpacity(0.3) : fgColor.withOpacity(0.1),
+            width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.05),
+            blurRadius: 3,
+            spreadRadius: 1,
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color:
+                  isA1C ? a1cPurple.withOpacity(0.1) : fgColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              isA1C ? Icons.science_rounded : Icons.water_drop_rounded,
+              color: isA1C ? a1cPurple : fgColor,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  isA1C ? "A1C Test" : "Glucose Reading",
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: isA1C ? a1cPurple : Colors.black87,
+                  ),
+                ),
+                Text(
+                  DateFormat("MMM dd, yyyy • h:mm a").format(date),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+                if (notes.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4.0),
+                    child: Text(
+                      notes,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontStyle: FontStyle.italic,
+                        color: Colors.grey.shade700,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                glucoseLevel.toStringAsFixed(1),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: isA1C ? a1cPurple : fgColor,
+                ),
+              ),
+              Text(
+                unit == Units.milligramsPerDeciliter ? "mg/dL" : "mmol/L",
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

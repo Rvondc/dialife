@@ -364,60 +364,6 @@ Widget medicationReminderListTile(
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   const Expanded(child: SizedBox()),
-                  // firstRecord.medicationDatetime.isAfter(DateTime.now())
-                  //     ? const SizedBox()
-                  //     : TextButton(
-                  //         onPressed: firstRecord.actualTakenTime == null
-                  //             ? () async {
-                  //                 await db.update("MedicationRecordDetails", {
-                  //                   "actual_taken_time":
-                  //                       DateTime.now().toIso8601String(),
-                  //                 });
-
-                  //                 reset();
-
-                  //                 MonitoringAPI.recordSyncAll(
-                  //                   await APIPatientRecordUploadable
-                  //                       .normalizedRecords(),
-                  //                 );
-                  //               }
-                  //             : null,
-                  //         style: ButtonStyle(
-                  //           padding: MaterialStateProperty.all(
-                  //             const EdgeInsets.symmetric(
-                  //               horizontal: 8,
-                  //             ),
-                  //           ),
-                  //           backgroundColor: MaterialStateProperty.all(
-                  //             firstRecord.actualTakenTime == null
-                  //                 ? const Color(0xFF326BFD)
-                  //                 : Colors.grey,
-                  //           ),
-                  //           overlayColor: firstRecord.actualTakenTime != null
-                  //               ? null
-                  //               : MaterialStateProperty.all(
-                  //                   Colors.white.withOpacity(0.3),
-                  //                 ),
-                  //         ),
-                  //         child: Container(
-                  //           alignment: Alignment.center,
-                  //           width: 80,
-                  //           height: 25,
-                  //           child: AutoSizeText(
-                  //             firstRecord.actualTakenTime == null
-                  //                 ? "Complete"
-                  //                 : "Taken @${DateFormat("h:mm a").format(firstRecord.actualTakenTime!)}",
-                  //             minFontSize: 10,
-                  //             maxLines: 2,
-                  //             textAlign: TextAlign.center,
-                  //             style: GoogleFonts.istokWeb(
-                  //               letterSpacing: 1.0,
-                  //               height: 1.0,
-                  //               color: Colors.white,
-                  //             ),
-                  //           ),
-                  //         ),
-                  //       ),
                   IconButton(
                     onPressed: () async {
                       showDialog(
@@ -466,28 +412,35 @@ Widget medicationReminderListTile(
                                 );
 
                                 reset();
-                                await MonitoringAPI.syncMedicationRecords()
-                                    .then((_) {
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        duration: Duration(milliseconds: 1000),
-                                        content:
-                                            Text('Synced activity records'),
-                                      ),
-                                    );
-                                  }
-                                }).catchError((_) {
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        duration: Duration(milliseconds: 1000),
-                                        content: Text(
-                                            'Failed to sync activity records'),
-                                      ),
-                                    );
-                                  }
-                                });
+
+                                if ((await User.currentUser).webId != null) {
+                                  await MonitoringAPI.syncMedicationRecords()
+                                      .then((_) {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                          duration:
+                                              Duration(milliseconds: 1000),
+                                          content:
+                                              Text('Synced activity records'),
+                                        ),
+                                      );
+                                    }
+                                  }).catchError((_) {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                          duration:
+                                              Duration(milliseconds: 1000),
+                                          content: Text(
+                                              'Failed to sync activity records'),
+                                        ),
+                                      );
+                                    }
+                                  });
+                                }
 
                                 if (!context.mounted) return;
                                 Navigator.pop(context);
@@ -591,33 +544,39 @@ Widget medicationReminderListTile(
 
                                               reset();
 
-                                              await MonitoringAPI
-                                                      .syncMedicationRecords()
-                                                  .then((_) {
-                                                if (context.mounted) {
-                                                  ScaffoldMessenger.of(context)
-                                                      .showSnackBar(
-                                                    const SnackBar(
-                                                      duration: Duration(
-                                                          milliseconds: 1000),
-                                                      content: Text(
-                                                          'Synced medication records'),
-                                                    ),
-                                                  );
-                                                }
-                                              }).catchError((_) {
-                                                if (context.mounted) {
-                                                  ScaffoldMessenger.of(context)
-                                                      .showSnackBar(
-                                                    const SnackBar(
-                                                      duration: Duration(
-                                                          milliseconds: 1000),
-                                                      content: Text(
-                                                          'Failed to sync medication records'),
-                                                    ),
-                                                  );
-                                                }
-                                              });
+                                              if ((await User.currentUser)
+                                                      .webId !=
+                                                  null) {
+                                                await MonitoringAPI
+                                                        .syncMedicationRecords()
+                                                    .then((_) {
+                                                  if (context.mounted) {
+                                                    ScaffoldMessenger.of(
+                                                            context)
+                                                        .showSnackBar(
+                                                      const SnackBar(
+                                                        duration: Duration(
+                                                            milliseconds: 1000),
+                                                        content: Text(
+                                                            'Synced medication records'),
+                                                      ),
+                                                    );
+                                                  }
+                                                }).catchError((_) {
+                                                  if (context.mounted) {
+                                                    ScaffoldMessenger.of(
+                                                            context)
+                                                        .showSnackBar(
+                                                      const SnackBar(
+                                                        duration: Duration(
+                                                            milliseconds: 1000),
+                                                        content: Text(
+                                                            'Failed to sync medication records'),
+                                                      ),
+                                                    );
+                                                  }
+                                                });
+                                              }
                                             },
                                       child: Text(
                                         value.actualTakenTime == null

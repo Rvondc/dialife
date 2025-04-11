@@ -168,374 +168,249 @@ class _ActivityRecordEditorInternalState
         Navigator.of(context).pop();
         return true;
       },
-      child: () {
-        if (widget._historyFormat == HistoryFormat.calendar) {
-          return ListView(
-            children: [
-              TableCalendar(
-                calendarBuilders: CalendarBuilders(
-                  todayBuilder: (context, day, focusedDay) {
-                    return Container(
-                      width: 40,
-                      height: 40,
-                      color: Colors.orange.withOpacity(0.1),
-                      alignment: Alignment.topCenter,
-                      child: Text(day.day.toString()),
-                    );
-                  },
-                  selectedBuilder: (context, day, focusedDay) {
-                    return Container(
-                      width: 40,
-                      height: 40,
-                      color: Colors.orange.withOpacity(0.3),
-                      alignment: Alignment.topCenter,
-                      child: Text(
-                        day.day.toString(),
-                      ),
-                    );
-                  },
-                  markerBuilder: (context, day, events) {
-                    if (events.isEmpty) {
-                      return null;
-                    }
-
-                    return Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Container(
-                          width: 15,
-                          height: 15,
-                          color: fgColor.withOpacity(0.7),
-                          alignment: Alignment.center,
-                          child: Text(
-                            events.length.toString(),
-                            style: GoogleFonts.montserrat(
-                              color: Colors.white,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-                onFormatChanged: (format) {
-                  setState(() {
-                    _format = format;
-                  });
-                },
-                calendarFormat: _format,
-                firstDay: DateTime.now().subtract(
-                  const Duration(days: 365),
-                ),
-                lastDay: DateTime.now().add(
-                  const Duration(days: 365),
-                ),
-                focusedDay: _focusedDay,
-                selectedDayPredicate: (day) {
-                  return isSameDay(day, _focusedDay);
-                },
-                onDaySelected: (selectedDay, focusedDay) {
-                  setState(() {
-                    _focusedDay = focusedDay;
-                    _focusedDayEvents = widget.records
-                        .where(
-                            (record) => isSameDay(record.createdAt, focusedDay))
-                        .toList();
-                  });
-                },
-                eventLoader: (day) {
-                  return widget.records
-                      .where((record) => isSameDay(record.createdAt, day))
-                      .toList();
-                },
-              ),
-              const SizedBox(height: 10),
-              () {
-                if (_focusedDayEvents.isEmpty) {
-                  return const SizedBox();
-                }
-
-                return Text(
-                  "Records",
-                  style: GoogleFonts.montserrat(
-                    fontWeight: FontWeight.bold,
-                  ),
-                );
-              }(),
-              ..._focusedDayEvents.mapIndexed((
-                index,
-                current,
-              ) {
-                final color = switch (current.type) {
-                  ExerciseType.aerobic => aerobicColor,
-                  ExerciseType.strength => strengthColor,
-                  ExerciseType.balance => balanceColor,
-                  ExerciseType.flexibility => flexibilityColor,
-                };
-
-                return GestureDetector(
-                  onTap: () async {
-                    await Navigator.of(context).pushNamed(
-                      "/activity-log/input",
-                      arguments: {
-                        "db": widget.db,
-                        "existing": current,
-                      },
-                    );
-
-                    widget.reset();
-                  },
-                  child: Dismissible(
-                    key: ValueKey(index),
-                    onDismissed: (direction) async {
-                      await widget.db.delete(
-                        "ActivityRecord",
-                        where: "id = ?",
-                        whereArgs: [current.id],
-                      );
-
-                      widget.reset();
-                      MonitoringAPI.recordSyncAll();
-                    },
-                    child: Container(
-                      margin: const EdgeInsets.only(top: 10),
-                      child: Material(
-                        elevation: 4,
-                        borderRadius: BorderRadius.circular(5),
-                        child: ListTile(
-                          dense: true,
-                          title: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(top: 8),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(5),
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(5),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: color,
-                                        ),
-                                        BoxShadow(
-                                          color: Colors.black.withOpacity(0.3),
-                                          offset: const Offset(0, -3),
-                                          spreadRadius: 0,
-                                          blurRadius: 5,
-                                        ),
-                                      ],
-                                    ),
-                                    width: 10,
-                                    height: 10,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    "${current.duration} mins",
-                                    style: GoogleFonts.montserrat(
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                  Text(
-                                    "Frequency: x${current.frequency}",
-                                    style: GoogleFonts.montserrat(),
-                                  ),
-                                ],
-                              ),
-                              const Expanded(child: SizedBox()),
-                              Text(
-                                "Started: ${DateFormat("MMM. dd hh:mm a").format(current.createdAt)}",
-                                style: GoogleFonts.montserrat(fontSize: 14),
-                              ),
-                            ],
-                          ),
-                          subtitle: Text(
-                              "Notes: ${current.notes.isEmpty ? "--" : current.notes}"),
-                          tileColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                      ),
-                    ),
-                    confirmDismiss: (direction) async {
-                      final result = ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          duration: const Duration(seconds: 1),
-                          content: const Text('Delete?'),
-                          action: SnackBarAction(
-                            label: 'Undo',
-                            onPressed: () {
-                              ScaffoldMessenger.of(context)
-                                  .hideCurrentSnackBar();
-                            },
-                          ),
-                        ),
-                      );
-
-                      return await result.closed != SnackBarClosedReason.action;
-                    },
-                  ),
-                );
-              }).toList(),
-              const SizedBox(height: 20),
-              Align(
-                alignment: Alignment.bottomLeft,
-                child: FloatingActionButton(
-                  onPressed: () async {
-                    if (_focusedDay.isAfter(DateTime.now())) {
-                      return;
-                    }
-
-                    await Navigator.of(context).pushNamed(
-                      "/activity-log/input",
-                      arguments: {
-                        "db": widget.db,
-                        "now": _focusedDay,
-                      },
-                    );
-
-                    widget.reset();
-                  },
-                  shape: const CircleBorder(),
-                  backgroundColor: fgColor,
-                  child: const Icon(
-                    Icons.add,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-            ],
-          );
-        } else {
-          return ListView.builder(
-            itemBuilder: (context, index) {
-              final current = widget.records[index];
-              final color = switch (current.type) {
-                ExerciseType.aerobic => aerobicColor,
-                ExerciseType.strength => strengthColor,
-                ExerciseType.balance => balanceColor,
-                ExerciseType.flexibility => flexibilityColor,
-              };
-              return GestureDetector(
-                onTap: () async {
-                  await Navigator.of(context).pushNamed(
-                    "/activity-log/input",
-                    arguments: {
-                      "db": widget.db,
-                      "existing": current,
-                    },
-                  );
-
-                  widget.reset();
-                },
-                child: Dismissible(
-                  key: ValueKey(index),
-                  onDismissed: (direction) async {
-                    await widget.db.delete(
-                      "ActivityRecord",
-                      where: "id = ?",
-                      whereArgs: [current.id],
-                    );
-
-                    MonitoringAPI.recordSyncAll();
-                  },
-                  child: Container(
-                    margin: const EdgeInsets.only(top: 10),
-                    child: Material(
-                      elevation: 4,
-                      borderRadius: BorderRadius.circular(5),
-                      child: ListTile(
-                        dense: true,
-                        title: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(top: 8),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(5),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(5),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: color,
-                                      ),
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.3),
-                                        offset: const Offset(0, -3),
-                                        spreadRadius: 0,
-                                        blurRadius: 5,
-                                      ),
-                                    ],
-                                  ),
-                                  width: 10,
-                                  height: 10,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "${current.duration} mins",
-                                  style: GoogleFonts.montserrat(
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                Text(
-                                  "Frequency: x${current.frequency}",
-                                  style: GoogleFonts.montserrat(),
-                                ),
-                              ],
-                            ),
-                            const Expanded(child: SizedBox()),
-                            Text(
-                              "Started: ${DateFormat("MMM. dd hh:mm a").format(current.createdAt)}",
-                              style: GoogleFonts.montserrat(fontSize: 14),
-                            ),
-                          ],
-                        ),
-                        subtitle: Text(
-                            "Notes: ${current.notes.isEmpty ? "--" : current.notes}"),
-                        tileColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                    ),
-                  ),
-                  confirmDismiss: (direction) async {
-                    final result = ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        duration: const Duration(seconds: 1),
-                        content: const Text('Delete?'),
-                        action: SnackBarAction(
-                          label: 'Undo',
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                          },
-                        ),
-                      ),
-                    );
-
-                    return await result.closed != SnackBarClosedReason.action;
-                  },
-                ),
-              );
-            },
-            itemCount: widget.records.length,
-          );
-        }
-      }(),
+      child: widget._historyFormat == HistoryFormat.calendar
+          ? _buildCalendarView()
+          : _buildListView(),
     );
+  }
+
+  Widget _buildCalendarView() {
+    return ListView(
+      children: [
+        TableCalendar(
+          calendarBuilders: _createCalendarBuilders(),
+          onFormatChanged: (format) => setState(() => _format = format),
+          calendarFormat: _format,
+          firstDay: DateTime.now().subtract(const Duration(days: 365)),
+          lastDay: DateTime.now().add(const Duration(days: 365)),
+          focusedDay: _focusedDay,
+          selectedDayPredicate: (day) => isSameDay(day, _focusedDay),
+          onDaySelected: _handleDaySelected,
+          eventLoader: (day) => widget.records
+              .where((record) => isSameDay(record.createdAt, day))
+              .toList(),
+        ),
+        const SizedBox(height: 10),
+        if (_focusedDayEvents.isNotEmpty)
+          Text(
+            "Records",
+            style: GoogleFonts.montserrat(fontWeight: FontWeight.bold),
+          ),
+        ..._focusedDayEvents
+            .mapIndexed((index, record) => _buildRecordTile(index, record)),
+        const SizedBox(height: 20),
+        Align(
+          alignment: Alignment.bottomLeft,
+          child: FloatingActionButton(
+            onPressed: _handleAddRecord,
+            shape: const CircleBorder(),
+            backgroundColor: fgColor,
+            child: const Icon(Icons.add, color: Colors.white),
+          ),
+        ),
+        const SizedBox(height: 20),
+      ],
+    );
+  }
+
+  Widget _buildListView() {
+    return ListView.builder(
+      itemBuilder: (context, index) =>
+          _buildRecordTile(index, widget.records[index]),
+      itemCount: widget.records.length,
+    );
+  }
+
+  CalendarBuilders _createCalendarBuilders() {
+    return CalendarBuilders(
+      todayBuilder: (context, day, focusedDay) => Container(
+        width: 40,
+        height: 40,
+        color: Colors.orange.withOpacity(0.1),
+        alignment: Alignment.topCenter,
+        child: Text(day.day.toString()),
+      ),
+      selectedBuilder: (context, day, focusedDay) => Container(
+        width: 40,
+        height: 40,
+        color: Colors.orange.withOpacity(0.3),
+        alignment: Alignment.topCenter,
+        child: Text(day.day.toString()),
+      ),
+      markerBuilder: (context, day, events) {
+        if (events.isEmpty) return null;
+
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Container(
+              width: 15,
+              height: 15,
+              color: fgColor.withOpacity(0.7),
+              alignment: Alignment.center,
+              child: Text(
+                events.length.toString(),
+                style: GoogleFonts.montserrat(
+                  color: Colors.white,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _handleDaySelected(DateTime selectedDay, DateTime focusedDay) {
+    setState(() {
+      _focusedDay = focusedDay;
+      _focusedDayEvents = widget.records
+          .where((record) => isSameDay(record.createdAt, focusedDay))
+          .toList();
+    });
+  }
+
+  Future<void> _handleAddRecord() async {
+    if (_focusedDay.isAfter(DateTime.now())) return;
+
+    await Navigator.of(context).pushNamed(
+      "/activity-log/input",
+      arguments: {
+        "db": widget.db,
+        "now": _focusedDay,
+      },
+    );
+
+    widget.reset();
+  }
+
+  Widget _buildRecordTile(int index, ActivityRecord record) {
+    final color = switch (record.type) {
+      ExerciseType.aerobic => aerobicColor,
+      ExerciseType.strength => strengthColor,
+      ExerciseType.balance => balanceColor,
+      ExerciseType.flexibility => flexibilityColor,
+    };
+
+    return GestureDetector(
+      onTap: () => _editRecord(record),
+      child: Dismissible(
+        key: ValueKey(index),
+        onDismissed: (direction) => _deleteRecord(record),
+        confirmDismiss: _confirmDismiss,
+        child: Container(
+          margin: const EdgeInsets.only(top: 10),
+          child: Material(
+            elevation: 4,
+            borderRadius: BorderRadius.circular(5),
+            child: ListTile(
+              dense: true,
+              title: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildColorIndicator(color),
+                  const SizedBox(width: 10),
+                  _buildRecordDetails(record),
+                  const Expanded(child: SizedBox()),
+                  Text(
+                    "Started: ${DateFormat("MMM. dd hh:mm a").format(record.createdAt)}",
+                    style: GoogleFonts.montserrat(fontSize: 14),
+                  ),
+                ],
+              ),
+              subtitle: Text(
+                "Notes: ${record.notes.isEmpty ? "--" : record.notes}",
+              ),
+              tileColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildColorIndicator(Color color) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(5),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(5),
+            boxShadow: [
+              BoxShadow(color: color),
+              BoxShadow(
+                color: Colors.black.withOpacity(0.3),
+                offset: const Offset(0, -3),
+                spreadRadius: 0,
+                blurRadius: 5,
+              ),
+            ],
+          ),
+          width: 10,
+          height: 10,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRecordDetails(ActivityRecord record) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "${record.duration} mins",
+          style: GoogleFonts.montserrat(fontSize: 14),
+        ),
+        Text(
+          "Frequency: x${record.frequency}",
+          style: GoogleFonts.montserrat(),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _editRecord(ActivityRecord record) async {
+    await Navigator.of(context).pushNamed(
+      "/activity-log/input",
+      arguments: {
+        "db": widget.db,
+        "existing": record,
+      },
+    );
+
+    widget.reset();
+  }
+
+  Future<void> _deleteRecord(ActivityRecord record) async {
+    await widget.db.delete(
+      "ActivityRecord",
+      where: "id = ?",
+      whereArgs: [record.id],
+    );
+
+    widget.reset();
+    MonitoringAPI.recordSyncAll();
+  }
+
+  Future<bool> _confirmDismiss(DismissDirection direction) async {
+    final result = ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        duration: const Duration(seconds: 1),
+        content: const Text('Delete?'),
+        action: SnackBarAction(
+          label: 'Undo',
+          onPressed: () {
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          },
+        ),
+      ),
+    );
+
+    return await result.closed != SnackBarClosedReason.action;
   }
 }

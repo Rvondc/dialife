@@ -283,12 +283,6 @@ class _RootState extends State<Root> {
       appBar: AppBar(
         backgroundColor: Colors.grey.shade50,
         title: SvgPicture.asset('assets/logo_simp.svg'),
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.contact_support_outlined),
-          ),
-        ],
       ),
       backgroundColor: Colors.grey.shade50,
       body: SafeArea(
@@ -297,6 +291,7 @@ class _RootState extends State<Root> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const SizedBox(height: 12),
               Text(
                 "Hello, ${_user!.name}!",
                 style: GoogleFonts.roboto(
@@ -515,7 +510,23 @@ class _RootState extends State<Root> {
                   const SizedBox(width: 24),
                   Expanded(
                     child: GestureDetector(
-                      onTap: () {
+                      onTap: () async {
+                        final user = await User.currentUser;
+
+                        if (user.webId == null) {
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Please enable monitoring in the More tab to use this feature.',
+                              ),
+                            ),
+                          );
+
+                          return;
+                        }
+
+                        if (!context.mounted) return;
                         Navigator.of(context).pushNamed(
                           '/doctors-appointment/input',
                           arguments: {
@@ -551,29 +562,39 @@ class _RootState extends State<Root> {
                   ),
                   const SizedBox(width: 24),
                   Expanded(
-                    child: Column(
-                      children: [
-                        AspectRatio(
-                          aspectRatio: 1,
-                          child: Material(
-                            elevation: 1,
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            child: Center(
-                              child: SvgPicture.asset(
-                                'assets/sos.svg',
-                                width: 40,
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).pushNamed(
+                          '/emergency-numbers',
+                          arguments: {
+                            'db': _db!,
+                          },
+                        );
+                      },
+                      child: Column(
+                        children: [
+                          AspectRatio(
+                            aspectRatio: 1,
+                            child: Material(
+                              elevation: 1,
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              child: Center(
+                                child: SvgPicture.asset(
+                                  'assets/sos.svg',
+                                  width: 40,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Emergency Hotlines',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.roboto(height: 1),
-                        ),
-                      ],
+                          const SizedBox(height: 8),
+                          Text(
+                            'Emergency Hotlines',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.roboto(height: 1),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(width: 24),
@@ -663,7 +684,7 @@ class _RootState extends State<Root> {
                   ),
                 ],
                 options: CarouselOptions(
-                  aspectRatio: 2.3,
+                  aspectRatio: 2.1,
                   viewportFraction: 1,
                   // autoPlay: true,
                   enlargeFactor: 0,
@@ -673,48 +694,6 @@ class _RootState extends State<Root> {
               const Expanded(child: SizedBox()),
             ],
           ),
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        shape: const CircleBorder(
-          side: BorderSide(
-            color: fgColor,
-            width: 2,
-          ),
-        ),
-        onPressed: () {},
-        backgroundColor: Colors.white,
-        foregroundColor: fgColor,
-        child: const Icon(Icons.add),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: BottomAppBar(
-        shape: const CircularNotchedRectangle(),
-        padding: EdgeInsets.zero,
-        height: 52,
-        color: fgColor,
-        child: Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            IconButton(
-              icon: const Icon(Icons.home_outlined, color: Colors.white),
-              onPressed: () {},
-            ),
-            IconButton(
-              icon: const Icon(Icons.forum_outlined, color: Colors.white),
-              onPressed: () {},
-            ),
-            const SizedBox(width: 48), // Space for the FAB
-            IconButton(
-              icon: const Icon(Icons.notifications_none, color: Colors.white),
-              onPressed: () {},
-            ),
-            IconButton(
-              icon: const Icon(Icons.person_outline, color: Colors.white),
-              onPressed: () {},
-            ),
-          ],
         ),
       ),
     );
@@ -768,10 +747,10 @@ class _RootState extends State<Root> {
             weekScope.end.isAfter(rec.medicationDatetime));
 
     BMIRecord? latestBMIRecord;
-    if (_bmiRecords == null || _bmiRecords!.isEmpty) {
+    if (_bmiRecords.isEmpty) {
       latestBMIRecord = null;
     } else {
-      latestBMIRecord = _bmiRecords?.reversed.first;
+      latestBMIRecord = _bmiRecords.reversed.first;
     }
 
     pdf.addPage(

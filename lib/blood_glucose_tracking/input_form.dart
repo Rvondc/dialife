@@ -158,61 +158,57 @@ class _GlucoseRecordInputFormInternalState
     }
 
     return Padding(
-      padding: const EdgeInsets.only(
-        top: 25,
-        left: 10,
-        right: 10,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Material(
             elevation: 4,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: Container(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
                 children: [
                   Text(
                     "GLUCOSE LEVEL",
                     style: GoogleFonts.montserrat(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 2),
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.5),
                   ),
                   const SizedBox(height: 20),
                   Image.asset(
                     "assets/glucose_logo.png",
-                    width: 120,
+                    width: 110,
                   ),
                 ],
               ),
             ),
           ),
-          const SizedBox(height: 15),
+          const SizedBox(height: 20),
           Material(
             elevation: 4,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: Container(
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(
-                      left: 15,
-                      right: 15,
-                      top: 15,
+                      left: 20,
+                      right: 20,
+                      top: 18,
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -226,11 +222,14 @@ class _GlucoseRecordInputFormInternalState
                         ),
                         FlutterSwitch(
                           value: _isMmolPerLiter,
-                          height: 25,
-                          width: 60,
+                          height: 28,
+                          width: 62,
+                          padding: 4,
                           duration: const Duration(milliseconds: 150),
                           activeColor: const Color(0xFFF7C6FF),
+                          inactiveColor: const Color(0xFFE6E6E6),
                           activeToggleColor: const Color(0xFF841896),
+                          inactiveToggleColor: const Color(0xFF666666),
                           onToggle: (value) {
                             setState(() {
                               _isMmolPerLiter = !_isMmolPerLiter;
@@ -243,9 +242,9 @@ class _GlucoseRecordInputFormInternalState
                   const SizedBox(height: 10),
                   Padding(
                     padding: const EdgeInsets.only(
-                      left: 15,
-                      right: 15,
-                      bottom: 15,
+                      left: 20,
+                      right: 20,
+                      bottom: 18,
                     ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.end,
@@ -254,7 +253,7 @@ class _GlucoseRecordInputFormInternalState
                           Symbols.glucose,
                           color: Color(0xFFE25430),
                           weight: 700,
-                          size: 54,
+                          size: 52,
                         ),
                         const SizedBox(width: 20),
                         IntrinsicWidth(
@@ -262,7 +261,6 @@ class _GlucoseRecordInputFormInternalState
                             keyboardType: TextInputType.number,
                             maxLength: 5,
                             inputFormatters: [
-                              // NOTE: Only allows a single decimal point (.)
                               TextInputFormatter.withFunction(
                                 (oldValue, newValue) {
                                   final text = newValue.text;
@@ -277,8 +275,8 @@ class _GlucoseRecordInputFormInternalState
                             style: GoogleFonts.inter(
                               color: const Color(0xFFE25430),
                               fontWeight: FontWeight.bold,
-                              height: 0.8,
-                              fontSize: 36,
+                              height: 0.9,
+                              fontSize: 38,
                             ),
                             decoration: InputDecoration(
                               isCollapsed: true,
@@ -286,32 +284,32 @@ class _GlucoseRecordInputFormInternalState
                               counterText: "",
                               border: InputBorder.none,
                               hintStyle: GoogleFonts.inter(
-                                color: const Color(0xFFE25430),
+                                color: const Color(0xFFE25430).withOpacity(0.6),
                                 fontWeight: FontWeight.bold,
-                                height: 0.8,
-                                fontSize: 36,
+                                height: 0.9,
+                                fontSize: 38,
                               ),
                             ),
                             controller: _converterController,
                           ),
                         ),
-                        const SizedBox(width: 5),
+                        const SizedBox(width: 8),
                         Text(
                           _isMmolPerLiter ? "mmol/L" : "mg/dL",
                           style: GoogleFonts.inter(
                             fontSize: 24,
                             fontWeight: FontWeight.w500,
                             height: 1,
+                            color: Colors.black87,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 10),
                   const Divider(
                     height: 0,
-                    thickness: 2,
-                    color: Color(0xFFCDCDCD),
+                    thickness: 1.5,
+                    color: Color(0xFFE0E0E0),
                   ),
                   IntrinsicHeight(
                     child: Row(
@@ -321,48 +319,62 @@ class _GlucoseRecordInputFormInternalState
                             onTap: () async {
                               final date = await showDatePicker(
                                 context: context,
-                                initialDate: _date.value != null
-                                    ? _date.value!
-                                    : DateTime.now(),
+                                initialDate: _date.value ?? DateTime.now(),
                                 firstDate: DateTime(1),
                                 lastDate: DateTime.now(),
+                                builder: (context, child) {
+                                  return Theme(
+                                    data: Theme.of(context).copyWith(
+                                      colorScheme: const ColorScheme.light(
+                                        primary: Color(0xFF841896),
+                                      ),
+                                    ),
+                                    child: child!,
+                                  );
+                                },
                               );
 
-                              if (date == null) {
-                                return;
+                              if (date != null) {
+                                _date.value = date;
                               }
-
-                              _date.value = date;
                             },
                             child: Container(
                               decoration: const BoxDecoration(
-                                color: Color(0xFFE1E1E1),
+                                color: Color(0xFFF5F5F5),
                                 borderRadius: BorderRadius.only(
-                                  bottomLeft: Radius.circular(10),
+                                  bottomLeft: Radius.circular(12),
                                 ),
                               ),
-                              padding: const EdgeInsets.all(10),
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 14, horizontal: 10),
                               child: ValueListenableBuilder(
                                 valueListenable: _date,
                                 builder: (context, value, child) {
                                   final formatter =
                                       DateFormat("dd / MM / yyyy");
+                                  String result = value != null
+                                      ? formatter.format(value)
+                                      : "DD / MM / YYYY";
 
-                                  String result;
-
-                                  if (value != null) {
-                                    result = formatter.format(value);
-                                  } else {
-                                    result = "DD / MM / YYYY";
-                                  }
-
-                                  return Text(
-                                    result,
-                                    textAlign: TextAlign.center,
-                                    style: GoogleFonts.montserrat(
-                                      fontSize: 16,
-                                      color: const Color(0xFF848181),
-                                    ),
+                                  return Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Icon(
+                                        Icons.calendar_today_outlined,
+                                        size: 16,
+                                        color: Color(0xFF666666),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        result,
+                                        textAlign: TextAlign.center,
+                                        style: GoogleFonts.montserrat(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500,
+                                          color: const Color(0xFF666666),
+                                        ),
+                                      ),
+                                    ],
                                   );
                                 },
                               ),
@@ -370,37 +382,43 @@ class _GlucoseRecordInputFormInternalState
                           ),
                         ),
                         Container(
-                          color: const Color(0xFFCDCDCD),
-                          width: 2,
+                          color: const Color(0xFFE0E0E0),
+                          width: 1.5,
                         ),
                         Expanded(
                           child: GestureDetector(
                             onTap: () async {
                               final time = await showTimePicker(
                                 context: context,
-                                initialTime: _time.value != null
-                                    ? _time.value!
-                                    : TimeOfDay.now(),
+                                initialTime: _time.value ?? TimeOfDay.now(),
+                                builder: (context, child) {
+                                  return Theme(
+                                    data: Theme.of(context).copyWith(
+                                      colorScheme: const ColorScheme.light(
+                                        primary: Color(0xFF841896),
+                                      ),
+                                    ),
+                                    child: child!,
+                                  );
+                                },
                               );
-                              if (time == null) {
-                                return;
+                              if (time != null) {
+                                _time.value = time;
                               }
-
-                              _time.value = time;
                             },
                             child: Container(
-                              padding: const EdgeInsets.all(10),
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 14, horizontal: 10),
                               decoration: const BoxDecoration(
-                                color: Color(0xFFE1E1E1),
+                                color: Color(0xFFF5F5F5),
                                 borderRadius: BorderRadius.only(
-                                  bottomRight: Radius.circular(10),
+                                  bottomRight: Radius.circular(12),
                                 ),
                               ),
                               child: ValueListenableBuilder(
                                 valueListenable: _time,
                                 builder: (context, value, child) {
                                   final formatter = DateFormat("hh : mm a");
-
                                   String result;
 
                                   if (value != null) {
@@ -414,13 +432,25 @@ class _GlucoseRecordInputFormInternalState
                                     result = "HH : MM";
                                   }
 
-                                  return Text(
-                                    result,
-                                    textAlign: TextAlign.center,
-                                    style: GoogleFonts.montserrat(
-                                      fontSize: 16,
-                                      color: const Color(0xFF848181),
-                                    ),
+                                  return Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Icon(
+                                        Icons.access_time_rounded,
+                                        size: 16,
+                                        color: Color(0xFF666666),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        result,
+                                        textAlign: TextAlign.center,
+                                        style: GoogleFonts.montserrat(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500,
+                                          color: const Color(0xFF666666),
+                                        ),
+                                      ),
+                                    ],
                                   );
                                 },
                               ),
@@ -434,33 +464,44 @@ class _GlucoseRecordInputFormInternalState
               ),
             ),
           ),
-          const SizedBox(height: 15),
+          const SizedBox(height: 20),
           Material(
-            elevation: 5,
+            elevation: 4,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: Stack(
               children: [
                 TextField(
                   controller: _notesController,
-                  maxLines: 7,
+                  maxLines: 6,
                   maxLength: 255,
-                  decoration: const InputDecoration(
-                    contentPadding: EdgeInsets.only(
-                      top: 32,
-                      left: 8,
-                      right: 8,
+                  style: GoogleFonts.inter(fontSize: 16),
+                  decoration: InputDecoration(
+                    contentPadding: const EdgeInsets.only(
+                      top: 36,
+                      left: 12,
+                      right: 12,
+                      bottom: 12,
                     ),
-                    fillColor: Color(0xFFFFFCB7),
-                    counterText: "",
+                    fillColor: const Color(0xFFFFFCB7),
+                    counterStyle: GoogleFonts.inter(fontSize: 12),
+                    hintText: "Add notes here...",
+                    hintStyle: GoogleFonts.inter(
+                      color: Colors.grey.shade600,
+                      fontSize: 16,
+                    ),
                     filled: true,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
                   ),
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
+                    horizontal: 12,
+                    vertical: 8,
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -468,12 +509,15 @@ class _GlucoseRecordInputFormInternalState
                       Text(
                         "NOTES",
                         style: GoogleFonts.inter(
-                          color: Colors.grey,
+                          color: Colors.grey.shade700,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
                         ),
                       ),
-                      const Icon(
+                      Icon(
                         Symbols.add_notes,
-                        color: Colors.grey,
+                        color: Colors.grey.shade700,
+                        size: 20,
                       ),
                     ],
                   ),
@@ -481,7 +525,7 @@ class _GlucoseRecordInputFormInternalState
               ],
             ),
           ),
-          const SizedBox(height: 5),
+          const SizedBox(height: 10),
           Row(
             children: [
               Builder(
@@ -496,42 +540,63 @@ class _GlucoseRecordInputFormInternalState
                         context: context,
                         builder: (context) {
                           return AlertDialog(
-                            title: const Text('Delete Record'),
-                            content: const Text('Are you sure?'),
+                            title: Text(
+                              'Delete Record',
+                              style: GoogleFonts.inter(
+                                  fontWeight: FontWeight.bold),
+                            ),
+                            content: Text(
+                              'Are you sure you want to delete this record?',
+                              style: GoogleFonts.inter(),
+                            ),
                             actions: <Widget>[
                               TextButton(
-                                child: const Text('Yes'),
+                                child: Text(
+                                  'Cancel',
+                                  style: GoogleFonts.inter(
+                                      color: Colors.grey.shade700),
+                                ),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                              ),
+                              TextButton(
+                                child: Text(
+                                  'Delete',
+                                  style: GoogleFonts.inter(color: Colors.red),
+                                ),
                                 onPressed: () async {
-                                  // Perform some action
                                   await widget._database.delete("GlucoseRecord",
                                       where: "id = ?",
                                       whereArgs: [widget._existing!.id]);
 
-                                  try {
-                                    await MonitoringAPI.syncGlucoseRecords();
+                                  if ((await User.currentUser).webId != null) {
+                                    try {
+                                      await MonitoringAPI.syncGlucoseRecords();
 
-                                    if (context.mounted) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        const SnackBar(
-                                          duration:
-                                              Duration(milliseconds: 1000),
-                                          content:
-                                              Text('Synced glucose records'),
-                                        ),
-                                      );
-                                    }
-                                  } catch (_) {
-                                    if (context.mounted) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        const SnackBar(
-                                          duration:
-                                              Duration(milliseconds: 1000),
-                                          content: Text(
-                                              'Failed to sync glucose records'),
-                                        ),
-                                      );
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                            duration:
+                                                Duration(milliseconds: 1000),
+                                            content:
+                                                Text('Synced glucose records'),
+                                          ),
+                                        );
+                                      }
+                                    } catch (_) {
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                            duration:
+                                                Duration(milliseconds: 1000),
+                                            content: Text(
+                                                'Failed to sync glucose records'),
+                                          ),
+                                        );
+                                      }
                                     }
                                   }
 
@@ -544,35 +609,34 @@ class _GlucoseRecordInputFormInternalState
                                       .popUntil((_) => count++ >= 2);
                                 },
                               ),
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                                child: const Text('No'),
-                              ),
                             ],
                           );
                         },
                       );
                     },
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.delete_outline,
-                      size: 32,
+                      size: 28,
+                      color: Colors.red.shade400,
                     ),
                   );
                 },
               ),
               const Expanded(child: SizedBox()),
-              const Text(
-                "A1C",
-                style: TextStyle(
-                  fontSize: 20,
+              Text(
+                "A1C Test",
+                style: GoogleFonts.inter(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
               Checkbox(
                 value: _isA1C,
                 visualDensity: VisualDensity.comfortable,
                 activeColor: fgColor,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(4),
+                ),
                 onChanged: (value) {
                   setState(() {
                     _isA1C = !_isA1C;
@@ -584,22 +648,24 @@ class _GlucoseRecordInputFormInternalState
           const SizedBox(height: 30),
           Center(
             child: SizedBox(
-              width: 150,
-              child: TextButton(
+              width: 180,
+              height: 48,
+              child: ElevatedButton(
                 onPressed: () async {
-                  Future<void> error() async {
+                  Future<void> error(String message) async {
                     await ScaffoldMessenger.of(context)
                         .showSnackBar(
-                          const SnackBar(
-                            duration: Duration(milliseconds: 300),
-                            content: Text('Incomplete Form'),
+                          SnackBar(
+                            duration: const Duration(milliseconds: 1500),
+                            behavior: SnackBarBehavior.floating,
+                            content: Text(message),
                           ),
                         )
                         .closed;
                   }
 
                   if (_date.value == null || _time.value == null) {
-                    await error();
+                    await error('Please select date and time');
                     return;
                   }
 
@@ -609,15 +675,7 @@ class _GlucoseRecordInputFormInternalState
                   );
 
                   if (date.isAfter(DateTime.now())) {
-                    await ScaffoldMessenger.of(context)
-                        .showSnackBar(
-                          const SnackBar(
-                            duration: Duration(milliseconds: 300),
-                            content: Text('Cannot enter future date'),
-                          ),
-                        )
-                        .closed;
-
+                    await error('Cannot enter future date and time');
                     setState(() {
                       if (widget._existing != null) {
                         final current = widget._existing!.bloodTestDate;
@@ -629,23 +687,21 @@ class _GlucoseRecordInputFormInternalState
                         _time.value = null;
                       }
                     });
-
                     return;
                   }
 
                   if (_glucoseController.text.isEmpty) {
-                    await error();
+                    await error('Please enter glucose value');
                     return;
                   }
 
-                  // NOTE: Beware of SQL Injection in notes argument
                   if (widget._existing == null) {
                     await widget._database.rawInsert(
                         "INSERT INTO GlucoseRecord (glucose_level, notes, is_a1c, blood_test_date) VALUES (?, ?, ?, ?)",
                         [
                           _glucoseController.text,
                           _notesController.text,
-                          _isA1C,
+                          _isA1C ? 1 : 0,
                           date.toIso8601String()
                         ]);
                   } else {
@@ -654,56 +710,58 @@ class _GlucoseRecordInputFormInternalState
                       [
                         _glucoseController.text,
                         _notesController.text,
-                        _isA1C,
+                        _isA1C ? 1 : 0,
                         date.toIso8601String(),
                         widget._existing!.id,
                       ],
                     );
                   }
 
-                  await MonitoringAPI.syncGlucoseRecords().then((_) {
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          duration: Duration(milliseconds: 1000),
-                          content: Text('Synced glucose records'),
-                        ),
-                      );
-                    }
-                  }).catchError((_) {
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          duration: Duration(milliseconds: 1000),
-                          content: Text('Failed to sync glucose records'),
-                        ),
-                      );
-                    }
-                  });
+                  if ((await User.currentUser).webId != null) {
+                    await MonitoringAPI.syncGlucoseRecords().then((_) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            duration: Duration(milliseconds: 1000),
+                            content: Text('Synced glucose records'),
+                          ),
+                        );
+                      }
+                    }).catchError((_) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            duration: Duration(milliseconds: 1000),
+                            content: Text('Failed to sync glucose records'),
+                          ),
+                        );
+                      }
+                    });
+                  }
 
                   if (context.mounted) {
                     Navigator.of(context).pop();
                   }
                 },
-                style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.all(fgColor),
-                  overlayColor: WidgetStateProperty.all(
-                    Colors.white.withOpacity(0.5),
-                  ),
-                  shape: WidgetStateProperty.all(
-                    RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: fgColor,
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
                   ),
                 ),
                 child: Text(
-                  widget._existing == null ? "SUBMIT" : "SAVE",
-                  style: const TextStyle(color: Colors.white),
+                  widget._existing == null ? "SUBMIT" : "SAVE CHANGES",
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                  ),
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 15),
+          const SizedBox(height: 20),
         ],
       ),
     );

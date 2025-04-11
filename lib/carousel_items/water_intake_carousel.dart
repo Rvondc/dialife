@@ -206,36 +206,6 @@ class WaterIntakeCarousel extends StatelessWidget {
                         height: 4,
                         color: Colors.grey.shade600,
                       ),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [],
-                          ),
-                          TextButton(
-                            onPressed: () {},
-                            style: ButtonStyle(
-                              backgroundColor: WidgetStateProperty.all(fgColor),
-                              visualDensity: VisualDensity.comfortable,
-                              shape: WidgetStateProperty.all(
-                                const RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(8),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            child: Text(
-                              "View Water Intake",
-                              style: GoogleFonts.roboto(
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
                     ],
                   ),
                 ),

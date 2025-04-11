@@ -16,7 +16,8 @@ class NutritionRecord {
       "day_description": dayDescription,
       "foods_csv": foods.join(","),
       "notes": notes,
-      "recorded_at": createdAt.toIso8601String(),
+      "recorded_at":
+          createdAt.toUtc().toString().split('.').first.replaceAll('T', ' '),
     };
   }
 

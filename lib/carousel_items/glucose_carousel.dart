@@ -1,9 +1,12 @@
 import 'package:dialife/blood_glucose_tracking/calculate_average.dart';
 import 'package:dialife/blood_glucose_tracking/entities.dart';
 import 'package:dialife/blood_glucose_tracking/glucose_tracking.dart';
+import 'package:dialife/main.dart';
+import 'package:dialife/user.dart';
 import 'package:flutter/material.dart';
 import 'package:get_time_ago/get_time_ago.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:sqflite/sqflite.dart';
 
 class GlucoseCarousel extends StatelessWidget {
   final List<GlucoseRecord> _records;
@@ -234,7 +237,20 @@ class GlucoseCarousel extends StatelessWidget {
                   ],
                 ),
                 TextButton(
-                  onPressed: () {},
+                  onPressed: () async {
+                    final path = await getDatabasesPath();
+                    final db = await initAppDatabase(path);
+                    final user = await User.currentUser;
+
+                    if (!context.mounted) return;
+                    Navigator.of(context).pushNamed(
+                      '/blood-glucose-tracking',
+                      arguments: {
+                        'db': db,
+                        'user': user,
+                      },
+                    );
+                  },
                   style: ButtonStyle(
                     backgroundColor: WidgetStateProperty.all(fgColor),
                     visualDensity: VisualDensity.comfortable,

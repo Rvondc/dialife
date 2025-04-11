@@ -1,9 +1,11 @@
 import 'package:dialife/blood_glucose_tracking/glucose_tracking.dart';
 import 'package:dialife/bmi_tracking/entities.dart';
 import 'package:dialife/main.dart';
+import 'package:dialife/user.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:sqflite/sqflite.dart';
 
 class BMICarousel extends StatelessWidget {
   final List<BMIRecord> _records;
@@ -216,6 +218,19 @@ class BMICarousel extends StatelessWidget {
                       SizedBox(
                         height: 30,
                         child: Builder(builder: (context) {
+                          if (_records.isEmpty) {
+                            return Container(
+                              alignment: Alignment.center,
+                              child: Text(
+                                "No BMI data available",
+                                style: GoogleFonts.roboto(
+                                  color: Colors.grey.shade500,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            );
+                          }
+
                           final latestBmiRecord = _records.last;
 
                           double fraction;
@@ -248,12 +263,23 @@ class BMICarousel extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Column(
+                          const Column(
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [],
                           ),
                           TextButton(
-                            onPressed: () {},
+                            onPressed: () async {
+                              final path = await getDatabasesPath();
+                              final db = await initAppDatabase(path);
+                              final user = await User.currentUser;
+
+                              if (!context.mounted) return;
+                              Navigator.pushNamed(context, '/bmi-tracking',
+                                  arguments: {
+                                    "db": db,
+                                    "user": user,
+                                  });
+                            },
                             style: ButtonStyle(
                               backgroundColor: WidgetStateProperty.all(fgColor),
                               visualDensity: VisualDensity.comfortable,

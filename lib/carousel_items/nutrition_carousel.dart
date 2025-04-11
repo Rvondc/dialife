@@ -1,9 +1,12 @@
 import 'package:dialife/blood_glucose_tracking/glucose_tracking.dart';
+import 'package:dialife/main.dart';
 import 'package:dialife/nutrition_log/entities.dart';
 import 'package:dialife/nutrition_log/utils.dart';
+import 'package:dialife/user.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:sqflite/sqflite.dart';
 
 class NutritionCarousel extends StatelessWidget {
   final List<NutritionRecord> _records;
@@ -218,12 +221,25 @@ class NutritionCarousel extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
+                const Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [],
                 ),
                 TextButton(
-                  onPressed: () {},
+                  onPressed: () async {
+                    final path = await getDatabasesPath();
+                    final db = await initAppDatabase(path);
+                    final user = await User.currentUser;
+
+                    if (!context.mounted) return;
+                    Navigator.of(context).pushNamed(
+                      '/nutrition-log',
+                      arguments: {
+                        'db': db,
+                        'user': user,
+                      },
+                    );
+                  },
                   style: ButtonStyle(
                     backgroundColor: WidgetStateProperty.all(fgColor),
                     visualDensity: VisualDensity.comfortable,

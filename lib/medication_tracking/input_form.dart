@@ -3,6 +3,7 @@ import 'package:dialife/api/entities.dart';
 import 'package:dialife/blood_glucose_tracking/glucose_tracking.dart';
 import 'package:dialife/local_notifications/local_notifications.dart';
 import 'package:dialife/medication_tracking/entities.dart';
+import 'package:dialife/user.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -880,24 +881,6 @@ class _NewMedicationReminderInputFormState
           int hour = time.hour;
           int minute = time.minute;
 
-          // MedicationRecordDetails to be inserted
-
-          // Insert record to MedicationRecordDetails table
-          // if (widget._existing == null) {
-          //   await db.insert('MedicationRecordDetails', details.toMap());
-          // } else {
-          //   final detailsWithoutId = details.toMap();
-          //   detailsWithoutId.remove("id");
-          //   debugPrint(detailsWithoutId.toString());
-
-          //   await db.update(
-          //     "MedicationRecordDetails",
-          //     detailsWithoutId,
-          //     where: "medication_reminder_record_id = ?",
-          //     whereArgs: [widget._existing!.medicationReminderRecordId],
-          //   );
-          // }
-
           DateTime now = DateTime.now();
           Duration difference =
               DateTime(year, month, day, hour, minute).difference(now);
@@ -959,38 +942,31 @@ class _NewMedicationReminderInputFormState
 
             await db.insert("MedicationRecordDetails", details.toMap());
           }
-
-          // debugPrint("Details: ${details.medicationDatetime}");
-          // debugPrint(DateTime(year, month, day, hour, minute).toString());
-
-          // debugPrint(difference.inSeconds.toString());
         }
       }
     }
 
-    await MonitoringAPI.syncMedicationRecords().then((_) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            duration: Duration(milliseconds: 1000),
-            content: Text('Synced medication records'),
-          ),
-        );
-      }
-    }).catchError((_) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            duration: Duration(milliseconds: 1000),
-            content: Text('Failed to sync medication records'),
-          ),
-        );
-      }
-    });
-    // debugPrint(
-    //     "Medication Reminder Records : ${await db.rawQuery("SELECT * FROM MedicationReminderRecords")}");
-    // debugPrint(
-    //     "Medication Reminder Details : ${await db.rawQuery("SELECT * FROM MedicationRecordDetails")}");
+    if ((await User.currentUser).webId != null) {
+      await MonitoringAPI.syncMedicationRecords().then((_) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              duration: Duration(milliseconds: 1000),
+              content: Text('Synced medication records'),
+            ),
+          );
+        }
+      }).catchError((_) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              duration: Duration(milliseconds: 1000),
+              content: Text('Failed to sync medication records'),
+            ),
+          );
+        }
+      });
+    }
   }
 
   Future<Map<String, dynamic>?> getLastRecord(

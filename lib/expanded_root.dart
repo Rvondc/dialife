@@ -6,6 +6,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ExapndedRoot extends StatelessWidget {
   final Database _db;
@@ -271,29 +272,50 @@ class ExapndedRoot extends StatelessWidget {
                     ),
                     const SizedBox(width: 24),
                     Expanded(
-                      child: Column(
-                        children: [
-                          AspectRatio(
-                            aspectRatio: 1,
-                            child: Material(
-                              elevation: 1,
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              child: Center(
-                                child: SvgPicture.asset(
-                                  'assets/sos.svg',
-                                  width: 40,
+                      child: GestureDetector(
+                        onTap: () async {
+                          final user = await User.currentUser;
+
+                          if (user.webId == null) {
+                            if (!context.mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'Please enable monitoring to use this feature.',
+                                ),
+                              ),
+                            );
+
+                            return;
+                          }
+
+                          if (!context.mounted) return;
+                          Navigator.of(context).pushNamed('/monitoring');
+                        },
+                        child: Column(
+                          children: [
+                            AspectRatio(
+                              aspectRatio: 1,
+                              child: Material(
+                                elevation: 1,
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                child: Center(
+                                  child: SvgPicture.asset(
+                                    'assets/sos.svg',
+                                    width: 40,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'My Doctors',
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.roboto(height: 1),
-                          ),
-                        ],
+                            const SizedBox(height: 8),
+                            Text(
+                              'My Doctors',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.roboto(height: 1),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                     const SizedBox(width: 24),
@@ -336,7 +358,23 @@ class ExapndedRoot extends StatelessWidget {
                   children: [
                     Expanded(
                       child: GestureDetector(
-                        onTap: () {
+                        onTap: () async {
+                          final user = await User.currentUser;
+
+                          if (user.webId == null) {
+                            if (!context.mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'Please enable monitoring to use this feature.',
+                                ),
+                              ),
+                            );
+
+                            return;
+                          }
+
+                          if (!context.mounted) return;
                           Navigator.of(context).pushNamed('/lab-results');
                         },
                         child: Column(
@@ -367,29 +405,50 @@ class ExapndedRoot extends StatelessWidget {
                     ),
                     const SizedBox(width: 24),
                     Expanded(
-                      child: Column(
-                        children: [
-                          AspectRatio(
-                            aspectRatio: 1,
-                            child: Material(
-                              elevation: 1,
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              child: Center(
-                                child: SvgPicture.asset(
-                                  'assets/history.svg',
-                                  width: 40,
+                      child: GestureDetector(
+                        onTap: () async {
+                          final user = await User.currentUser;
+
+                          if (user.webId == null) {
+                            if (!context.mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'Please enable monitoring to use this feature.',
+                                ),
+                              ),
+                            );
+
+                            return;
+                          }
+
+                          if (!context.mounted) return;
+                          Navigator.of(context).pushNamed('/medical-history');
+                        },
+                        child: Column(
+                          children: [
+                            AspectRatio(
+                              aspectRatio: 1,
+                              child: Material(
+                                elevation: 1,
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                child: Center(
+                                  child: SvgPicture.asset(
+                                    'assets/history.svg',
+                                    width: 40,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Medical History',
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.roboto(height: 1),
-                          ),
-                        ],
+                            const SizedBox(height: 8),
+                            Text(
+                              'Medical History',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.roboto(height: 1),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                     const SizedBox(width: 24),
@@ -546,7 +605,7 @@ class ExapndedRoot extends StatelessWidget {
                                     if (!context.mounted) return;
                                     Navigator.pop(context);
 
-                                    if (!(isConnected as bool)) {
+                                    if (!isConnected) {
                                       await showDialog(
                                         context: context,
                                         builder: (context) => AlertDialog(
@@ -629,24 +688,38 @@ class ExapndedRoot extends StatelessWidget {
                     ),
                     child: Column(
                       children: [
-                        Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.help_outline,
-                                color: Colors.grey.shade600,
-                              ),
-                              const SizedBox(width: 12),
-                              Text(
-                                'Help Center',
-                                style: GoogleFonts.roboto(
+                        GestureDetector(
+                          onTap: () {
+                            final Uri emailUri = Uri(
+                              scheme: 'mailto',
+                              path: 'support@pulsepilot.info',
+                              queryParameters: {
+                                'subject': 'Support-Request',
+                                'body': '',
+                              },
+                            );
+
+                            launchUrl(emailUri);
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.help_outline,
                                   color: Colors.grey.shade600,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
                                 ),
-                              ),
-                            ],
+                                const SizedBox(width: 12),
+                                Text(
+                                  'Help Center',
+                                  style: GoogleFonts.roboto(
+                                    color: Colors.grey.shade600,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                         const Divider(height: 1),
@@ -765,6 +838,8 @@ class ExapndedRoot extends StatelessWidget {
                 where: "id = ?",
                 whereArgs: [user.id],
               );
+
+              await MonitoringAPI.recordSyncAll();
             } catch (e) {
               if (!context.mounted) return;
               await showDialog(

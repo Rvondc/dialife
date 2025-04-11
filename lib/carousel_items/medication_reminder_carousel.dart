@@ -1,9 +1,12 @@
 import 'package:collection/collection.dart';
 import 'package:dialife/blood_glucose_tracking/glucose_tracking.dart';
+import 'package:dialife/main.dart';
 import 'package:dialife/medication_tracking/entities.dart';
+import 'package:dialife/user.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:sqflite/sqflite.dart';
 
 class MedicationReminderCarousel extends StatelessWidget {
   final List<MedicationRecordDetails> _records;
@@ -192,12 +195,25 @@ class MedicationReminderCarousel extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
+                const Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [],
                 ),
                 TextButton(
-                  onPressed: () {},
+                  onPressed: () async {
+                    final path = await getDatabasesPath();
+                    final db = await initAppDatabase(path);
+                    final user = await User.currentUser;
+
+                    if (!context.mounted) return;
+                    Navigator.of(context).pushNamed(
+                      '/medication-tracking',
+                      arguments: {
+                        'db': db,
+                        'user': user,
+                      },
+                    );
+                  },
                   style: ButtonStyle(
                     backgroundColor: WidgetStateProperty.all(fgColor),
                     visualDensity: VisualDensity.comfortable,

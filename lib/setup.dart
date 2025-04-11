@@ -1,4 +1,5 @@
 import 'package:datepicker_dropdown/datepicker_dropdown.dart';
+import 'package:dialife/api/api.dart';
 import 'package:dialife/blood_glucose_tracking/glucose_tracking.dart';
 import 'package:dropdown_textfield/dropdown_textfield.dart';
 import 'package:flutter/material.dart';
@@ -28,6 +29,8 @@ class _UserSetupState extends State<UserSetup> {
   final TextEditingController _lastNameController = TextEditingController();
 
   final TextEditingController _middleNameController = TextEditingController();
+
+  final TextEditingController _recoveryIdController = TextEditingController();
 
   final TextEditingController _contactNumberController =
       TextEditingController();
@@ -90,18 +93,19 @@ class _UserSetupState extends State<UserSetup> {
           controller: _setupController,
           children: [
             Container(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
               color: const Color(0x80E4E4E4),
               child: SingleChildScrollView(
                 child: Column(
                   children: [
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 20),
                     Text(
                       "WELCOME TO",
                       textAlign: TextAlign.center,
                       style: GoogleFonts.istokWeb(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
+                        letterSpacing: 1.2,
                       ),
                     ),
                     const SizedBox(height: 5),
@@ -110,43 +114,64 @@ class _UserSetupState extends State<UserSetup> {
                       textAlign: TextAlign.center,
                       style: GoogleFonts.italianno(
                         color: fgColor,
-                        fontSize: 64,
+                        fontSize: 68,
                         height: 1,
                       ),
                     ),
-                    const SizedBox(height: 15),
+                    const SizedBox(height: 20),
                     Container(
-                      padding: const EdgeInsets.all(10),
+                      padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.7),
-                        borderRadius: BorderRadius.circular(10),
+                        color: Colors.white.withOpacity(0.85),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 6,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
                       ),
-                      child: const Text(
-                        "PulsePilot is a mobile application for diabetes management designed to help diabetic patients improve self-management, enhance access to care, and facilitate communication with healthcare providers. This app provides features such as blood sugar monitoring, medication intake tracking, doctor’s appointment scheduling, weight and activity logging, nutrition tracking, instant messaging, and access to reading materials, all aimed at improving the quality of life for individuals with diabetes.",
+                      child: Text(
+                        "PulsePilot is a mobile application for diabetes management designed to help diabetic patients improve self-management, enhance access to care, and facilitate communication with healthcare providers. This app provides features such as blood sugar monitoring, medication intake tracking, doctor's appointment scheduling, weight and activity logging, nutrition tracking, instant messaging, and access to reading materials, all aimed at improving the quality of life for individuals with diabetes.",
                         textAlign: TextAlign.justify,
-                        style: TextStyle(fontSize: 16),
+                        style: GoogleFonts.istokWeb(
+                          fontSize: 15,
+                          height: 1.4,
+                          color: Colors.black87,
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 30),
                     Text(
-                      "What's your name?",
+                      "Let's Get Started",
                       textAlign: TextAlign.center,
                       style: GoogleFonts.istokWeb(
-                        fontSize: 16,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 1,
+                        color: fgColor,
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    Material(
+                    const SizedBox(height: 5),
+                    Text(
+                      "Please enter your name",
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.istokWeb(
+                        fontSize: 14,
+                        color: Colors.black54,
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    Card(
                       elevation: 4,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                       child: Container(
-                        padding: const EdgeInsets.all(12),
+                        padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(12),
                           color: Colors.white,
                         ),
                         child: Column(
@@ -158,23 +183,31 @@ class _UserSetupState extends State<UserSetup> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.stretch,
                                     children: [
-                                      const Text("First name"),
+                                      Text(
+                                        "First name",
+                                        style: GoogleFonts.istokWeb(
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.black87,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
                                       TextField(
                                         controller: _firstNameController,
                                         style: GoogleFonts.istokWeb(
-                                          fontWeight: FontWeight.bold,
+                                          fontWeight: FontWeight.w500,
                                         ),
                                         decoration: InputDecoration(
                                           filled: true,
                                           border: OutlineInputBorder(
                                             borderRadius:
-                                                BorderRadius.circular(3),
+                                                BorderRadius.circular(8),
+                                            borderSide: BorderSide.none,
                                           ),
                                           isDense: true,
                                           contentPadding:
                                               const EdgeInsets.symmetric(
                                             horizontal: 16,
-                                            vertical: 8,
+                                            vertical: 12,
                                           ),
                                           fillColor: const Color(0xFFE4E4E4),
                                         ),
@@ -182,30 +215,38 @@ class _UserSetupState extends State<UserSetup> {
                                     ],
                                   ),
                                 ),
-                                const SizedBox(width: 10),
+                                const SizedBox(width: 15),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.stretch,
                                     children: [
-                                      const Text("Last name"),
+                                      Text(
+                                        "Last name",
+                                        style: GoogleFonts.istokWeb(
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.black87,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
                                       TextField(
                                         controller: _lastNameController,
                                         style: GoogleFonts.istokWeb(
-                                          fontWeight: FontWeight.bold,
+                                          fontWeight: FontWeight.w500,
                                         ),
                                         decoration: InputDecoration(
                                           filled: true,
                                           fillColor: const Color(0xFFE4E4E4),
                                           border: OutlineInputBorder(
                                             borderRadius:
-                                                BorderRadius.circular(3),
+                                                BorderRadius.circular(8),
+                                            borderSide: BorderSide.none,
                                           ),
                                           isDense: true,
                                           contentPadding:
                                               const EdgeInsets.symmetric(
                                             horizontal: 16,
-                                            vertical: 8,
+                                            vertical: 12,
                                           ),
                                         ),
                                       ),
@@ -214,7 +255,7 @@ class _UserSetupState extends State<UserSetup> {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 10),
+                            const SizedBox(height: 20),
                             Row(
                               children: [
                                 Expanded(
@@ -222,81 +263,113 @@ class _UserSetupState extends State<UserSetup> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.stretch,
                                     children: [
-                                      const Text("Middle name (optional)"),
+                                      Text(
+                                        "Middle name (optional)",
+                                        style: GoogleFonts.istokWeb(
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.black87,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
                                       TextField(
                                         controller: _middleNameController,
                                         style: GoogleFonts.istokWeb(
-                                          fontWeight: FontWeight.bold,
+                                          fontWeight: FontWeight.w500,
                                         ),
                                         decoration: InputDecoration(
                                           filled: true,
                                           fillColor: const Color(0xFFE4E4E4),
                                           border: OutlineInputBorder(
                                             borderRadius:
-                                                BorderRadius.circular(3),
+                                                BorderRadius.circular(8),
+                                            borderSide: BorderSide.none,
                                           ),
                                           isDense: true,
                                           contentPadding:
                                               const EdgeInsets.symmetric(
                                             horizontal: 16,
-                                            vertical: 8,
+                                            vertical: 12,
                                           ),
                                         ),
                                       ),
                                     ],
                                   ),
                                 ),
-                                const SizedBox(width: 10),
+                                const SizedBox(width: 15),
                                 const Expanded(child: SizedBox()),
                               ],
                             ),
-                            const SizedBox(height: 20),
-                            Center(
-                              child: SizedBox(
-                                width: MediaQuery.of(context).size.width * 0.7,
-                                child: TextButton(
-                                  onPressed: () async {
-                                    if (_firstNameController.text.isEmpty ||
-                                        _lastNameController.text.isEmpty) {
-                                      await ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                            const SnackBar(
-                                              duration:
-                                                  Duration(milliseconds: 300),
-                                              content: Text('Incomplete Form'),
-                                            ),
-                                          )
-                                          .closed;
+                            const SizedBox(height: 30),
+                            ElevatedButton(
+                              onPressed: () async {
+                                if (_firstNameController.text.isEmpty ||
+                                    _lastNameController.text.isEmpty) {
+                                  await ScaffoldMessenger.of(context)
+                                      .showSnackBar(
+                                        const SnackBar(
+                                          duration: Duration(milliseconds: 300),
+                                          content: Text(
+                                              'Please enter your first and last name'),
+                                          behavior: SnackBarBehavior.floating,
+                                        ),
+                                      )
+                                      .closed;
+                                  return;
+                                }
 
-                                      return;
-                                    }
-
-                                    _setupController.nextPage(
-                                      duration:
-                                          const Duration(milliseconds: 300),
-                                      curve: Curves.easeInOut,
-                                    );
-                                  },
-                                  style: ButtonStyle(
-                                    padding: WidgetStateProperty.all(
-                                      const EdgeInsets.all(12),
-                                    ),
-                                    overlayColor: WidgetStateProperty.all(
-                                      Colors.white.withOpacity(0.3),
-                                    ),
-                                    backgroundColor:
-                                        WidgetStateProperty.all(fgColor),
-                                    shape: WidgetStateProperty.all(
-                                      RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                    ),
-                                  ),
-                                  child: const Text(
-                                    "Next",
-                                    style: TextStyle(color: Colors.white),
-                                  ),
+                                _setupController.nextPage(
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: fgColor,
+                                foregroundColor: Colors.white,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 15),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
+                                elevation: 2,
+                                minimumSize: Size(
+                                    MediaQuery.of(context).size.width * 0.7, 0),
+                              ),
+                              child: Text(
+                                "Next",
+                                style: GoogleFonts.istokWeb(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 15),
+                            TextButton(
+                              onPressed: () {
+                                _showRecoveryDialog(context);
+                              },
+                              style: TextButton.styleFrom(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  side: const BorderSide(color: fgColor),
+                                ),
+                                foregroundColor: fgColor,
+                                minimumSize: Size(
+                                    MediaQuery.of(context).size.width * 0.7, 0),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.restore, size: 18, color: fgColor),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    "Recover Account",
+                                    style: GoogleFonts.istokWeb(
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
@@ -1221,6 +1294,566 @@ class _UserSetupState extends State<UserSetup> {
           ],
         ),
       ],
+    );
+  }
+
+  Future<dynamic> _showRecoveryDialog(BuildContext context) {
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          title: Row(
+            children: [
+              const Icon(Icons.restore, color: fgColor),
+              const SizedBox(width: 10),
+              Text(
+                "Account Recovery",
+                style: GoogleFonts.istokWeb(
+                  fontWeight: FontWeight.bold,
+                  color: fgColor,
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Please enter your 6-digit Recovery ID:",
+                style: GoogleFonts.istokWeb(),
+              ),
+              const SizedBox(height: 15),
+              TextField(
+                controller: _recoveryIdController,
+                keyboardType: TextInputType.number,
+                maxLength: 6,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                ],
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: fgColor),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: fgColor, width: 2),
+                  ),
+                  filled: true,
+                  fillColor: const Color(0xFFE4E4E4),
+                  hintText: "Enter 6 digits",
+                  counterText: "",
+                  prefixIcon: const Icon(Icons.pin, color: fgColor),
+                  isDense: true,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 16,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 5),
+              Text(
+                "Your Recovery ID was provided when you first created your account.",
+                style: GoogleFonts.istokWeb(
+                  fontSize: 12,
+                  fontStyle: FontStyle.italic,
+                  color: Colors.grey[700],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              style: ButtonStyle(
+                padding: WidgetStateProperty.all(
+                  const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                ),
+                shape: WidgetStateProperty.all(
+                  RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+              child: Text(
+                "Cancel",
+                style: TextStyle(color: Colors.grey[800]),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (_recoveryIdController.text.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Please enter your Recovery ID"),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                  return;
+                }
+
+                if (_recoveryIdController.text.length < 6) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Recovery ID must be 6 digits"),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                  return;
+                }
+
+                Navigator.pop(context);
+
+                _showRecoveringDialog(context);
+              },
+              style: ButtonStyle(
+                backgroundColor: WidgetStateProperty.all(fgColor),
+                padding: WidgetStateProperty.all(
+                  const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                ),
+                shape: WidgetStateProperty.all(
+                  RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+              child: const Text(
+                "Recover Account",
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<dynamic> _showRecoveringDialog(BuildContext context) {
+    final passcodeController = TextEditingController();
+    final confirmPasscodeController = TextEditingController();
+
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          title: Row(
+            children: [
+              const Icon(Icons.restore, color: fgColor),
+              const SizedBox(width: 10),
+              Text(
+                "Account Recovery",
+                style: GoogleFonts.istokWeb(
+                  fontWeight: FontWeight.bold,
+                  color: fgColor,
+                ),
+              ),
+            ],
+          ),
+          content: FutureBuilder(
+            future: () async {
+              final recoveryData = await MonitoringAPI.getRecoveryData(
+                  _recoveryIdController.text);
+
+              await widget.db.insert(
+                "User",
+                {
+                  "first_name": recoveryData.firstName,
+                  "last_name": recoveryData.lastName,
+                  "middle_name": recoveryData.middleName,
+                  "contact_number": recoveryData.contactNumber,
+                  "birthdate": recoveryData.birthdate.toIso8601String(),
+                  "province": recoveryData.province,
+                  "is_male": recoveryData.sex == "Male",
+                  "municipality": recoveryData.municipality,
+                  "barangay": recoveryData.barangay,
+                  "address_description": recoveryData.addressDescription,
+                  "zip_code": recoveryData.zipCode,
+                  "recovery_id": recoveryData.recoveryId,
+                  "web_id": recoveryData.id,
+                },
+              );
+
+              for (final record in recoveryData.bmiRecords) {
+                await widget.db.insert(
+                  "BMIRecord",
+                  {
+                    "height": record.height,
+                    "weight": record.weight,
+                    "notes": record.notes,
+                    "created_at": record.recordedAt.toIso8601String(),
+                  },
+                );
+              }
+
+              for (final record in recoveryData.glucoseRecords) {
+                await widget.db.insert(
+                  "GlucoseRecord",
+                  {
+                    "glucose_level": record.glucoseLevel,
+                    "notes": record.notes,
+                    "is_a1c": record.isA1c,
+                    "blood_test_date": record.recordedAt.toIso8601String(),
+                  },
+                );
+              }
+
+              for (final record in recoveryData.nutritionRecords) {
+                await widget.db.insert(
+                  "NutritionRecord",
+                  {
+                    "notes": record.notes,
+                    "day_description": record.dayDescription,
+                    "foods_csv": record.foodsCsv,
+                    "created_at": record.recordedAt.toIso8601String(),
+                  },
+                );
+              }
+
+              for (final record in recoveryData.activityRecords) {
+                await widget.db.insert(
+                  "ActivityRecord",
+                  {
+                    "type": record.type,
+                    "duration": record.duration,
+                    "frequency": record.frequency,
+                    "notes": record.notes,
+                    "created_at": record.recordedAt.toIso8601String(),
+                  },
+                );
+              }
+
+              for (final record in recoveryData.waterRecords) {
+                await widget.db.insert(
+                  "WaterRecord",
+                  {
+                    "glasses": record.glasses,
+                    "time": record.recordedAt.toIso8601String(),
+                  },
+                );
+              }
+            }(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      "Recovering your account...",
+                      style: GoogleFonts.istokWeb(),
+                    ),
+                    const SizedBox(height: 15),
+                    const Center(
+                        child: CircularProgressIndicator(color: fgColor)),
+                  ],
+                );
+              } else if (snapshot.hasError) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.error_outline,
+                      color: Colors.red,
+                      size: 48,
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      "Unable to recover account",
+                      style: GoogleFonts.istokWeb(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    AnimatedSize(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                      child: snapshot.error != null
+                          ? ExpansionTile(
+                              title: Text(
+                                "Technical Details",
+                                style: GoogleFonts.istokWeb(
+                                  fontSize: 14,
+                                  color: Colors.grey[700],
+                                ),
+                              ),
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(
+                                    "${snapshot.error}",
+                                    style: GoogleFonts.istokWeb(
+                                      fontSize: 13,
+                                      color: Colors.red[700],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            )
+                          : const SizedBox.shrink(),
+                    ),
+                  ],
+                );
+              } else {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 8,
+                  ),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Success icon with animation - reduced size
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          padding: const EdgeInsets.all(8.0),
+                          decoration: BoxDecoration(
+                            color: Colors.green[50],
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.check_circle_outline,
+                            color: Colors.green[600],
+                            size: 36,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+
+                        // Title with more concise styling
+                        Text(
+                          "Recovery Complete",
+                          style: GoogleFonts.istokWeb(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: fgColor,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+
+                        // Description with improved readability
+                        Text(
+                          "Please set up a new passcode to continue.",
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.istokWeb(
+                            fontSize: 14,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Passcode fields with improved styling and reduced spacing
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[50],
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.grey[200]!),
+                          ),
+                          child: Column(
+                            children: [
+                              // Combine passcode fields in rows to save vertical space
+                              Column(
+                                children: [
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        "New Passcode",
+                                        style: GoogleFonts.istokWeb(
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.black87,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      SizedBox(
+                                        width: double.infinity,
+                                        child: TextField(
+                                          keyboardType: TextInputType.number,
+                                          decoration: InputDecoration(
+                                            hintText: "Code",
+                                            hintStyle: TextStyle(
+                                                fontSize: 14,
+                                                color: Colors.grey[500]),
+                                            counterText: "",
+                                            filled: true,
+                                            fillColor: Colors.white,
+                                            border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                              borderSide: const BorderSide(),
+                                            ),
+                                            contentPadding:
+                                                const EdgeInsets.symmetric(
+                                                    horizontal: 16,
+                                                    vertical: 12),
+                                          ),
+                                          textAlign: TextAlign.center,
+                                          controller: passcodeController,
+                                          inputFormatters: [
+                                            FilteringTextInputFormatter
+                                                .digitsOnly
+                                          ],
+                                          maxLength: 4,
+                                          obscureText: true,
+                                          style: const TextStyle(
+                                            fontSize: 24,
+                                            letterSpacing: 16,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        "Confirm Passcode",
+                                        style: GoogleFonts.istokWeb(
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.black87,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      SizedBox(
+                                        width: double.infinity,
+                                        child: TextField(
+                                          inputFormatters: [
+                                            FilteringTextInputFormatter
+                                                .digitsOnly
+                                          ],
+                                          decoration: InputDecoration(
+                                            hintText: "Confirm",
+                                            hintStyle: TextStyle(
+                                                fontSize: 14,
+                                                color: Colors.grey[500]),
+                                            counterText: "",
+                                            filled: true,
+                                            fillColor: Colors.white,
+                                            border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                              borderSide: const BorderSide(),
+                                            ),
+                                            contentPadding:
+                                                const EdgeInsets.symmetric(
+                                                    horizontal: 16,
+                                                    vertical: 12),
+                                          ),
+                                          textAlign: TextAlign.center,
+                                          controller: confirmPasscodeController,
+                                          maxLength: 4,
+                                          obscureText: true,
+                                          keyboardType: TextInputType.number,
+                                          style: const TextStyle(
+                                            fontSize: 24,
+                                            letterSpacing: 16,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // More compact button
+                        ElevatedButton(
+                          onPressed: () async {
+                            if (passcodeController.text.isEmpty ||
+                                confirmPasscodeController.text.isEmpty) {
+                              await ScaffoldMessenger.of(context)
+                                  .showSnackBar(
+                                    const SnackBar(
+                                      duration: Duration(milliseconds: 300),
+                                      content: Text(
+                                        "Please enter a 4-digit passcode.",
+                                      ),
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  )
+                                  .closed;
+                              return;
+                            }
+
+                            if (passcodeController.text !=
+                                confirmPasscodeController.text) {
+                              await ScaffoldMessenger.of(context)
+                                  .showSnackBar(
+                                    const SnackBar(
+                                      duration: Duration(milliseconds: 300),
+                                      content: Text("Passcodes do not match."),
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  )
+                                  .closed;
+                              return;
+                            }
+
+                            await widget.db.insert("Passcode", {
+                              "code": passcodeController.text,
+                            });
+
+                            if (!context.mounted) return;
+                            Navigator.pop(context);
+
+                            await ScaffoldMessenger.of(context)
+                                .showSnackBar(
+                                  const SnackBar(
+                                    duration: Duration(milliseconds: 300),
+                                    content:
+                                        Text('Account successfully recovered!'),
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                )
+                                .closed;
+
+                            widget.reset();
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: fgColor,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 32, vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            elevation: 2,
+                            minimumSize: Size(
+                                MediaQuery.of(context).size.width * 0.5, 0),
+                          ),
+                          child: Text(
+                            "Complete Recovery",
+                            style: GoogleFonts.istokWeb(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+            },
+          ),
+        );
+      },
     );
   }
 }

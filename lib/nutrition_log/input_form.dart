@@ -3,6 +3,7 @@ import 'package:dialife/api/api.dart';
 import 'package:dialife/api/entities.dart';
 import 'package:dialife/blood_glucose_tracking/glucose_tracking.dart';
 import 'package:dialife/nutrition_log/entities.dart';
+import 'package:dialife/user.dart';
 import 'package:dropdown_textfield/dropdown_textfield.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -662,25 +663,27 @@ class _NutritionLogInternalState extends State<_NutritionLogInternal> {
                         .closed;
                   }
 
-                  await MonitoringAPI.syncNutritionRecords().then((_) {
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          duration: Duration(milliseconds: 1000),
-                          content: Text('Synced nutrition records'),
-                        ),
-                      );
-                    }
-                  }).catchError((_) {
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          duration: Duration(milliseconds: 1000),
-                          content: Text('Failed to sync nutrition records'),
-                        ),
-                      );
-                    }
-                  });
+                  if ((await User.currentUser).webId != null) {
+                    await MonitoringAPI.syncNutritionRecords().then((_) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            duration: Duration(milliseconds: 1000),
+                            content: Text('Synced nutrition records'),
+                          ),
+                        );
+                      }
+                    }).catchError((_) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            duration: Duration(milliseconds: 1000),
+                            content: Text('Failed to sync nutrition records'),
+                          ),
+                        );
+                      }
+                    });
+                  }
 
                   if (context.mounted) {
                     Navigator.of(context).pop();
@@ -731,34 +734,37 @@ class _NutritionLogInternalState extends State<_NutritionLogInternal> {
                                           where: "id = ?",
                                           whereArgs: [widget.existing!.id]);
 
-                                      try {
-                                        await MonitoringAPI
-                                            .syncNutritionRecords();
+                                      if ((await User.currentUser).webId !=
+                                          null) {
+                                        try {
+                                          await MonitoringAPI
+                                              .syncNutritionRecords();
 
-                                        if (context.mounted) {
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            const SnackBar(
-                                              duration:
-                                                  Duration(milliseconds: 1000),
-                                              content: Text(
-                                                'Synced nutrition records',
+                                          if (context.mounted) {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              const SnackBar(
+                                                duration: Duration(
+                                                    milliseconds: 1000),
+                                                content: Text(
+                                                  'Synced nutrition records',
+                                                ),
                                               ),
-                                            ),
-                                          );
-                                        }
-                                      } catch (_) {
-                                        if (context.mounted) {
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            const SnackBar(
-                                              duration:
-                                                  Duration(milliseconds: 1000),
-                                              content: Text(
-                                                'Failed to sync nutrition records',
+                                            );
+                                          }
+                                        } catch (_) {
+                                          if (context.mounted) {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              const SnackBar(
+                                                duration: Duration(
+                                                    milliseconds: 1000),
+                                                content: Text(
+                                                  'Failed to sync nutrition records',
+                                                ),
                                               ),
-                                            ),
-                                          );
+                                            );
+                                          }
                                         }
                                       }
 

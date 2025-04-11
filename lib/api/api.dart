@@ -1,10 +1,10 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:dialife/activity_log/entities.dart';
 import 'package:dialife/api/entities.dart';
 import 'package:dialife/blood_glucose_tracking/entities.dart';
 import 'package:dialife/bmi_tracking/entities.dart';
-import 'package:dialife/chat/entities.dart';
 import 'package:dialife/main.dart';
 import 'package:dialife/medication_tracking/entities.dart';
 import 'package:dialife/nutrition_log/entities.dart';
@@ -32,12 +32,159 @@ class MonitoringAPI {
 
   static String get baseUrl => "${_https ? "https://" : "http://"}$_baseUrl";
 
-  static Future<void> revokeDoctor(int id) async {
+  static Future<void> revokeAccess(int doctorId) async {
     final isConnected = await InternetConnection().hasInternetAccess;
     if (!isConnected) {
-      return;
+      throw Exception("No internet");
     }
 
+    final user = await User.currentUser;
+    
+    if (user.webId == null) {
+      throw Exception("Patient does not exist in Monitoring API");
+    }
+
+    final Uri uri = _https
+        ? Uri.https(_baseUrl, '$_basePath/api/patient/${user.webId}/revoke/$doctorId')
+        : Uri.http(_baseUrl, '$_basePath/api/patient/${user.webId}/revoke/$doctorId');
+
+    final response = await http.post(uri);
+
+    if (response.statusCode != 200) {
+      throw Exception("Status Code not OK: ${response.body}");
+    }
+  }
+
+  static Future<List<APIAppointment>> getAppointments() async {
+    final isConnected = await InternetConnection().hasInternetAccess;
+    if (!isConnected) {
+      throw Exception("No internet");
+    }
+
+    final user = await User.currentUser;
+    if (user.webId == null) {
+      throw Exception("Patient does not exist in Monitoring API");
+    }
+
+    final Uri uri = _https
+        ? Uri.https(_baseUrl, '/api/appointment/${user.webId}')
+        : Uri.http(_baseUrl, '/api/appointment/${user.webId}');
+
+    final response = await http.post(uri);
+
+    if (response.statusCode != 200) {
+      throw Exception("Status Code not OK: ${response.body}");
+    }
+
+    final body = jsonDecode(response.body) as List<dynamic>;
+    return APIAppointment.fromListOfMaps(body.cast<Map<String, dynamic>>());
+  }
+
+  static Future<void> createAppointment({
+    required int doctorId,
+    required DateTime date,
+    required TimeOfDay time,
+    required Duration duration,
+    required String reason,
+    String? notes,
+  }) async {
+    final isConnected = await InternetConnection().hasInternetAccess;
+    if (!isConnected) {
+      throw Exception("No internet");
+    }
+
+    final user = await User.currentUser;
+    if (user.webId == null) {
+      throw Exception("Patient does not exist in Monitoring API");
+    }
+
+    final Uri uri = _https
+        ? Uri.https(_baseUrl, '/api/appointment/$doctorId/${user.webId}/create')
+        : Uri.http(_baseUrl, '/api/appointment/$doctorId/${user.webId}/create');
+
+    final request = http.MultipartRequest('POST', uri);
+
+    request.fields['date'] = date.toIso8601String();
+    request.fields['time'] =
+        '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+    request.fields['duration'] = duration.inMinutes.toString();
+    request.fields['reason'] = reason;
+    if (notes != null) {
+      request.fields['notes'] = notes;
+    }
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+
+    if (response.statusCode != 200) {
+      throw Exception("Status Code not OK: ${response.body}");
+    }
+  }
+
+  static Future<APITimeSlotSchedule> getTimeSlots(
+      int doctorId, DateTime date) async {
+    final isConnected = await InternetConnection().hasInternetAccess;
+    if (!isConnected) {
+      throw Exception("No internet");
+    }
+
+    final Uri uri = _https
+        ? Uri.https(_baseUrl, '/api/appointment/$doctorId/timeslots')
+        : Uri.http(_baseUrl, '/api/appointment/$doctorId/timeslots');
+
+    final response = await http.post(
+      uri,
+      body: jsonEncode({'date': date.toIso8601String()}),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception("Status Code not OK: ${response.body}");
+    }
+
+    return APITimeSlotSchedule.fromMap(jsonDecode(response.body));
+  }
+
+  static Future<APIRecoveryData> getRecoveryData(String recoveryId) async {
+    final isConnected = await InternetConnection().hasInternetAccess;
+    if (!isConnected) {
+      throw Exception("No internet");
+    }
+
+    final Uri uri = _https
+        ? Uri.https(_baseUrl, '$_basePath/api/recover/$recoveryId')
+        : Uri.http(_baseUrl, '$_basePath/api/recover/$recoveryId');
+
+    final response = await http.post(uri);
+
+    if (response.statusCode != 200) {
+      throw Exception("Status Code not OK: ${response.body}");
+    }
+
+    return APIRecoveryData.fromMap(jsonDecode(response.body));
+  }
+
+  static Future<List<APIDoctor>> getOnlineDoctors() async {
+    final user = await User.currentUser;
+
+    if (user.webId == null) {
+      throw Exception("Patient does not exist in Monitoring API");
+    }
+
+    final Uri uri = _https
+        ? Uri.https(_baseUrl, '$_basePath/api/online/${user.webId}/doctors')
+        : Uri.http(_baseUrl, '$_basePath/api/online/${user.webId}/doctors');
+
+    final response = await http.post(uri);
+
+    if (response.statusCode != 200) {
+      throw Exception("Status Code not OK: ${response.body}");
+    }
+
+    final body = jsonDecode(response.body) as List<dynamic>;
+    return APIDoctor.fromListOfMaps(body.cast<Map<String, dynamic>>());
+  }
+
+  static Future<List<APILabRequest>> getLabRequests() async {
     final path = await getDatabasesPath();
     final db = await initAppDatabase(path);
     final user = User.fromMap((await db.query("User")).first);
@@ -48,26 +195,164 @@ class MonitoringAPI {
 
     if (_https) {
       final response = await http.post(
-        Uri.https(_baseUrl, '$_basePath/patient/revoke'),
-        body: jsonEncode({
-          "patient_id": user.webId,
-          "doctor_id": id,
-        }),
+        Uri.https(_baseUrl, '$_basePath/api/patient/${user.webId}/lab'),
       );
+
       if (response.statusCode != 200) {
         throw Exception("Status Code not OK: ${response.body}");
       }
+
+      final body = jsonDecode(response.body) as List<dynamic>;
+
+      return APILabRequest.fromListOfMaps(body.cast());
     } else {
       final response = await http.post(
-        Uri.http(_baseUrl, '$_basePath/patient/revoke'),
-        body: jsonEncode({
-          "patient_id": user.webId,
-          "doctor_id": id,
-        }),
+        Uri.http(_baseUrl, '$_basePath/api/patient/${user.webId}/lab'),
       );
+
       if (response.statusCode != 200) {
         throw Exception("Status Code not OK: ${response.body}");
       }
+
+      final body = jsonDecode(response.body) as List<dynamic>;
+
+      return APILabRequest.fromListOfMaps(body.cast());
+    }
+  }
+
+  static Future<void> pingOnline() async {
+    final user = await User.currentUser;
+    if (user.webId == null) {
+      return;
+    }
+
+    final Uri uri = _https
+        ? Uri.https(_baseUrl, '$_basePath/api/online/${user.webId}/ping')
+        : Uri.http(_baseUrl, '$_basePath/api/online/${user.webId}/ping');
+
+    final response = await http.post(uri);
+
+    if (response.statusCode != 200) {
+      throw Exception("Status Code not OK: ${response.body}");
+    }
+  }
+
+  static Future<void> sendMessage({
+    required int doctorId,
+    required String messageType,
+    String? textMessage,
+    File? file,
+  }) async {
+    final isConnected = await InternetConnection().hasInternetAccess;
+    if (!isConnected) {
+      throw Exception("No internet connection");
+    }
+
+    final user = await User.currentUser;
+    if (user.webId == null) {
+      throw Exception("Patient does not exist in Monitoring API");
+    }
+
+    // Validate inputs based on message type
+    if (messageType == 'text' && textMessage == null) {
+      throw Exception("Text message is required for text message type");
+    }
+    if ((messageType == 'image' || messageType == 'pdf') && file == null) {
+      throw Exception("File is required for image or pdf message type");
+    }
+
+    final Uri uri = _https
+        ? Uri.https(_baseUrl, '$_basePath/api/chat/send/$doctorId')
+        : Uri.http(_baseUrl, '$_basePath/api/chat/send/$doctorId');
+
+    dynamic response;
+
+    if (messageType == 'text') {
+      // For text messages
+      final httpResponse = await http.post(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'patient_id': user.webId,
+          'message_type': messageType,
+          'message': textMessage,
+        }),
+      );
+
+      if (httpResponse.statusCode != 200) {
+        throw Exception("Status Code not OK: ${httpResponse.body}");
+      }
+
+      response = httpResponse;
+    } else {
+      // For image or PDF files
+      final request = http.MultipartRequest('POST', uri);
+
+      request.fields['patient_id'] = user.webId.toString();
+      request.fields['message_type'] = messageType;
+      request.files.add(await http.MultipartFile.fromPath(
+        'file',
+        file!.path,
+      ));
+
+      final streamedResponse = await request.send();
+      response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode != 200) {
+        throw Exception("Status Code not OK: ${response.body}");
+      }
+    }
+  }
+
+  static Future<List<APIChatMessage>> getChatBatch(
+    int doctorId, {
+    int? fromMessageId,
+  }) async {
+    final isConnected = await InternetConnection().hasInternetAccess;
+    if (!isConnected) {
+      throw Exception("No internet connection");
+    }
+
+    final patientId = (await User.currentUser).webId;
+
+    // Convert parameters to request body
+    final body = <String, dynamic>{};
+    if (fromMessageId != null) {
+      body['from_message_id'] = fromMessageId;
+    }
+
+    if (_https) {
+      final response = await http.post(
+        Uri.https(
+          _baseUrl,
+          '$_basePath/api/chat/batch/$patientId/$doctorId',
+        ),
+        body: jsonEncode(body),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception("Status Code not OK: ${response.body}");
+      }
+
+      final responseBody = jsonDecode(response.body) as List<dynamic>;
+      return APIChatMessage.fromListOfMaps(
+          responseBody.cast<Map<String, dynamic>>());
+    } else {
+      final response = await http.post(
+        Uri.http(
+          _baseUrl,
+          '$_basePath/api/chat/batch/$patientId/$doctorId',
+        ),
+        body: jsonEncode(body),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception("Status Code not OK: ${response.body}");
+      }
+
+      final responseBody = jsonDecode(response.body) as List<dynamic>;
+      return APIChatMessage.fromListOfMaps(
+          responseBody.cast<Map<String, dynamic>>());
     }
   }
 
@@ -82,8 +367,9 @@ class MonitoringAPI {
     }
 
     if (_https) {
-      final response = await http.get(
-          Uri.https(_baseUrl, '$_basePath/patient/doctors/get/${user.webId}'));
+      final response = await http.post(
+        Uri.https(_baseUrl, '$_basePath/api/doctors/${user.webId}/monitoring'),
+      );
 
       if (response.statusCode != 200) {
         throw Exception("Status Code not OK: ${response.body}");
@@ -94,8 +380,9 @@ class MonitoringAPI {
       return APIDoctor.fromListOfMaps(
           (body as List<dynamic>).cast<Map<String, dynamic>>());
     } else {
-      final response = await http.get(
-          Uri.http(_baseUrl, '$_basePath/patient/doctors/get/${user.webId}'));
+      final response = await http.post(
+        Uri.http(_baseUrl, '$_basePath/api/doctors/${user.webId}/monitoring'),
+      );
 
       if (response.statusCode != 200) {
         throw Exception("Status Code not OK: ${response.body}");
@@ -105,6 +392,65 @@ class MonitoringAPI {
 
       return APIDoctor.fromListOfMaps(
           (body as List<dynamic>).cast<Map<String, dynamic>>());
+    }
+  }
+
+  static Future<void> uploadLabResult(int requestId, File file) async {
+    final path = await getDatabasesPath();
+    final db = await initAppDatabase(path);
+    final user = User.fromMap((await db.query("User")).first);
+
+    if (user.webId == null) {
+      throw Exception("Patient does not exist in Monitoring API");
+    }
+
+    final isConnected = await InternetConnection().hasInternetAccess;
+    if (!isConnected) {
+      throw Exception("No internet");
+    }
+
+    if (_https) {
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.https(
+          _baseUrl,
+          '$_basePath/api/patient/${user.webId}/lab/result',
+        ),
+      );
+
+      request.fields['request_id'] = requestId.toString();
+      request.files.add(await http.MultipartFile.fromPath(
+        'file',
+        file.path,
+      ));
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode != 200) {
+        throw Exception("Status Code not OK: ${response.body}");
+      }
+    } else {
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.http(
+          _baseUrl,
+          '$_basePath/api/patient/${user.webId}/lab/result',
+        ),
+      );
+
+      request.fields['request_id'] = requestId.toString();
+      request.files.add(await http.MultipartFile.fromPath(
+        'file',
+        file.path,
+      ));
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode != 200) {
+        throw Exception("Status Code not OK: ${response.body}");
+      }
     }
   }
 
@@ -153,181 +499,67 @@ class MonitoringAPI {
     }
   }
 
-  static Future<bool> chatExistsWith(APIDoctor doctor) async {
+  static Future<List<APIConditionHistory>> getConditionHistory() async {
     final path = await getDatabasesPath();
     final db = await initAppDatabase(path);
-
     final user = User.fromMap((await db.query("User")).first);
 
-    final isConnected = await InternetConnection().hasInternetAccess;
-    if (!isConnected) {
-      return false;
-    }
-
     if (_https) {
-      final response = await http.get(
-        Uri.https(
-          _baseUrl,
-          '$_basePath/doctor/chat/getid/${doctor.doctorId}/${user.webId}',
-        ),
-      );
+      final response = await http.post(Uri.https(
+          _baseUrl, '$_basePath/api/patient/${user.webId}/history/condition'));
 
-      if (response.statusCode == 404) {
-        return false;
-      } else if (response.statusCode == 200) {
-        return true;
+      if (response.statusCode != 200) {
+        throw Exception("Status Code not OK: ${response.body}");
       }
 
-      throw Exception("Invalid Response: ${response.body}");
+      final body = jsonDecode(response.body);
+
+      return APIConditionHistory.fromListOfMaps(
+          (body as List<dynamic>).cast<Map<String, dynamic>>());
     } else {
-      final response = await http.get(
-        Uri.http(
-          _baseUrl,
-          '$_basePath/doctor/chat/getid/${doctor.doctorId}/${user.webId}',
-        ),
-      );
+      final response = await http.post(Uri.http(
+          _baseUrl, '$_basePath/api/patient/${user.webId}/history/condition'));
 
-      if (response.statusCode == 404) {
-        return false;
-      } else if (response.statusCode == 200) {
-        return true;
+      if (response.statusCode != 200) {
+        throw Exception("Status Code not OK: ${response.body}");
       }
 
-      throw Exception("Invalid Response: ${response.body}");
+      final body = jsonDecode(response.body);
+
+      return APIConditionHistory.fromListOfMaps(
+          (body as List<dynamic>).cast<Map<String, dynamic>>());
     }
   }
 
-  static Future<void> sendMessageTo(APIDoctor doctor, String message) async {
+  static Future<List<APIImmunizationHistory>> getImmunizationHistory() async {
     final path = await getDatabasesPath();
     final db = await initAppDatabase(path);
-
     final user = User.fromMap((await db.query("User")).first);
 
-    final isConnected = await InternetConnection().hasInternetAccess;
-    if (!isConnected) {
-      throw Exception("No internet");
-    }
-
-    if (user.webId == null) {
-      throw Exception("Patient does not exist in Monitoring API");
-    }
-
     if (_https) {
-      final response = await http.get(
-        Uri.https(
-          _baseUrl,
-          '$_basePath/doctor/chat/getid/${doctor.doctorId}/${user.webId}',
-        ),
-      );
+      final response = await http.post(Uri.https(_baseUrl,
+          '$_basePath/api/patient/${user.webId}/history/immunization'));
 
       if (response.statusCode != 200) {
         throw Exception("Status Code not OK: ${response.body}");
       }
 
-      final connectionId =
-          int.parse(jsonDecode(response.body)['chat_connection_id']);
+      final body = jsonDecode(response.body);
 
-      http.post(
-        Uri.https(_baseUrl, '$_basePath/message/send/$connectionId'),
-        body: jsonEncode({
-          'sender_type': 'patient',
-          'sender_id': user.webId,
-          'content': message,
-        }),
-      );
+      return APIImmunizationHistory.fromListOfMaps(
+          (body as List<dynamic>).cast<Map<String, dynamic>>());
     } else {
-      final response = await http.get(
-        Uri.http(
-          _baseUrl,
-          '$_basePath/doctor/chat/getid/${doctor.doctorId}/${user.webId}',
-        ),
-      );
+      final response = await http.post(Uri.http(_baseUrl,
+          '$_basePath/api/patient/${user.webId}/history/immunization'));
 
       if (response.statusCode != 200) {
         throw Exception("Status Code not OK: ${response.body}");
       }
 
-      final connectionId =
-          int.parse(jsonDecode(response.body)['chat_connection_id']);
+      final body = jsonDecode(response.body);
 
-      http.post(
-        Uri.http(_baseUrl, '$_basePath/message/send/$connectionId'),
-        body: jsonEncode({
-          'sender_type': 'patient',
-          'sender_id': user.webId,
-          'content': message,
-        }),
-      );
-    }
-  }
-
-  static Future<List<ChatMessage>> getChatLog(
-    User user,
-    APIDoctor doctor,
-  ) async {
-    final isConnected = await InternetConnection().hasInternetAccess;
-    if (!isConnected) {
-      throw Exception("No internet");
-    }
-
-    if (user.webId == null) {
-      throw Exception("Patient does not exist in Monitoring API");
-    }
-
-    if (_https) {
-      final response = await http.get(
-        Uri.https(
-          _baseUrl,
-          '$_basePath/doctor/chat/getid/${doctor.doctorId}/${user.webId}',
-        ),
-      );
-
-      if (response.statusCode != 200) {
-        throw Exception("Status Code not OK: ${response.body}");
-      }
-
-      final connectionId =
-          int.parse(jsonDecode(response.body)['chat_connection_id']);
-
-      final messages = await http.get(
-        Uri.https(
-          _baseUrl,
-          '$_basePath/message/get/$connectionId',
-        ),
-      );
-
-      final chatMessages = (jsonDecode(messages.body) as List<dynamic>)
-          .cast<Map<String, dynamic>>()
-          .map(ChatMessage.fromMap);
-
-      return chatMessages.toList();
-    } else {
-      final response = await http.get(
-        Uri.http(
-          _baseUrl,
-          '$_basePath/doctor/chat/getid/${doctor.doctorId}/${user.webId}',
-        ),
-      );
-
-      if (response.statusCode != 200) {
-        throw Exception("Status Code not OK: ${response.body}");
-      }
-
-      final connectionId =
-          int.parse(jsonDecode(response.body)['chat_connection_id']);
-
-      final messages = await http.get(
-        Uri.http(
-          _baseUrl,
-          '$_basePath/message/get/$connectionId',
-        ),
-      );
-
-      final chatMessages = (jsonDecode(messages.body) as List<dynamic>)
-          .cast<Map<String, dynamic>>()
-          .map(ChatMessage.fromMap);
-
-      return chatMessages.toList();
+      return APIImmunizationHistory.fromListOfMaps(
+          (body as List<dynamic>).cast<Map<String, dynamic>>());
     }
   }
 
@@ -735,7 +967,10 @@ class MonitoringAPI {
         throw Exception("Status Code not OK: ${response.body}");
       }
 
-      return jsonDecode(response.body)["web_id"];
+      return (
+        jsonDecode(response.body)["web_id"] as int,
+        jsonDecode(response.body)["recovery_id"] as String
+      );
     } else {
       final response = await http.post(
         Uri.http(

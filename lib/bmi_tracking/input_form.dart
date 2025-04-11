@@ -729,26 +729,32 @@ class _BMIRecordInputFormInternalState
                                     where: "id = ?",
                                     whereArgs: [widget._existing!.id]);
 
-                                try {
-                                  await MonitoringAPI.syncBmiRecords();
+                                if ((await User.currentUser).webId != null) {
+                                  try {
+                                    await MonitoringAPI.syncBmiRecords();
 
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        duration: Duration(milliseconds: 1000),
-                                        content: Text('Synced BMI records'),
-                                      ),
-                                    );
-                                  }
-                                } catch (_) {
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        duration: Duration(milliseconds: 1000),
-                                        content:
-                                            Text('Failed to sync BMI records'),
-                                      ),
-                                    );
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                          duration:
+                                              Duration(milliseconds: 1000),
+                                          content: Text('Synced BMI records'),
+                                        ),
+                                      );
+                                    }
+                                  } catch (_) {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                          duration:
+                                              Duration(milliseconds: 1000),
+                                          content: Text(
+                                              'Failed to sync BMI records'),
+                                        ),
+                                      );
+                                    }
                                   }
                                 }
 
@@ -869,25 +875,27 @@ class _BMIRecordInputFormInternalState
                         .closed;
                   }
 
-                  await MonitoringAPI.syncBmiRecords().then((_) {
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          duration: Duration(milliseconds: 1000),
-                          content: Text('Synced BMI records'),
-                        ),
-                      );
-                    }
-                  }).catchError((_) {
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          duration: Duration(milliseconds: 1000),
-                          content: Text('Failed to sync BMI records'),
-                        ),
-                      );
-                    }
-                  });
+                  if ((await User.currentUser).webId != null) {
+                    await MonitoringAPI.syncBmiRecords().then((_) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            duration: Duration(milliseconds: 1000),
+                            content: Text('Synced BMI records'),
+                          ),
+                        );
+                      }
+                    }).catchError((_) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            duration: Duration(milliseconds: 1000),
+                            content: Text('Failed to sync BMI records'),
+                          ),
+                        );
+                      }
+                    });
+                  }
 
                   if (context.mounted) {
                     Navigator.of(context).pop();

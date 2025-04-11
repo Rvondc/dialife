@@ -12,7 +12,6 @@ class EmergencyNumbers extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: const Icon(Icons.emergency_outlined),
         title: const SizedBox(
           width: 200,
           child: AutoSizeText(
