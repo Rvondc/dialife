@@ -632,7 +632,7 @@ class __BMITrackingInternalState extends State<_BMITrackingInternal> {
                           width: 0.5,
                         ),
                       ),
-                      series: <ChartSeries<BMIRecord, DateTime>>[
+                      series: <CartesianSeries<BMIRecord, DateTime>>[
                         LineSeries(
                           dataSource: dataPoints,
                           xValueMapper: (datum, index) => datum.createdAt,
@@ -1100,7 +1100,7 @@ Widget averageContainer(String label, double? average) {
 //           notes VARCHAR(255) NOT NULL,
 //           weight DECIMAL(5, 2) NOT NULL,
 //           created_at DATETIME NOT NULL
-//         ) 
+//         )
 //       """);
 
 //       return db.execute(

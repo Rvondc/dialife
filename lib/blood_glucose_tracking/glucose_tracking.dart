@@ -729,7 +729,7 @@ class _GlucoseTrackingInternalState extends State<_GlucoseTrackingInternal> {
                           width: 0.5,
                         ),
                       ),
-                      series: <ChartSeries<GlucoseRecord, DateTime>>[
+                      series: <CartesianSeries<GlucoseRecord, DateTime>>[
                         LineSeries(
                           dataSource: glucoseDataPoints,
                           xValueMapper: (datum, index) => datum.bloodTestDate,

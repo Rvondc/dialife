@@ -256,7 +256,17 @@ class _ActivityLogInternalState extends State<_ActivityLogInternal> {
                                       reservedSize: 36,
                                       getTitlesWidget: (value, meta) {
                                         return SideTitleWidget(
-                                          axisSide: meta.axisSide,
+                                          meta: TitleMeta(
+                                            min: 0,
+                                            max: 1,
+                                            parentAxisSize: 10,
+                                            axisPosition: 1,
+                                            appliedInterval: 1,
+                                            sideTitles: SideTitles(),
+                                            formattedValue: "formattedValue",
+                                            axisSide: AxisSide.bottom,
+                                            rotationQuarterTurns: 1,
+                                          ),
                                           child: Text(
                                             DateFormat("dd/MM").format(
                                               validDays[value.toInt()],

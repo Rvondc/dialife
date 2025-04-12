@@ -149,8 +149,6 @@ class LocalNotification {
       notificationDetails,
       payload: payload,
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
     );
 
     // debugPrint(delay.toString());
@@ -197,6 +195,7 @@ class LocalNotification {
       body,
       RepeatInterval.everyMinute,
       notificationDetails,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
     );
   }
 
