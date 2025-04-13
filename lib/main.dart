@@ -16,7 +16,6 @@ import 'package:dialife/activity_log/activity_log.dart';
 import 'package:dialife/activity_log/input_form.dart';
 import 'package:dialife/activity_log/record_editor.dart';
 import 'package:dialife/contact_list/contact_list.dart';
-import 'package:dialife/contact_list/input_form.dart';
 import 'package:dialife/edit_user.dart';
 import 'package:dialife/edit_user_birthdate.dart';
 import 'package:dialife/education/diabetes_sections.dart';
@@ -288,13 +287,6 @@ class Main extends StatelessWidget {
               builder: (context) => const ContactList(),
               settings: const RouteSettings(name: "/contact-list"),
             );
-          // case "/contact-list/input":
-          //   final args = settings.arguments as Map<String, dynamic>;
-
-          //   return MaterialPageRoute(
-          //     builder: (context) => ContactListInput(db: args["db"]),
-          //     settings: const RouteSettings(name: "/contact-list/input"),
-          //   );
           case "/education":
             return MaterialPageRoute(
               builder: (context) => const Education(),

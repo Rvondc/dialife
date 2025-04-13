@@ -1,0 +1,20 @@
+{
+  "buildFiles": [
+    "/Users/chrisdominicp.chan/flutter/flutter/packages/flutter_tools/gradle/src/main/groovy/CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "/Users/chrisdominicp.chan/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+      "-C",
+      "/Users/chrisdominicp.chan/Desktop/Programs/Flutter/dialife-med/android/app/.cxx/RelWithDebInfo/1o528l38/x86",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "/Users/chrisdominicp.chan/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+    "-C",
+    "/Users/chrisdominicp.chan/Desktop/Programs/Flutter/dialife-med/android/app/.cxx/RelWithDebInfo/1o528l38/x86",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {}
+}

@@ -1,0 +1,28 @@
+{
+  "buildFiles": [
+    "/Users/chrisdominicp.chan/flutter/flutter/packages/flutter_tools/gradle/src/main/groovy/CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "/Users/chrisdominicp.chan/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+      "-C",
+      "/Users/chrisdominicp.chan/Desktop/Programs/Flutter/dialife-med/android/app/.cxx/RelWithDebInfo/1o528l38/x86_64",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "/Users/chrisdominicp.chan/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+    "-C",
+    "/Users/chrisdominicp.chan/Desktop/Programs/Flutter/dialife-med/android/app/.cxx/RelWithDebInfo/1o528l38/x86_64",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {},
+  "toolchains": {
+    "toolchain": {
+      "cCompilerExecutable": "/Users/chrisdominicp.chan/Library/Android/sdk/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang.lld",
+      "cppCompilerExecutable": "/Users/chrisdominicp.chan/Library/Android/sdk/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang++.lld"
+    }
+  },
+  "cFileExtensions": [],
+  "cppFileExtensions": []
+}

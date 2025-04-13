@@ -1459,7 +1459,8 @@ class _UserSetupState extends State<UserSetup> {
           content: FutureBuilder(
             future: () async {
               final recoveryData = await MonitoringAPI.getRecoveryData(
-                  _recoveryIdController.text);
+                _recoveryIdController.text,
+              );
 
               await widget.db.insert(
                 "User",
@@ -1484,8 +1485,8 @@ class _UserSetupState extends State<UserSetup> {
                 await widget.db.insert(
                   "BMIRecord",
                   {
-                    "height": record.height,
-                    "weight": record.weight,
+                    "height": double.parse(record.height),
+                    "weight": double.parse(record.weight),
                     "notes": record.notes,
                     "created_at": record.recordedAt.toIso8601String(),
                   },
