@@ -686,7 +686,7 @@ class _RootState extends State<Root> {
                 options: CarouselOptions(
                   aspectRatio: 2.1,
                   viewportFraction: 1,
-                  // autoPlay: true,
+                  autoPlay: true,
                   enlargeFactor: 0,
                   enlargeCenterPage: true,
                 ),
